@@ -1,8 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import MaterialCard from "@/app/design/components/Sidebar/MaterialCard";
 import type { Material, Category } from "@/app/design/types/interfaces";
+import MaterialCard from "./MaterialCard";
 
 interface MaterialLibraryProps {
   materials: Record<string, Material[]>;
