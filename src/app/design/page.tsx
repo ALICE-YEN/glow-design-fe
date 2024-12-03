@@ -9,6 +9,7 @@ import {
 import Cropping from "@/app/design/components/Cropping";
 import LayerList from "@/app/design/components/LayerList";
 import Sidebar from "@/app/design/components/Sidebar";
+import Toolbar from "@/app/design/components/Toolbar";
 
 export default function CanvasComponent() {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
@@ -110,6 +111,8 @@ export default function CanvasComponent() {
         ref={canvasRef}
         className="w-full h-full block"
       ></canvas>
+
+      <Toolbar canvas={canvas} />
 
       <Sidebar canvas={canvas} />
 

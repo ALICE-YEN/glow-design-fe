@@ -13,7 +13,7 @@ export interface Material {
   id: string;
   name: string;
   src: string | StaticImageData;
-  description?: string;
+  description: string;
 }
 
 export interface Category {

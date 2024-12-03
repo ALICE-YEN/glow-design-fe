@@ -63,7 +63,7 @@ export default function Sidebar({ canvas }: { canvas: HTMLCanvasElement }) {
           activeIndex !== null || isAnimating
             ? "rounded-l-default"
             : "rounded-default"
-        }  shadow-xl bg-stone-100 z-10`}
+        } shadow-xl bg-stone-100 z-10`}
       >
         {BUTTON_CONFIG.map((btn) => (
           <SidebarButton

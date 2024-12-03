@@ -1,11 +1,13 @@
+"use client";
+
 import RockImg from "@/assets/imgs/rock.jpeg";
 import WoodImg from "@/assets/imgs/wood.jpeg";
-import MaterialLibrary from "@/app/design/components/Sidebar/MaterialLibrary";
 import type {
   SidebarButtonConfig,
   Material,
   Category,
 } from "@/app/design/types/interfaces";
+import MaterialLibrary from "./MaterialLibrary";
 
 interface SlideoutPanelProps {
   isActive: boolean;
