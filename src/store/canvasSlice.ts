@@ -1,30 +1,31 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
+import { CanvasAction } from "@/types/enum";
 
 interface CanvasState {
+  currentAction: CanvasAction;
   zoom: number;
-  isCleared: boolean;
 }
 
 const initialState: CanvasState = {
+  currentAction: CanvasAction.NONE,
   zoom: 1,
-  isCleared: false,
 };
 
 const canvasSlice = createSlice({
   name: "canvas",
   initialState,
   reducers: {
+    setAction(state, action: PayloadAction<CanvasAction>) {
+      state.currentAction = action.payload;
+    },
+    resetAction(state) {
+      state.currentAction = CanvasAction.NONE; // 重置操作为无
+    },
     setZoom(state, action: PayloadAction<number>) {
       state.zoom = action.payload;
-    },
-    clearCanvas(state) {
-      state.isCleared = true;
-    },
-    resetClearFlag(state) {
-      state.isCleared = false;
     },
   },
 });
 
-export const { setZoom, clearCanvas, resetClearFlag } = canvasSlice.actions;
+export const { setAction, resetAction, setZoom } = canvasSlice.actions;
 export default canvasSlice.reducer;

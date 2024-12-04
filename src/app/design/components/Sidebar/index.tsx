@@ -43,7 +43,7 @@ const BUTTON_CONFIG: SidebarButtonConfig[] = [
   },
 ];
 
-export default function Sidebar({ canvas }: { canvas: HTMLCanvasElement }) {
+export default function Sidebar() {
   const [activeIndex, setActiveIndex] = useState<string | null>(null);
   const [isAnimating, setIsAnimating] = useState(false); // SlideoutPanel 動畫
 

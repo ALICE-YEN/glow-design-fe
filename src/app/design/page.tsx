@@ -3,7 +3,8 @@
 import { useEffect, useRef, useState } from "react";
 import { Canvas, Line, Rect, Image } from "fabric";
 import { useAppSelector, useAppDispatch } from "@/hooks/redux";
-import { setZoom } from "@/store/canvasSlice";
+import { setZoom, resetAction } from "@/store/canvasSlice";
+import { CanvasAction } from "@/types/enum";
 import {
   handleObjectMoving,
   clearGuidelines,
@@ -18,7 +19,7 @@ export default function CanvasComponent() {
   const [canvas, setCanvas] = useState<Canvas | null>(null);
   const [guidelines, setGuidelines] = useState([]);
 
-  const zoom = useAppSelector((state) => state.canvas.zoom);
+  const currentAction = useAppSelector((state) => state.canvas.currentAction);
   const dispatch = useAppDispatch();
 
   useEffect(() => {
@@ -78,6 +79,23 @@ export default function CanvasComponent() {
     }
   }, []);
 
+  useEffect(() => {
+    if (!canvas) return;
+
+    switch (currentAction) {
+      case CanvasAction.CLEAR:
+        canvas.clear();
+        break;
+      default:
+        break;
+    }
+
+    // 完成操作後，重置當前操作
+    if (currentAction !== CanvasAction.NONE) {
+      dispatch(resetAction());
+    }
+  }, [currentAction, canvas, dispatch]);
+
   // 繪製網格
   //   const drawGrid = (canvas: Canvas, gridSize: number) => {};
 
@@ -117,9 +135,9 @@ export default function CanvasComponent() {
         className="w-full h-full block"
       ></canvas>
 
-      <Toolbar canvas={canvas} />
+      <Toolbar />
 
-      <Sidebar canvas={canvas} />
+      <Sidebar />
 
       <div
         style={{
@@ -149,8 +167,7 @@ export default function CanvasComponent() {
         <Cropping canvas={canvas} onFramesUpdate={handleFramesUpdated} />
         <LayerList canvas={canvas} />
 
-        <p>Zoom: {zoom}</p>
-        <button onClick={() => dispatch(setZoom(zoom + 0.1))}>Zoom In</button>
+        <p>currentAction: {currentAction}</p>
       </div>
     </div>
   );

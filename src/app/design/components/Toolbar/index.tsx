@@ -10,6 +10,9 @@ import {
   IconDefinition,
 } from "@fortawesome/free-solid-svg-icons";
 import { faMoon, faUser } from "@fortawesome/free-regular-svg-icons";
+import { useAppDispatch } from "@/hooks/redux";
+import { setAction } from "@/store/canvasSlice";
+import { CanvasAction } from "@/types/enum";
 import Button from "./Button";
 import Title from "./Title";
 
@@ -19,11 +22,11 @@ interface ToolbarButtonConfig {
   handleClick: () => void;
 }
 
-export default function Toolbar({ canvas }: { canvas: HTMLCanvasElement }) {
+export default function Toolbar() {
+  const dispatch = useAppDispatch();
+
   const handleEraseClick = () => {
-    if (canvas) {
-      canvas.clear();
-    }
+    dispatch(setAction(CanvasAction.CLEAR));
     console.log("Erase clicked");
   };
 
