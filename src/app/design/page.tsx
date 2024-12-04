@@ -2,6 +2,8 @@
 
 import { useEffect, useRef, useState } from "react";
 import { Canvas, Line, Rect, Image } from "fabric";
+import { useAppSelector, useAppDispatch } from "@/hooks/redux";
+import { setZoom } from "@/store/canvasSlice";
 import {
   handleObjectMoving,
   clearGuidelines,
@@ -15,6 +17,9 @@ export default function CanvasComponent() {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const [canvas, setCanvas] = useState<Canvas | null>(null);
   const [guidelines, setGuidelines] = useState([]);
+
+  const zoom = useAppSelector((state) => state.canvas.zoom);
+  const dispatch = useAppDispatch();
 
   useEffect(() => {
     if (canvasRef.current) {
@@ -143,6 +148,9 @@ export default function CanvasComponent() {
 
         <Cropping canvas={canvas} onFramesUpdate={handleFramesUpdated} />
         <LayerList canvas={canvas} />
+
+        <p>Zoom: {zoom}</p>
+        <button onClick={() => dispatch(setZoom(zoom + 0.1))}>Zoom In</button>
       </div>
     </div>
   );

@@ -7,7 +7,8 @@ import type {
   Material,
   Category,
 } from "@/app/design/types/interfaces";
-import MaterialLibrary from "./MaterialLibrary";
+import MaterialLibrary from "./SlideoutPanelContent/MaterialLibrary";
+import WallDrawing from "./SlideoutPanelContent/WallDrawing";
 
 interface SlideoutPanelProps {
   isActive: boolean;
@@ -84,7 +85,7 @@ export default function SlideoutPanel({
     if (content.id === "materials" || content.id === "furniture") {
       return <MaterialLibrary materials={materials} categories={categories} />;
     } else if (content.id === "decorate") {
-      return <div>這是裝潢的 UI</div>;
+      return <WallDrawing />;
     } else if (content.id === "export") {
       return <div>這是匯出的 UI</div>;
     }
