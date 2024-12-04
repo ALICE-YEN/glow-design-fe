@@ -1,8 +1,11 @@
 export enum CanvasAction {
   NONE = "none",
-  CLEAR = "clear",
   DRAW = "draw",
-  ERASE = "erase",
+  CLEAR = "clear",
+  PLACE_DOOR = "placeDoor",
+  PLACE_WINDOW = "placeWindow",
   ZOOM_IN = "zoomIn",
   ZOOM_OUT = "zoomOut",
+  EXPORT_PNG = "exportPNG",
+  SAVE = "save",
 }
