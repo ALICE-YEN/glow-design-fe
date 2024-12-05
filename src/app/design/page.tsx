@@ -20,6 +20,7 @@ export default function CanvasComponent() {
   const [guidelines, setGuidelines] = useState([]);
 
   const currentAction = useAppSelector((state) => state.canvas.currentAction);
+  const selectedImage = useAppSelector((state) => state.canvas.selectedImage);
   const dispatch = useAppDispatch();
 
   useEffect(() => {
@@ -137,6 +138,15 @@ export default function CanvasComponent() {
         canvas.freeDrawingBrush.strokeLineJoin = "miter";
         canvas.freeDrawingBrush.strokeMiterLimit = 100;
         break;
+      case CanvasAction.PLACE_FURNITURE:
+        loadFromUrl({ url: selectedImage, customWidth: 300 });
+        break;
+      case CanvasAction.PLACE_WINDOW:
+        loadFromUrl({ url: selectedImage, customWidth: 300 });
+        break;
+      case CanvasAction.PLACE_DOOR:
+        loadFromUrl({ url: selectedImage, customWidth: 300 });
+        break;
       default:
         break;
     }
@@ -145,12 +155,11 @@ export default function CanvasComponent() {
     if (currentAction !== CanvasAction.NONE) {
       dispatch(resetAction());
     }
-  }, [currentAction, canvas, dispatch]);
+  }, [currentAction, canvas, dispatch, selectedImage]);
 
   // 繪製網格
   //   const drawGrid = (canvas: Canvas, gridSize: number) => {};
 
-  // 繪製矩形
   const drawRectangle = (color: string) => {
     if (canvas) {
       const rect = new Rect({
@@ -166,16 +175,31 @@ export default function CanvasComponent() {
 
   const loadFromUrl = async ({
     url = "https://www.google.com/images/srpr/logo3w.png",
+    customWidth = null, // 自定義寬度（px），默認為 null
+  }: {
+    url?: string;
+    customWidth?: number | null;
   }) => {
     if (!canvas) return;
 
     const imgData = await FabricImage.fromURL(url);
     console.log("imgData", imgData);
 
+    // 如果提供了自定義寬度，計算等比例縮放比例
+    if (customWidth && imgData.width) {
+      const scaleFactor = customWidth / imgData.width; // 計算縮放比例
+      imgData.scale(scaleFactor); // 等比例縮放
+    }
+
     imgData.set({
-      left: canvas.getWidth() / 2 - imgData.width / 2,
-      top: canvas.getHeight() / 2 - imgData.height / 2,
+      left:
+        canvas.getWidth() / 2 -
+        (customWidth ? imgData.getScaledWidth() / 2 : imgData.width / 2),
+      top:
+        canvas.getHeight() / 2 -
+        (customWidth ? imgData.getScaledHeight() / 2 : imgData.height / 2),
     });
+
     canvas.add(imgData);
     // imgData.setCoords(); // 當對象的屬性（如位置、縮放、旋轉）通過程式碼修改時，需要調用 setCoords()，以同步內部的坐標數據
     canvas.renderAll();
@@ -189,19 +213,17 @@ export default function CanvasComponent() {
   };
 
   const handleFileUpload = (event) => {
-    if (!canvas) return;
-
     const file = event.target.files[0];
     if (!file) return;
 
     const reader = new FileReader();
 
     reader.onload = (e) => {
-      const result = e.target.result; // 獲取 Base64 圖片
-      loadFromUrl({ url: result });
+      const result = e.target.result; // Base64 URL
+      loadFromUrl({ url: result, customWidth: 300 });
     };
 
-    reader.readAsDataURL(file); // 將文件讀取為 Base64
+    reader.readAsDataURL(file); // 將文件讀取為 Base64 格式 URL
   };
 
   return (
@@ -237,7 +259,10 @@ export default function CanvasComponent() {
           Draw Rectangle2
         </button>
 
-        <button onClick={loadFromUrl} style={{ marginRight: "10px" }}>
+        <button
+          onClick={() => loadFromUrl({ customWidth: 300 })}
+          style={{ marginRight: "10px" }}
+        >
           loadFromUrl
         </button>
 
@@ -253,6 +278,7 @@ export default function CanvasComponent() {
         <LayerList canvas={canvas} />
 
         <p>currentAction: {currentAction}</p>
+        <p>selectedImage: {selectedImage}</p>
       </div>
     </div>
   );

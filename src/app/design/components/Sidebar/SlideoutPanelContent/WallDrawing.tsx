@@ -2,7 +2,7 @@
 
 import { ReactNode } from "react";
 import { useAppDispatch } from "@/hooks/redux";
-import { setAction } from "@/store/canvasSlice";
+import { setAction, setSelectedImage } from "@/store/canvasSlice";
 import { CanvasAction } from "@/types/enum";
 
 interface ItemConfig {
@@ -58,7 +58,14 @@ export default function WallDrawing() {
           />
         </svg>
       ),
-      handleClick: () => dispatch(setAction(CanvasAction.PLACE_DOOR)),
+      handleClick: () => {
+        dispatch(setAction(CanvasAction.PLACE_DOOR));
+        dispatch(
+          setSelectedImage(
+            "https://www.hung-chan.com.tw/media/k2/items/cache/a5cfeb7eb858a454222c6a713718c016_XL.jpg"
+          )
+        );
+      },
     },
     {
       id: "window",
@@ -72,7 +79,14 @@ export default function WallDrawing() {
           <rect x="30" y="40" width="40" height="20" fill="#cccccc" />
         </svg>
       ),
-      handleClick: () => dispatch(setAction(CanvasAction.PLACE_WINDOW)),
+      handleClick: () => {
+        dispatch(setAction(CanvasAction.PLACE_WINDOW));
+        dispatch(
+          setSelectedImage(
+            "https://img.lovepik.com/free-png/20211103/lovepik-window-png-image_400222125_wh1200.png"
+          )
+        );
+      },
     },
   ];
 

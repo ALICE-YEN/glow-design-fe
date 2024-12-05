@@ -14,6 +14,7 @@ export interface Material {
   name: string;
   src: string | StaticImageData;
   description: string;
+  url: string;
 }
 
 export interface Category {

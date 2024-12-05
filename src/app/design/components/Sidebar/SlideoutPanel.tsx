@@ -30,18 +30,21 @@ const materials: Record<string, Material[]> = {
       name: "岩石 1",
       src: RockImg,
       description: "經典黑白石材",
+      url: "https://media.gettyimages.com/id/125809774/zh/%E7%85%A7%E7%89%87/background-texture.jpg?s=612x612&w=gi&k=20&c=0l3dcIyohxRhOpu9bpIbwEN11X5eGfLxxYKGnRBLSYE=",
     },
     {
       id: "rock2",
       name: "岩石 2",
       src: RockImg,
       description: "經典黑白石材",
+      url: "https://www.google.com/images/srpr/logo3w.png",
     },
     {
       id: "rock3",
       name: "岩石 3",
       src: RockImg,
       description: "經典黑白石材",
+      url: "https://www.google.com/images/srpr/logo3w.png",
     },
   ],
   wood: [
@@ -50,12 +53,14 @@ const materials: Record<string, Material[]> = {
       name: "木材 1",
       src: WoodImg,
       description: "橡木木地板",
+      url: "https://www.google.com/images/srpr/logo3w.png",
     },
     {
       id: "wood2",
       name: "木材 2",
       src: WoodImg,
       description: "胡桃木地板",
+      url: "https://www.google.com/images/srpr/logo3w.png",
     },
   ],
   tile: [
@@ -64,6 +69,7 @@ const materials: Record<string, Material[]> = {
       name: "磁磚 1",
       src: WoodImg,
       description: "白色方形磁磚",
+      url: "https://www.google.com/images/srpr/logo3w.png",
     },
   ],
   outdoor: [
@@ -72,6 +78,7 @@ const materials: Record<string, Material[]> = {
       name: "戶外材料 1",
       src: RockImg,
       description: "戶外石材",
+      url: "https://www.google.com/images/srpr/logo3w.png",
     },
   ],
 };

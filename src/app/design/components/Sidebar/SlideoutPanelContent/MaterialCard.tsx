@@ -5,11 +5,18 @@ import type { Material } from "@/app/design/types/interfaces";
 
 interface MaterialCardProps {
   material: Material;
+  handleClick: (material: Material) => void;
 }
 
-export default function MaterialCard({ material }: MaterialCardProps) {
+export default function MaterialCard({
+  material,
+  handleClick,
+}: MaterialCardProps) {
   return (
-    <div className="rounded-md overflow-hidden border border-gray-200 hover:shadow-lg transition cursor-pointer">
+    <div
+      className="rounded-md overflow-hidden border border-gray-200 hover:shadow-lg transition cursor-pointer"
+      onClick={() => handleClick(material)}
+    >
       <Image
         src={material.src}
         alt={material.name}
