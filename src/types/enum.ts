@@ -8,4 +8,5 @@ export enum CanvasAction {
   ZOOM_OUT = "zoomOut",
   EXPORT_PNG = "exportPNG",
   SAVE = "save",
+  SELECT_OBJECT = "selectObject",
 }

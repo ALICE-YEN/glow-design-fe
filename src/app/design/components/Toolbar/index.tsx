@@ -30,6 +30,16 @@ export default function Toolbar() {
     console.log("Erase clicked");
   };
 
+  const handleSaveClick = () => {
+    dispatch(setAction(CanvasAction.SAVE));
+    console.log("Save clicked");
+  };
+
+  const handleSelectObjectClick = () => {
+    dispatch(setAction(CanvasAction.SELECT_OBJECT));
+    console.log("Pointer Tool clicked");
+  };
+
   const TOOLBAR_BUTTONS: {
     middle: ToolbarButtonConfig[];
     right: ToolbarButtonConfig[];
@@ -38,7 +48,7 @@ export default function Toolbar() {
       {
         icon: faMousePointer,
         label: "Pointer Tool",
-        handleClick: () => console.log("Pointer Tool clicked"),
+        handleClick: handleSelectObjectClick,
       },
       {
         icon: faHand,
@@ -58,7 +68,7 @@ export default function Toolbar() {
       {
         icon: faSave,
         label: "Save",
-        handleClick: () => console.log("Save clicked"),
+        handleClick: handleSaveClick,
       },
       {
         icon: faEraser,
@@ -79,11 +89,12 @@ export default function Toolbar() {
       },
     ],
   };
+
   return (
     <header className="fixed top-0 left-1/2 translate-x-[-50%] h-16 min-w-[800px] flex items-center justify-between bg-stone-100 shadow-xl px-6 py-2 rounded-lg">
       {/* 左側標誌 */}
       <Title
-        designTitle="溫馨小屋"
+        designTitle="嚴宅"
         updateTitle={(newTitle) => console.log("修改名字", newTitle)}
       />
 
