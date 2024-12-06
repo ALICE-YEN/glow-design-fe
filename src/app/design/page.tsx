@@ -118,6 +118,8 @@ export default function CanvasComponent() {
   useEffect(() => {
     if (!canvas) return;
 
+    canvas.isDrawingMode = false;
+
     switch (currentAction) {
       case CanvasAction.CLEAR:
         canvas.clear();
@@ -125,7 +127,6 @@ export default function CanvasComponent() {
         canvas.renderAll();
         break;
       case CanvasAction.SELECT_OBJECT:
-        canvas.isDrawingMode = false;
         break;
       case CanvasAction.DRAW:
         canvas.isDrawingMode = true;
@@ -139,11 +140,7 @@ export default function CanvasComponent() {
         canvas.freeDrawingBrush.strokeMiterLimit = 100;
         break;
       case CanvasAction.PLACE_FURNITURE:
-        loadFromUrl({ url: selectedImage, customWidth: 300 });
-        break;
       case CanvasAction.PLACE_WINDOW:
-        loadFromUrl({ url: selectedImage, customWidth: 300 });
-        break;
       case CanvasAction.PLACE_DOOR:
         loadFromUrl({ url: selectedImage, customWidth: 300 });
         break;
@@ -151,8 +148,11 @@ export default function CanvasComponent() {
         break;
     }
 
-    // 完成操作後，重置當前操作
-    if (currentAction !== CanvasAction.NONE) {
+    // 完成操作後，重置當前操作(除了持續性操作（如繪圖模式）不重置狀態)
+    if (
+      currentAction !== CanvasAction.NONE &&
+      currentAction !== CanvasAction.DRAW
+    ) {
       dispatch(resetAction());
     }
   }, [currentAction, canvas, dispatch, selectedImage]);
@@ -194,10 +194,10 @@ export default function CanvasComponent() {
     imgData.set({
       left:
         canvas.getWidth() / 2 -
-        (customWidth ? imgData.getScaledWidth() / 2 : imgData.width / 2),
+        (customWidth ? imgData.getScaledWidth() : imgData.width) / 2,
       top:
         canvas.getHeight() / 2 -
-        (customWidth ? imgData.getScaledHeight() / 2 : imgData.height / 2),
+        (customWidth ? imgData.getScaledHeight() : imgData.height) / 2,
     });
 
     canvas.add(imgData);
