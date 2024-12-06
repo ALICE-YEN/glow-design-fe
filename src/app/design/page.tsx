@@ -1,10 +1,29 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { Canvas, PencilBrush, Line, Rect, Image, FabricImage } from "fabric";
+import {
+  Canvas,
+  TEvent,
+  PencilBrush,
+  Group,
+  Line,
+  Rect,
+  Image,
+  FabricImage,
+  Polygon,
+} from "fabric";
 import { useAppSelector, useAppDispatch } from "@/hooks/redux";
-import { setZoom, resetAction } from "@/store/canvasSlice";
+import { resetAction } from "@/store/canvasSlice";
 import { CanvasAction } from "@/types/enum";
+import {
+  initializeCanvas,
+  fitCanvasToWindowAndDrawGrid,
+} from "@/app/design/utils/basicCanvasHelpers";
+import {
+  snapToGrid,
+  finalizeTempLine,
+  updateTempLine,
+} from "@/app/design/utils/drawingHelpers";
 import {
   handleObjectMoving,
   clearGuidelines,
@@ -14,10 +33,17 @@ import LayerList from "@/app/design/components/LayerList";
 import Sidebar from "@/app/design/components/Sidebar";
 import Toolbar from "@/app/design/components/Toolbar";
 
-export default function CanvasComponent() {
+type Point = { x: number; y: number };
+
+export default function Design() {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const [canvas, setCanvas] = useState<Canvas | null>(null);
   const [guidelines, setGuidelines] = useState([]);
+
+  const pointsRef = useRef<Point[]>([]); // 保存最新的點資料，用於即時操作，避免 React 狀態更新的非同步問題。
+  const tempLineRef = useRef<Line | null>(null); // 表示模擬線，隨滑鼠移動動態更新，用於即時操作，避免 React 狀態更新的非同步問題。
+  const [points, setPoints] = useState([]); // 用於追蹤點座標  這還需要嗎？
+  const gridSize = 20; // 網格大小
 
   const currentAction = useAppSelector((state) => state.canvas.currentAction);
   const selectedImage = useAppSelector((state) => state.canvas.selectedImage);
@@ -25,69 +51,133 @@ export default function CanvasComponent() {
 
   useEffect(() => {
     if (canvasRef.current) {
-      // 初始化 Fabric.js Canvas
-      const initCanvas = new Canvas(canvasRef.current, {
-        // backgroundColor: "#FFFFF0",
-        backgroundColor: "#B2AC88",
-        isDrawingMode: false, // 畫布的繪畫模式
-      });
+      const initCanvas = initializeCanvas(canvasRef.current);
 
       initCanvas.requestRenderAll();
       setCanvas(initCanvas);
 
-      // 設置 Canvas 的大小為窗口大小
-      const resizeCanvas = () => {
-        const windowWidth = window.innerWidth;
-        const windowHeight = window.innerHeight;
+      // 調整 Canvas 尺寸為視窗大小並繪製網格
+      const handleResize = () =>
+        fitCanvasToWindowAndDrawGrid(initCanvas, gridSize);
 
-        initCanvas.setWidth(windowWidth);
-        initCanvas.setHeight(windowHeight);
-      };
-      // 初始化畫布大小和網格
-      resizeCanvas();
+      // 初次設定
+      handleResize();
 
-      // 監聽窗口大小變化
-      window.addEventListener("resize", resizeCanvas);
+      // 監聽視窗大小變化
+      window.addEventListener("resize", handleResize);
 
       return () => {
-        window.removeEventListener("resize", resizeCanvas);
+        window.removeEventListener("resize", handleResize);
         initCanvas.dispose();
       };
     }
   }, []);
 
-  useEffect(() => {
+  const startDrawing = () => {
     if (!canvas) return;
 
-    // let startPoint = [];
-    // let endPoint = [];
+    // 重置點資料和模擬線
+    setPoints([]);
+    pointsRef.current = [];
+    tempLineRef.current = null;
 
-    // const handleMouseDown = (event) => {
-    //   if (currentAction === CanvasAction.DRAW) {
-    //     const pointer = canvas.getPointer(event.e);
+    canvas.on("mouse:down", handleMouseDown);
+    canvas.on("mouse:move", handleMouseMove);
 
-    //     if (!startPoint.length) {
-    //       startPoint = [pointer.x, pointer.y];
-    //     } else {
-    //       endPoint = [pointer.x, pointer.y];
+    return () => {
+      console.log("startDrawing return");
+      canvas.off("mouse:down", handleMouseDown);
+      canvas.off("mouse:move", handleMouseMove);
+    };
+  };
 
-    //       const line = new Line([...startPoint, ...endPoint], {
-    //         stroke: "black",
-    //         strokeWidth: 2,
-    //         selectable: false,
-    //         evented: false, // 不响应其他事件
-    //       });
-    //       canvas.add(line);
+  const checkClosure = (x, y) => {
+    if (pointsRef.current.length >= 3) {
+      const { x: firstX, y: firstY } = pointsRef.current[0];
+      if (Math.abs(x - firstX) < gridSize && Math.abs(y - firstY) < gridSize) {
+        fillPolygonWithLines(canvas, [
+          ...pointsRef.current,
+          { x: firstX, y: firstY },
+        ]);
+        pointsRef.current = [];
+        setPoints([]);
+      }
+    }
+  };
 
-    //       startPoint = endPoint;
-    //       endPoint = [];
-    //     }
-    //   }
-    // };
+  const handleMouseDown = (event: TEvent): void => {
+    if (!canvas) return;
 
-    // canvas.on("mouse:down", handleMouseDown);
-    // canvas.on("mouse:move", handleMouseMove);
-    // canvas.on("mouse:up", handleMouseUp);
+    const pointer = canvas.getPointer(event.e);
+    const x = snapToGrid(pointer.x, gridSize);
+    const y = snapToGrid(pointer.y, gridSize);
+
+    // 更新點資料
+    pointsRef.current = [...pointsRef.current, { x, y }];
+    setPoints(pointsRef.current);
+
+    // 固定模擬線為黑色直線
+    finalizeTempLine(canvas, tempLineRef);
+
+    // 檢查是否閉合
+    checkClosure(x, y);
+  };
+
+  const handleMouseMove = (event: TEvent) => {
+    if (!canvas || pointsRef.current.length === 0) return;
+
+    // 目前 handleMouseDown 的座標
+    const pointer = canvas.getPointer(event.e);
+    const endX = snapToGrid(pointer.x, gridSize);
+    const endY = snapToGrid(pointer.y, gridSize);
+
+    // 前次 handleMouseDown 的座標
+    const { x: startX, y: startY } =
+      pointsRef.current[pointsRef.current.length - 1];
+
+    // 更新模擬線
+    updateTempLine(canvas, tempLineRef, startX, startY, endX, endY);
+  };
+
+  const fillPolygonWithLines = (canvas: Canvas, points: Point[]) => {
+    // 建立線條
+    // const lines = points.map((point, index) => {
+    //   const nextPoint = points[(index + 1) % points.length]; // 确保最后一个点连接到第一个点，形成闭合？？？
+    //   return new Line([point.x, point.y, nextPoint.x, nextPoint.y], {
+    //     stroke: "black",
+    //     strokeWidth: 2,
+    //     selectable: false, // 保持不可独立选中
+    //     evented: false,
+    //   });
+    // });
+    // console.log("lines", lines);
+
+    // 將線條組合成 Group
+    // const group = new Group(lines, {
+    //   fill: "rgba(0, 255, 0, 0.3)", // 设置填充色
+    //   selectable: true, // 整体可选
+    //   evented: true, // 响应事件
+    // });
+    // console.log("group", group);
+    // canvas.add(group);
+
+    const polygon = new Polygon(points, {
+      fill: "rgba(0, 255, 0, 0.3)",
+      selectable: true,
+      // evented: false,
+    });
+    canvas.add(polygon);
+
+    // 移除 mouse:down 和 mouse:move 监听器
+    canvas.off("mouse:down", handleMouseDown);
+    canvas.off("mouse:move", handleMouseMove);
+
+    canvas.renderAll();
+    dispatch(resetAction());
+  };
+
+  useEffect(() => {
+    if (!canvas) return;
 
     canvas.on("selection:created", (e) => {
       // console.log("select a new object on canvas", e.selected[0]);
@@ -130,14 +220,30 @@ export default function CanvasComponent() {
         break;
       case CanvasAction.DRAW:
         canvas.isDrawingMode = true;
-        canvas.freeDrawingBrush = new PencilBrush(canvas);
-        canvas.freeDrawingBrush.color = "gray";
-        canvas.freeDrawingBrush.width = 10;
-        canvas.freeDrawingBrush.drawStraightLine = true;
-        canvas.freeDrawingBrush.straightLineKey = "shiftKey";
-        canvas.freeDrawingBrush.strokeLineCap = "square";
-        canvas.freeDrawingBrush.strokeLineJoin = "miter";
-        canvas.freeDrawingBrush.strokeMiterLimit = 100;
+        // const pencilBrush = new PencilBrush(canvas); // 畫出的路徑是 fabric.Path 對象，可以在後續檢查是否形成封閉的形狀（比如檢查起點和終點是否相連）
+        // canvas.freeDrawingBrush = pencilBrush;
+        // pencilBrush.width = 10;
+        // pencilBrush.drawStraightLine = true;
+        // pencilBrush.straightLineKey = "shiftKey";
+        // pencilBrush.strokeLineCap = "square"; // 線條端點樣式
+        // pencilBrush.strokeLineJoin = "miter"; // 線條拐角樣式
+        // pencilBrush.strokeMiterLimit = 100;
+
+        // canvas.on("path:created", (event) => {
+        //   const path = event.path; // 獲取繪製的路徑
+        //   console.log("Path created:", path);
+
+        //   // 可在此檢查是否為封閉形狀
+        //   const isClosed = checkIfPathIsClosed(path);
+        //   if (isClosed) {
+        //     console.log("Path is closed: 密閉格局完成");
+        //   } else {
+        //     console.log("Path is not closed: 尚未完成格局");
+        //   }
+        // });
+
+        startDrawing();
+
         break;
       case CanvasAction.PLACE_FURNITURE:
       case CanvasAction.PLACE_WINDOW:
@@ -156,6 +262,20 @@ export default function CanvasComponent() {
       dispatch(resetAction());
     }
   }, [currentAction, canvas, dispatch, selectedImage]);
+
+  // function checkIfPathIsClosed(path) {
+  //   const points = path.path; // 獲取路徑點數據
+  //   if (points.length < 2) return false;
+
+  //   // 檢查起點和終點是否重合
+  //   const [startX, startY] = points[0].slice(1); // 起點
+  //   const [endX, endY] = points[points.length - 1].slice(1); // 終點
+
+  //   const tolerance = 50; // 容許誤差範圍
+  //   return (
+  //     Math.abs(startX - endX) < tolerance && Math.abs(startY - endY) < tolerance
+  //   );
+  // }
 
   // 繪製網格
   //   const drawGrid = (canvas: Canvas, gridSize: number) => {};
@@ -275,7 +395,7 @@ export default function CanvasComponent() {
         />
 
         <Cropping canvas={canvas} onFramesUpdate={handleFramesUpdated} />
-        <LayerList canvas={canvas} />
+        {/* <LayerList canvas={canvas} /> */}
 
         <p>currentAction: {currentAction}</p>
         <p>selectedImage: {selectedImage}</p>
