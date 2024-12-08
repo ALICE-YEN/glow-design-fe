@@ -10,6 +10,9 @@ import {
   IconDefinition,
 } from "@fortawesome/free-solid-svg-icons";
 import { faMoon, faUser } from "@fortawesome/free-regular-svg-icons";
+import { useAppDispatch } from "@/hooks/redux";
+import { setAction } from "@/store/canvasSlice";
+import { CanvasAction } from "@/types/enum";
 import Button from "./Button";
 import Title from "./Title";
 
@@ -19,12 +22,22 @@ interface ToolbarButtonConfig {
   handleClick: () => void;
 }
 
-export default function Toolbar({ canvas }: { canvas: HTMLCanvasElement }) {
+export default function Toolbar() {
+  const dispatch = useAppDispatch();
+
   const handleEraseClick = () => {
-    if (canvas) {
-      canvas.clear();
-    }
+    dispatch(setAction(CanvasAction.CLEAR));
     console.log("Erase clicked");
+  };
+
+  const handleSaveClick = () => {
+    dispatch(setAction(CanvasAction.SAVE));
+    console.log("Save clicked");
+  };
+
+  const handleSelectObjectClick = () => {
+    dispatch(setAction(CanvasAction.SELECT_OBJECT));
+    console.log("Pointer Tool clicked");
   };
 
   const TOOLBAR_BUTTONS: {
@@ -35,7 +48,7 @@ export default function Toolbar({ canvas }: { canvas: HTMLCanvasElement }) {
       {
         icon: faMousePointer,
         label: "Pointer Tool",
-        handleClick: () => console.log("Pointer Tool clicked"),
+        handleClick: handleSelectObjectClick,
       },
       {
         icon: faHand,
@@ -55,7 +68,7 @@ export default function Toolbar({ canvas }: { canvas: HTMLCanvasElement }) {
       {
         icon: faSave,
         label: "Save",
-        handleClick: () => console.log("Save clicked"),
+        handleClick: handleSaveClick,
       },
       {
         icon: faEraser,
@@ -76,11 +89,12 @@ export default function Toolbar({ canvas }: { canvas: HTMLCanvasElement }) {
       },
     ],
   };
+
   return (
     <header className="fixed top-0 left-1/2 translate-x-[-50%] h-16 min-w-[800px] flex items-center justify-between bg-stone-100 shadow-xl px-6 py-2 rounded-lg">
       {/* 左側標誌 */}
       <Title
-        designTitle="溫馨小屋"
+        designTitle="嚴宅"
         updateTitle={(newTitle) => console.log("修改名字", newTitle)}
       />
 

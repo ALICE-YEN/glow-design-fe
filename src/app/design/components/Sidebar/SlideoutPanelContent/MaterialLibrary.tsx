@@ -1,6 +1,9 @@
 "use client";
 
 import { useState } from "react";
+import { useAppDispatch } from "@/hooks/redux";
+import { setAction, setSelectedImage } from "@/store/canvasSlice";
+import { CanvasAction } from "@/types/enum";
 import type { Material, Category } from "@/app/design/types/interfaces";
 import MaterialCard from "./MaterialCard";
 
@@ -13,12 +16,19 @@ export default function MaterialLibrary({
   materials,
   categories,
 }: MaterialLibraryProps) {
+  const dispatch = useAppDispatch();
+
   const [activeCategory, setActiveCategory] = useState<string>(
     categories[0].id
   );
 
   const handleCategoryClick = (categoryId: string) => {
     setActiveCategory(categoryId);
+  };
+
+  const handleMaterialClick = (material: Material) => {
+    dispatch(setAction(CanvasAction.PLACE_FURNITURE));
+    dispatch(setSelectedImage(material.url));
   };
 
   return (
@@ -43,7 +53,11 @@ export default function MaterialLibrary({
       {/* 素材列表 */}
       <div className="grid grid-cols-3 gap-4 mt-6">
         {materials[activeCategory]?.map((material) => (
-          <MaterialCard key={material.id} material={material} />
+          <MaterialCard
+            key={material.id}
+            material={material}
+            handleClick={handleMaterialClick}
+          />
         ))}
       </div>
     </div>
