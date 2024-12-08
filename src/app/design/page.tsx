@@ -27,7 +27,7 @@ import {
 import {
   handleObjectMoving,
   clearGuidelines,
-} from "@/app/design/utils/snappingHelpers";
+} from "@/app/design/utils/snappingHelpers"; // 網格之後壞掉，要修！
 import Cropping from "@/app/design/components/Cropping";
 import LayerList from "@/app/design/components/LayerList";
 import Sidebar from "@/app/design/components/Sidebar";
@@ -73,7 +73,7 @@ export default function Design() {
     }
   }, []);
 
-  const startDrawing = () => {
+  const startDrawingWall = () => {
     if (!canvas) return;
 
     // 重置點資料和模擬線
@@ -85,7 +85,7 @@ export default function Design() {
     canvas.on("mouse:move", handleMouseMove);
 
     return () => {
-      console.log("startDrawing return");
+      console.log("startDrawingWall return");
       canvas.off("mouse:down", handleMouseDown);
       canvas.off("mouse:move", handleMouseMove);
     };
@@ -95,10 +95,7 @@ export default function Design() {
     if (pointsRef.current.length >= 3) {
       const { x: firstX, y: firstY } = pointsRef.current[0];
       if (Math.abs(x - firstX) < gridSize && Math.abs(y - firstY) < gridSize) {
-        fillPolygonWithLines(canvas, [
-          ...pointsRef.current,
-          { x: firstX, y: firstY },
-        ]);
+        fillPolygonWithLines(canvas, pointsRef.current);
         pointsRef.current = [];
         setPoints([]);
       }
@@ -139,34 +136,41 @@ export default function Design() {
     updateTempLine(canvas, tempLineRef, startX, startY, endX, endY);
   };
 
-  const fillPolygonWithLines = (canvas: Canvas, points: Point[]) => {
+  const fillPolygonWithLines = async (canvas: Canvas, points: Point[]) => {
     // 建立線條
-    // const lines = points.map((point, index) => {
-    //   const nextPoint = points[(index + 1) % points.length]; // 确保最后一个点连接到第一个点，形成闭合？？？
-    //   return new Line([point.x, point.y, nextPoint.x, nextPoint.y], {
-    //     stroke: "black",
-    //     strokeWidth: 2,
-    //     selectable: false, // 保持不可独立选中
-    //     evented: false,
-    //   });
-    // });
-    // console.log("lines", lines);
+    console.log("points", points);
+    // points 有包含最後一點(就是第一個點)，閉合
+    const lines = points.slice(0, -1).map((point, index) => {
+      console.log("建立線條", index);
+      const nextPoint = points[index + 1];
+      return new Line([point.x, point.y, nextPoint.x, nextPoint.y], {
+        stroke: "black",
+        strokeWidth: 2,
+        selectable: false,
+        evented: false,
+      });
+    });
+    console.log("lines", lines);
+
+    const imgData = await FabricImage.fromURL(
+      "https://www.google.com/images/srpr/logo3w.png"
+    );
 
     // 將線條組合成 Group
-    // const group = new Group(lines, {
-    //   fill: "rgba(0, 255, 0, 0.3)", // 设置填充色
-    //   selectable: true, // 整体可选
-    //   evented: true, // 响应事件
-    // });
-    // console.log("group", group);
-    // canvas.add(group);
-
-    const polygon = new Polygon(points, {
+    const group = new Group([...lines], {
       fill: "rgba(0, 255, 0, 0.3)",
       selectable: true,
-      // evented: false,
+      evented: true,
     });
-    canvas.add(polygon);
+    console.log("group", group);
+    canvas.add(group);
+
+    // const polygon = new Polygon(points, {
+    //   fill: "rgba(0, 255, 0, 0.3)",
+    //   selectable: true,
+    //   // evented: false,
+    // });
+    // canvas.add(polygon);
 
     // 移除 mouse:down 和 mouse:move 监听器
     canvas.off("mouse:down", handleMouseDown);
@@ -193,15 +197,14 @@ export default function Design() {
       //   "object property is modified(resized or rotated)",
       //   e.target
       // );
-      // clearGuidelines(initCanvas, guidelines, setGuidelines);
-      clearGuidelines(canvas);
+      // clearGuidelines(canvas);
     });
     canvas.on("object:scaling", (e) => {
       // console.log("object property is scaling", e.target);
     });
 
     canvas.on("object:moving", (e) => {
-      handleObjectMoving(canvas, e.target, guidelines, setGuidelines);
+      // handleObjectMoving(canvas, e.target, guidelines, setGuidelines);
     });
   }, [canvas, currentAction]);
 
@@ -218,7 +221,7 @@ export default function Design() {
         break;
       case CanvasAction.SELECT_OBJECT:
         break;
-      case CanvasAction.DRAW:
+      case CanvasAction.DRAW_WALL:
         canvas.isDrawingMode = true;
         // const pencilBrush = new PencilBrush(canvas); // 畫出的路徑是 fabric.Path 對象，可以在後續檢查是否形成封閉的形狀（比如檢查起點和終點是否相連）
         // canvas.freeDrawingBrush = pencilBrush;
@@ -231,19 +234,10 @@ export default function Design() {
 
         // canvas.on("path:created", (event) => {
         //   const path = event.path; // 獲取繪製的路徑
-        //   console.log("Path created:", path);
-
-        //   // 可在此檢查是否為封閉形狀
-        //   const isClosed = checkIfPathIsClosed(path);
-        //   if (isClosed) {
-        //     console.log("Path is closed: 密閉格局完成");
-        //   } else {
-        //     console.log("Path is not closed: 尚未完成格局");
-        //   }
+        //   console.log("Path created:", path.path);
         // });
 
-        startDrawing();
-
+        startDrawingWall();
         break;
       case CanvasAction.PLACE_FURNITURE:
       case CanvasAction.PLACE_WINDOW:
@@ -257,28 +251,11 @@ export default function Design() {
     // 完成操作後，重置當前操作(除了持續性操作（如繪圖模式）不重置狀態)
     if (
       currentAction !== CanvasAction.NONE &&
-      currentAction !== CanvasAction.DRAW
+      currentAction !== CanvasAction.DRAW_WALL
     ) {
       dispatch(resetAction());
     }
   }, [currentAction, canvas, dispatch, selectedImage]);
-
-  // function checkIfPathIsClosed(path) {
-  //   const points = path.path; // 獲取路徑點數據
-  //   if (points.length < 2) return false;
-
-  //   // 檢查起點和終點是否重合
-  //   const [startX, startY] = points[0].slice(1); // 起點
-  //   const [endX, endY] = points[points.length - 1].slice(1); // 終點
-
-  //   const tolerance = 50; // 容許誤差範圍
-  //   return (
-  //     Math.abs(startX - endX) < tolerance && Math.abs(startY - endY) < tolerance
-  //   );
-  // }
-
-  // 繪製網格
-  //   const drawGrid = (canvas: Canvas, gridSize: number) => {};
 
   const drawRectangle = (color: string) => {
     if (canvas) {
@@ -303,7 +280,6 @@ export default function Design() {
     if (!canvas) return;
 
     const imgData = await FabricImage.fromURL(url);
-    console.log("imgData", imgData);
 
     // 如果提供了自定義寬度，計算等比例縮放比例
     if (customWidth && imgData.width) {

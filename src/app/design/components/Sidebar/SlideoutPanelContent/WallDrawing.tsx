@@ -38,7 +38,7 @@ export default function WallDrawing() {
         <rect x="20" y="20" width="60" height="60" fill="#cccccc" />
       </svg>
     ),
-    handleClick: () => dispatch(setAction(CanvasAction.DRAW)),
+    handleClick: () => dispatch(setAction(CanvasAction.DRAW_WALL)),
   };
   const OPENING_ITEMS: ItemConfig[] = [
     {

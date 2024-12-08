@@ -1,6 +1,6 @@
 export enum CanvasAction {
   NONE = "none",
-  DRAW = "draw",
+  DRAW_WALL = "drawWall",
   CLEAR = "clear",
   PLACE_DOOR = "placeDoor",
   PLACE_WINDOW = "placeWindow",
