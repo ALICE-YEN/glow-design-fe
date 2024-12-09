@@ -1,6 +1,6 @@
 "use client";
 
-import { ReactNode } from "react";
+import { ReactNode, useState } from "react";
 import { useAppDispatch } from "@/hooks/redux";
 import { setAction, setSelectedImage } from "@/store/canvasSlice";
 import { CanvasAction } from "@/types/enum";
@@ -24,6 +24,8 @@ function DrawingButton({ label, icon, handleClick }: ItemConfig) {
 }
 
 export default function WallDrawing() {
+  const [isDrawing, setIsDrawing] = useState<boolean>(false);
+
   const dispatch = useAppDispatch();
 
   const DRAWING_ITEM: ItemConfig = {
@@ -38,8 +40,39 @@ export default function WallDrawing() {
         <rect x="20" y="20" width="60" height="60" fill="#cccccc" />
       </svg>
     ),
-    handleClick: () => dispatch(setAction(CanvasAction.DRAW_WALL)),
+    handleClick: () => {
+      dispatch(setAction(CanvasAction.DRAW_WALL));
+      setIsDrawing(true);
+    },
   };
+
+  const EXIT_DRAWING_ITEM: ItemConfig = {
+    id: "exit-draw",
+    label: "退出繪製",
+    icon: (
+      <svg
+        xmlns="http://www.w3.org/2000/svg"
+        viewBox="0 0 100 100"
+        className="w-16 h-16 text-gray-400"
+      >
+        <rect x="20" y="20" width="60" height="60" fill="#cccccc" />
+        <text
+          x="50%"
+          y="50%"
+          textAnchor="middle"
+          dominantBaseline="middle"
+          fill="#ffffff"
+          fontSize="14"
+        >
+          ESC
+        </text>
+      </svg>
+    ),
+    handleClick: () => {
+      setIsDrawing(false);
+    },
+  };
+
   const OPENING_ITEMS: ItemConfig[] = [
     {
       id: "single-door",
@@ -90,17 +123,54 @@ export default function WallDrawing() {
     },
   ];
 
-  return (
-    <div className="pt-4">
-      {/* 繪製牆體 */}
-      <section className="mb-6 flex">
+  const renderDrawingMode = () => (
+    <>
+      {/* 退出繪製 */}
+      <p className="text-sm text-secondary mb-2.5">
+        使用滑鼠左鍵點擊並拖曳以繪製牆體
+        <br />
+        拖曳到滿意的位置後再點擊一次繪製下一道牆
+        <br />
+        把起點與終點重合後再點擊一次即可完成繪製
+      </p>
+      <video
+        width="300"
+        autoPlay
+        loop
+        muted
+        playsInline
+        className="pointer-events-none no-controls"
+      >
+        <source
+          src="https://res.cloudinary.com/datj4og4i/video/upload/v1725736733/drawWall_xoxe7u.mp4"
+          type="video/mp4"
+        />
+        您的瀏覽器不支援影片播放。
+      </video>
+      <p className="text-sm text-secondary my-2.5">
+        或可按下方按鈕或Esc鍵退出繪製模式
+      </p>
+      <section className="flex pt-2">
+        <DrawingButton
+          label={EXIT_DRAWING_ITEM.label}
+          icon={EXIT_DRAWING_ITEM.icon}
+          handleClick={EXIT_DRAWING_ITEM.handleClick}
+        />
+      </section>
+    </>
+  );
+
+  const renderDefaultMode = () => (
+    <>
+      {/* 開使繪製 */}
+      <p className="text-sm mb-2.5">點擊下方按鈕或L鍵後進入繪製模式</p>
+      <section className="mb-6 flex pt-4">
         <DrawingButton
           label={DRAWING_ITEM.label}
           icon={DRAWING_ITEM.icon}
           handleClick={DRAWING_ITEM.handleClick}
         />
       </section>
-
       {/* 放置門窗 */}
       <section className="pt-6 border-t border-gray-300">
         <h2 className="text-lg font-bold mb-2.5">放置門窗</h2>
@@ -116,6 +186,8 @@ export default function WallDrawing() {
           ))}
         </div>
       </section>
-    </div>
+    </>
   );
+
+  return <div>{isDrawing ? renderDrawingMode() : renderDefaultMode()}</div>;
 }

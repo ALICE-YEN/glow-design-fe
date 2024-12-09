@@ -8,6 +8,7 @@
   --button-hover: rgb(229 231 235); /* gray-200 */
   --button-active: rgb(229 231 235); /* gray-200 */
   --primary-text: #5c573e;
+  --secondary-text: #555352;
 }
 
 @media (prefers-color-scheme: dark) {
@@ -48,4 +49,17 @@ body {
   @media screen(lg) {
     font-size: 6rem;
   }
+}
+
+video::-webkit-media-controls {
+  display: none !important;
+}
+video::-webkit-media-controls-enclosure {
+  display: none !important;
+}
+video::-webkit-media-controls-panel {
+  display: none !important;
+}
+video::-moz-media-controls {
+  display: none !important;
 }

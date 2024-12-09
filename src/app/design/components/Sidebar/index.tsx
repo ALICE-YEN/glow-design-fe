@@ -18,7 +18,7 @@ const BUTTON_CONFIG: SidebarButtonConfig[] = [
     icon: faHome,
     label: "裝潢",
     title: "繪製格局",
-    description: "點擊下方按鈕或L鍵後進入繪製模式",
+    description: "",
   },
   {
     id: "materials",

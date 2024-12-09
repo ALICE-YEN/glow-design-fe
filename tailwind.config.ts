@@ -14,6 +14,7 @@ export default {
         "button-hover": "var(--button-hover)",
         "button-active": "var(--button-active)",
         primary: "var(--primary-text)", // 文字顏色設為 primary
+        secondary: "var(--secondary-text)", // 次要文字顏色設為 secondary
       },
       borderRadius: {
         default: "6px",
