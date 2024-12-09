@@ -72,7 +72,13 @@ const Actions = ({ onCancel, onConfirm }: ActionsProps) => {
   );
 };
 
-export default function ExportImg() {
+interface ExportImgProps {
+  handleCloseSlideoutPanel: () => void;
+}
+
+export default function ExportImg({
+  handleCloseSlideoutPanel,
+}: ExportImgProps) {
   const [selectedSize, setSelectedSize] = useState<ImgSize>(ImgSize.A4);
 
   const handleSelect = (size: ImgSize) => {
@@ -85,6 +91,7 @@ export default function ExportImg() {
 
   const handleCancel = () => {
     console.log("Selection canceled");
+    handleCloseSlideoutPanel();
   };
 
   return (

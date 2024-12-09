@@ -15,6 +15,7 @@ interface SlideoutPanelProps {
   isActive: boolean;
   content: SidebarButtonConfig;
   handleAnimationEnd: () => void;
+  handleCloseSlideoutPanel: () => void;
 }
 
 const categories: Category[] = [
@@ -88,6 +89,7 @@ export default function SlideoutPanel({
   isActive,
   content,
   handleAnimationEnd,
+  handleCloseSlideoutPanel,
 }: SlideoutPanelProps) {
   const renderContent = () => {
     if (content.id === "materials" || content.id === "furniture") {
@@ -95,7 +97,7 @@ export default function SlideoutPanel({
     } else if (content.id === "decorate") {
       return <WallDrawing />;
     } else if (content.id === "export") {
-      return <ExportImg />;
+      return <ExportImg handleCloseSlideoutPanel={handleCloseSlideoutPanel} />;
     }
     return null;
   };

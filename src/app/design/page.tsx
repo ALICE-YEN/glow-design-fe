@@ -85,7 +85,6 @@ export default function Design() {
     canvas.on("mouse:move", handleMouseMove);
 
     return () => {
-      console.log("startDrawingWall return");
       canvas.off("mouse:down", handleMouseDown);
       canvas.off("mouse:move", handleMouseMove);
     };
@@ -216,7 +215,7 @@ export default function Design() {
     switch (currentAction) {
       case CanvasAction.CLEAR:
         canvas.clear();
-        canvas.backgroundColor = "#B2AC88"; // 恢復背景色
+        fitCanvasToWindowAndDrawGrid(canvas, gridSize); // 這樣會 memory leak 嗎？
         canvas.renderAll();
         break;
       case CanvasAction.SELECT_OBJECT:

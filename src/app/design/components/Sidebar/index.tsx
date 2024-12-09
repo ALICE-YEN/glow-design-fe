@@ -82,6 +82,7 @@ export default function Sidebar() {
           isActive={activeIndex === btn.id}
           content={btn}
           handleAnimationEnd={handleAnimationEnd}
+          handleCloseSlideoutPanel={() => setActiveIndex(null)}
         />
       ))}
     </div>
