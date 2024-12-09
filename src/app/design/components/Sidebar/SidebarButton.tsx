@@ -21,7 +21,7 @@ export default function SidebarButton({
     <button
       onClick={handleClick}
       className={`flex flex-col items-center space-y-2 text-black ${
-        isActive ? "bg-gray-200" : "hover:bg-gray-200"
+        isActive ? "bg-button-active" : "hover:bg-button-hover"
       } transition-transform duration-300 py-6 last:mb-6`}
     >
       <FontAwesomeIcon icon={icon} color="#5C573E" size="lg" />

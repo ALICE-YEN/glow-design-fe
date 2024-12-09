@@ -10,7 +10,10 @@ export default {
     extend: {
       colors: {
         background: "var(--background)",
-        foreground: "var(--foreground)",
+        "panel-background": "var(--panel-background)",
+        "button-hover": "var(--button-hover)",
+        "button-active": "var(--button-active)",
+        primary: "var(--primary-text)", // 文字顏色設為 primary
       },
       borderRadius: {
         default: "6px",
