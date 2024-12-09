@@ -10,6 +10,8 @@ export default {
     extend: {
       colors: {
         background: "var(--background)",
+        contrast: "var(--contrast)",
+        "contrast-hover": "var(--contrast-hover)",
         "panel-background": "var(--panel-background)",
         "button-hover": "var(--button-hover)",
         "button-active": "var(--button-active)",

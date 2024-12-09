@@ -163,7 +163,9 @@ export default function WallDrawing() {
   const renderDefaultMode = () => (
     <>
       {/* 開使繪製 */}
-      <p className="text-sm mb-2.5">點擊下方按鈕或L鍵後進入繪製模式</p>
+      <p className="text-sm text-secondary mb-2.5">
+        點擊下方按鈕或L鍵後進入繪製模式
+      </p>
       <section className="mb-6 flex pt-4">
         <DrawingButton
           label={DRAWING_ITEM.label}
@@ -174,7 +176,7 @@ export default function WallDrawing() {
       {/* 放置門窗 */}
       <section className="pt-6 border-t border-gray-300">
         <h2 className="text-lg font-bold mb-2.5">放置門窗</h2>
-        <p className="text-sm mb-2.5">請選擇門窗組件</p>
+        <p className="text-sm text-secondary mb-2.5">請選擇門窗組件</p>
         <div className="pt-4 flex space-x-6">
           {OPENING_ITEMS.map((item) => (
             <DrawingButton

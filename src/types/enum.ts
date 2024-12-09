@@ -11,3 +11,9 @@ export enum CanvasAction {
   SAVE = "save",
   SELECT_OBJECT = "selectObject",
 }
+
+export enum ImgSize {
+  A3 = "A3",
+  A4 = "A4",
+  CUSTOMIZED = "自定義",
+}

@@ -9,6 +9,7 @@ import type {
 } from "@/app/design/types/interfaces";
 import MaterialLibrary from "./SlideoutPanelContent/MaterialLibrary";
 import WallDrawing from "./SlideoutPanelContent/WallDrawing";
+import ExportImg from "./SlideoutPanelContent/ExportImg";
 
 interface SlideoutPanelProps {
   isActive: boolean;
@@ -94,7 +95,7 @@ export default function SlideoutPanel({
     } else if (content.id === "decorate") {
       return <WallDrawing />;
     } else if (content.id === "export") {
-      return <div>這是匯出的 UI</div>;
+      return <ExportImg />;
     }
     return null;
   };
@@ -110,7 +111,7 @@ export default function SlideoutPanel({
     >
       <div className="p-6">
         <h2 className="text-lg font-bold mb-2.5">{content.title}</h2>
-        <p className="text-sm mb-2.5">{content.description}</p>
+        <p className="text-sm text-secondary mb-2.5">{content.description}</p>
         {renderContent()}
       </div>
     </div>

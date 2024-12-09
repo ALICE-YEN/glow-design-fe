@@ -53,7 +53,7 @@ export default function Title({ designTitle, updateTitle }: TitleProps) {
 
   return (
     <div className="flex items-center space-x-6 font-bold">
-      <span className="text-[#A63A3A] text-xl">居然好設計</span>
+      <span className="text-contrast text-xl">居然好設計</span>
       {isEditing ? (
         <input
           type="text"
@@ -61,7 +61,7 @@ export default function Title({ designTitle, updateTitle }: TitleProps) {
           onChange={handleTitleChange}
           onKeyDown={handleKeyDown}
           onBlur={handleBlur}
-          className="border-b-2  focus:outline-none focus:border-[#A63A3A] text-lg text-primary"
+          className="border-b-2 focus:outline-none focus:border-contrast text-lg text-primary"
           autoFocus
         />
       ) : (

@@ -41,7 +41,7 @@ export default function MaterialLibrary({
             onClick={() => handleCategoryClick(category.id)}
             className={`pb-2 w-full border-b-2 text-sm ${
               activeCategory === category.id
-                ? "border-[#A63A3A] text-[#A63A3A] border-b-[3px]"
+                ? "border-contrast text-contrast border-b-[3px]"
                 : "hover:text-gray-500"
             }`}
           >
