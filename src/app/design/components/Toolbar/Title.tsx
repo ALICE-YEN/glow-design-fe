@@ -61,12 +61,12 @@ export default function Title({ designTitle, updateTitle }: TitleProps) {
           onChange={handleTitleChange}
           onKeyDown={handleKeyDown}
           onBlur={handleBlur}
-          className="border-b-2  focus:outline-none focus:border-[#A63A3A] text-lg text-[#5C573E]"
+          className="border-b-2  focus:outline-none focus:border-[#A63A3A] text-lg text-primary"
           autoFocus
         />
       ) : (
         <span
-          className="text-[#5C573E] text-lg cursor-pointer hover:underline"
+          className="text-primary text-lg cursor-pointer hover:underline"
           onClick={() => setIsEditing(true)}
         >
           {title} {isLoading && " (更新中...)"}

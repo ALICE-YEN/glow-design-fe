@@ -13,7 +13,7 @@ export default function Button({ icon, label, handleClick }: ButtonProps) {
   return (
     <button
       onClick={handleClick}
-      className="w-10 h-10 rounded-default hover:bg-gray-200 transition"
+      className="w-10 h-10 rounded-default hover:bg-button-hover transition"
       title={label}
     >
       <FontAwesomeIcon icon={icon} size="lg" />

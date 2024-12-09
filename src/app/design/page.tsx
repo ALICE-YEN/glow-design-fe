@@ -347,7 +347,7 @@ export default function Design() {
   };
 
   return (
-    <div className="flex h-screen relative">
+    <main className="flex h-screen relative">
       <canvas
         id="canvas"
         ref={canvasRef}
@@ -400,6 +400,6 @@ export default function Design() {
         <p>currentAction: {currentAction}</p>
         <p>selectedImage: {selectedImage}</p>
       </div>
-    </div>
+    </main>
   );
 }

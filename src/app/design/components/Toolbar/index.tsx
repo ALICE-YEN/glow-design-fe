@@ -91,7 +91,7 @@ export default function Toolbar() {
   };
 
   return (
-    <header className="fixed top-0 left-1/2 translate-x-[-50%] h-16 min-w-[800px] flex items-center justify-between bg-stone-100 shadow-xl px-6 py-2 rounded-lg">
+    <header className="fixed top-0 left-1/2 translate-x-[-50%] h-16 min-w-[800px] flex items-center justify-between bg-panel-background shadow-xl px-6 py-2 rounded-lg">
       {/* 左側標誌 */}
       <Title
         designTitle="嚴宅"
