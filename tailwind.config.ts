@@ -17,7 +17,8 @@ export default {
         secondary: "var(--secondary-text)", // 次要文字顏色設為 secondary
       },
       borderRadius: {
-        default: "6px",
+        default: "var(--default-radius)",
+        card: "var(--card-radius)",
       },
     },
   },

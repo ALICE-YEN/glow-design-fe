@@ -101,7 +101,7 @@ export default function SlideoutPanel({
 
   return (
     <div
-      className={`fixed top-1/2 translate-y-[-50%] left-16 w-[360px] min-h-[500px] rounded-r-default bg-panel-background transition-transform duration-300 ${
+      className={`fixed top-1/2 translate-y-[-50%] left-16 w-[340px] h-[500px] overflow-y-auto rounded-r-default bg-panel-background transition-transform duration-300 ${
         isActive ? "translate-x-0 shadow-xl" : "-translate-x-full"
       }`}
       onTransitionEnd={() => {

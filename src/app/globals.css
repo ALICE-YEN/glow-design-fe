@@ -3,12 +3,17 @@
 @tailwind utilities;
 
 :root {
+  /* colors */
   --background: #b2ac88;
   --panel-background: rgb(245 245 244); /* stone-100 */
   --button-hover: rgb(229 231 235); /* gray-200 */
   --button-active: rgb(229 231 235); /* gray-200 */
   --primary-text: #5c573e;
   --secondary-text: #555352;
+
+  /* borderRadius */
+  --default-radius: 6px;
+  --card-radius: 20px;
 }
 
 @media (prefers-color-scheme: dark) {
