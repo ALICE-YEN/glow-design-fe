@@ -25,21 +25,21 @@ interface ToolbarButtonConfig {
 export default function Toolbar() {
   const dispatch = useAppDispatch();
 
-  const handleEraseClick = () => {
-    dispatch(setAction(CanvasAction.CLEAR));
-    console.log("Erase clicked");
+  const handleSelectObjectClick = () => {
+    dispatch(setAction(CanvasAction.SELECT_OBJECT));
+  };
+
+  const handlePanCanvasClick = () => {
+    dispatch(setAction(CanvasAction.PAN_CANVAS));
   };
 
   const handleSaveClick = () => {
     dispatch(setAction(CanvasAction.SAVE));
-    console.log("Save clicked");
   };
 
-  const handleSelectObjectClick = () => {
-    dispatch(setAction(CanvasAction.SELECT_OBJECT));
-    console.log("Pointer Tool clicked");
+  const handleClearClick = () => {
+    dispatch(setAction(CanvasAction.CLEAR));
   };
-
   const TOOLBAR_BUTTONS: {
     middle: ToolbarButtonConfig[];
     right: ToolbarButtonConfig[];
@@ -47,13 +47,13 @@ export default function Toolbar() {
     middle: [
       {
         icon: faMousePointer,
-        label: "Pointer Tool",
+        label: "Select Object",
         handleClick: handleSelectObjectClick,
       },
       {
         icon: faHand,
-        label: "Hand Tool",
-        handleClick: () => console.log("Hand Tool clicked"),
+        label: "Pan Canvas",
+        handleClick: handlePanCanvasClick,
       },
       {
         icon: faArrowLeft,
@@ -72,8 +72,8 @@ export default function Toolbar() {
       },
       {
         icon: faEraser,
-        label: "Erase",
-        handleClick: handleEraseClick,
+        label: "Clear",
+        handleClick: handleClearClick,
       },
     ],
     right: [

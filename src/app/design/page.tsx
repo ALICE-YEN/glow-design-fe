@@ -16,8 +16,11 @@ import { useAppSelector, useAppDispatch } from "@/hooks/redux";
 import { resetAction } from "@/store/canvasSlice";
 import { CanvasAction } from "@/types/enum";
 import {
-  initializeCanvas,
-  fitCanvasToWindowAndDrawGrid,
+  initializeCanvasWithGrid,
+  drawGrid,
+  setupPan,
+  setupZoom,
+  handleResize,
 } from "@/app/design/utils/basicCanvasHelpers";
 import {
   snapToGrid,
@@ -43,7 +46,11 @@ export default function Design() {
   const pointsRef = useRef<Point[]>([]); // 保存最新的點資料，用於即時操作，避免 React 狀態更新的非同步問題。
   const tempLineRef = useRef<Line | null>(null); // 表示模擬線，隨滑鼠移動動態更新，用於即時操作，避免 React 狀態更新的非同步問題。
   const [points, setPoints] = useState([]); // 用於追蹤點座標  這還需要嗎？
-  const gridSize = 20; // 網格大小
+
+  const GRID_SIZE = 20; // 網格大小
+  const ZOOM_FACTOR = 0.001; // 縮放比例
+  const MIN_ZOOM = 0.5; // 限制最大縮放
+  const MAX_ZOOM = 2; // 限制最小縮放
 
   const currentAction = useAppSelector((state) => state.canvas.currentAction);
   const selectedImage = useAppSelector((state) => state.canvas.selectedImage);
@@ -51,23 +58,23 @@ export default function Design() {
 
   useEffect(() => {
     if (canvasRef.current) {
-      const initCanvas = initializeCanvas(canvasRef.current);
+      const initCanvas = initializeCanvasWithGrid(canvasRef.current, GRID_SIZE);
 
       initCanvas.requestRenderAll();
       setCanvas(initCanvas);
 
-      // 調整 Canvas 尺寸為視窗大小並繪製網格
-      const handleResize = () =>
-        fitCanvasToWindowAndDrawGrid(initCanvas, gridSize);
+      // 縮放功能
+      setupZoom(initCanvas, ZOOM_FACTOR, MIN_ZOOM, MAX_ZOOM);
 
-      // 初次設定
-      handleResize();
+      // 視窗調整後重新繪製視口，讓畫布的視窗範圍（viewport） 與視窗大小同步，而非改變畫布的內部邏輯尺寸
+      const resizeHandler = () => handleResize(initCanvas);
+      resizeHandler();
 
       // 監聽視窗大小變化
-      window.addEventListener("resize", handleResize);
+      window.addEventListener("resize", resizeHandler);
 
       return () => {
-        window.removeEventListener("resize", handleResize);
+        window.removeEventListener("resize", resizeHandler);
         initCanvas.dispose();
       };
     }
@@ -93,7 +100,10 @@ export default function Design() {
   const checkClosure = (x, y) => {
     if (pointsRef.current.length >= 3) {
       const { x: firstX, y: firstY } = pointsRef.current[0];
-      if (Math.abs(x - firstX) < gridSize && Math.abs(y - firstY) < gridSize) {
+      if (
+        Math.abs(x - firstX) < GRID_SIZE &&
+        Math.abs(y - firstY) < GRID_SIZE
+      ) {
         fillPolygonWithLines(canvas, pointsRef.current);
         pointsRef.current = [];
         setPoints([]);
@@ -105,8 +115,8 @@ export default function Design() {
     if (!canvas) return;
 
     const pointer = canvas.getPointer(event.e);
-    const x = snapToGrid(pointer.x, gridSize);
-    const y = snapToGrid(pointer.y, gridSize);
+    const x = snapToGrid(pointer.x, GRID_SIZE);
+    const y = snapToGrid(pointer.y, GRID_SIZE);
 
     // 更新點資料
     pointsRef.current = [...pointsRef.current, { x, y }];
@@ -124,8 +134,8 @@ export default function Design() {
 
     // 目前 handleMouseDown 的座標
     const pointer = canvas.getPointer(event.e);
-    const endX = snapToGrid(pointer.x, gridSize);
-    const endY = snapToGrid(pointer.y, gridSize);
+    const endX = snapToGrid(pointer.x, GRID_SIZE);
+    const endY = snapToGrid(pointer.y, GRID_SIZE);
 
     // 前次 handleMouseDown 的座標
     const { x: startX, y: startY } =
@@ -214,28 +224,26 @@ export default function Design() {
 
     switch (currentAction) {
       case CanvasAction.CLEAR:
+        // 1.清除所有物件後直接重新繪製網格
         canvas.clear();
-        fitCanvasToWindowAndDrawGrid(canvas, gridSize); // 這樣會 memory leak 嗎？
+        drawGrid(canvas, GRID_SIZE);
+
+        // 2.只清除非網格物件
+        // canvas.getObjects().forEach((obj) => {
+        //   if (obj.data !== "grid") {
+        //     canvas.remove(obj);
+        //   }
+        // });
+
         canvas.renderAll();
         break;
       case CanvasAction.SELECT_OBJECT:
         break;
+      case CanvasAction.PAN_CANVAS:
+        setupPan(canvas); // 還不知道怎麼清理事件監聽器
+        break;
       case CanvasAction.DRAW_WALL:
         canvas.isDrawingMode = true;
-        // const pencilBrush = new PencilBrush(canvas); // 畫出的路徑是 fabric.Path 對象，可以在後續檢查是否形成封閉的形狀（比如檢查起點和終點是否相連）
-        // canvas.freeDrawingBrush = pencilBrush;
-        // pencilBrush.width = 10;
-        // pencilBrush.drawStraightLine = true;
-        // pencilBrush.straightLineKey = "shiftKey";
-        // pencilBrush.strokeLineCap = "square"; // 線條端點樣式
-        // pencilBrush.strokeLineJoin = "miter"; // 線條拐角樣式
-        // pencilBrush.strokeMiterLimit = 100;
-
-        // canvas.on("path:created", (event) => {
-        //   const path = event.path; // 獲取繪製的路徑
-        //   console.log("Path created:", path.path);
-        // });
-
         startDrawingWall();
         break;
       case CanvasAction.PLACE_FURNITURE:

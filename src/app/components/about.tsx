@@ -37,7 +37,7 @@ export default function About() {
   });
 
   return (
-    <div className="h-[250vh] bg-background" ref={ref}>
+    <div className="h-[250vh]" ref={ref}>
       <div className="sticky top-0 mx-auto flex h-screen w-full max-w-7xl items-center px-10 xl:px-4">
         <div className="flex w-full items-center justify-between gap-20">
           <div className="space-y-8">
@@ -116,7 +116,7 @@ export default function About() {
 
 const HowToBeginXS = () => {
   return (
-    <div className="grid justify-center gap-8 bg-background px-10">
+    <div className="grid justify-center gap-8 px-10">
       <motion.div
         key={0}
         className="rounded-2xl border-[1px] border-white p-8 text-xl text-white"

@@ -56,7 +56,7 @@ const HeroXS = () => {
 
 export default function Hero() {
   return (
-    <div className="h-[100vh] bg-background text-white">
+    <div className="h-[100vh] text-white">
       <div className="relative hidden h-full w-full place-items-center md:grid">
         <HeroMD />
       </div>
