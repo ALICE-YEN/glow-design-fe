@@ -10,10 +10,10 @@ export const finalizeTempLine = (
   tempLineRef: React.MutableRefObject<Line | null>
 ): void => {
   if (!tempLineRef.current) return;
-
   tempLineRef.current.set({
     stroke: "black",
     strokeWidth: 5,
+    id: "finalizedLine",
   });
   canvasInstance.add(tempLineRef.current);
 

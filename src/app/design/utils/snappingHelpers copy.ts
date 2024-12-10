@@ -19,30 +19,17 @@ export const handleObjectMoving = (
   guidelines: Line[], // 當前指導線列表
   setGuidelines: (guidelines: Line[]) => void // 更新指導線列表的回調函數
 ) => {
-  const transform = canvas.viewportTransform || [1, 0, 0, 1, 0, 0]; // Fabric.js 中表示畫布縮放和平移狀態的陣列
-  const scaleX = transform[0]; // 畫布的水平縮放比例
-  const scaleY = transform[3]; // 畫布的垂直縮放比例
-  const translateX = transform[4]; // 畫布的平移偏移量
-  const translateY = transform[5]; // 畫布的平移偏移量
+  const canvasWidth = canvas.width ?? 0;
+  const canvasHeight = canvas.height ?? 0;
 
-  // 將畫布的寬高除以縮放比例，得到實際的邏輯尺寸（即未被縮放的尺寸）
-  const canvasWidth = (canvas.width ?? 0) / scaleX;
-  const canvasHeight = (canvas.height ?? 0) / scaleY;
-
-  // 計算物件的左上角座標，考慮畫布的縮放和平移
-  const left = (obj.left ?? 0) / scaleX - translateX / scaleX;
-  const top = (obj.top ?? 0) / scaleY - translateY / scaleY;
-
-  // 物件的寬高，考慮物件縮放比例和畫布縮放比例
-  const width = ((obj.width ?? 0) * (obj.scaleX ?? 1)) / scaleX;
-  const height = ((obj.height ?? 0) * (obj.scaleY ?? 1)) / scaleY;
-
-  const right = left + width;
-  const bottom = top + height;
+  const left = obj.left ?? 0;
+  const top = obj.top ?? 0;
+  const right = left + (obj.width ?? 0) * (obj.scaleX ?? 1);
+  const bottom = top + (obj.height ?? 0) * (obj.scaleY ?? 1);
 
   // 物件的中心點坐標
-  const centerX = left + width / 2;
-  const centerY = top + height / 2;
+  const centerX = left + ((obj.width ?? 0) * (obj.scaleX ?? 1)) / 2;
+  const centerY = top + ((obj.height ?? 0) * (obj.scaleY ?? 1)) / 2;
 
   const newGuidelines = [];
   clearGuidelines(canvas);
@@ -52,10 +39,10 @@ export const handleObjectMoving = (
 
   // 檢查左邊界
   if (Math.abs(left) < snappingDistance) {
-    obj.set({ left: translateX });
+    obj.set({ left: 0 });
     // 檢查是否已經存在一條 ID 為 vertical-left 的指導線。如果不存在，創建一條垂直線並添加到畫布上。
     if (!guidelineExists(canvas, "vertical-left")) {
-      const line = createVerticalGuideline(canvas, translateX, "vertical-left");
+      const line = createVerticalGuideline(canvas, 0, "vertical-left");
       newGuidelines.push(line);
       canvas.add(line);
     }
@@ -64,13 +51,9 @@ export const handleObjectMoving = (
 
   // 檢查上邊界
   if (Math.abs(top) < snappingDistance) {
-    obj.set({ top: translateY });
+    obj.set({ top: 0 });
     if (!guidelineExists(canvas, "horizontal-top")) {
-      const line = createHorizontalGuideline(
-        canvas,
-        translateY,
-        "horizontal-top"
-      );
+      const line = createHorizontalGuideline(canvas, 0, "horizontal-top");
       newGuidelines.push(line);
       canvas.add(line);
     }
@@ -79,11 +62,11 @@ export const handleObjectMoving = (
 
   // 檢查右邊界
   if (Math.abs(right - canvasWidth) < snappingDistance) {
-    obj.set({ left: canvasWidth - width + translateX });
+    obj.set({ left: canvasWidth - obj.width * obj.scaleX });
     if (!guidelineExists(canvas, "vertical-right")) {
       const line = createVerticalGuideline(
         canvas,
-        canvasWidth + translateX,
+        canvasWidth,
         "vertical-right"
       );
       newGuidelines.push(line);
@@ -94,11 +77,11 @@ export const handleObjectMoving = (
 
   // 檢查下邊界
   if (Math.abs(bottom - canvasHeight) < snappingDistance) {
-    obj.set({ top: canvasHeight - height + translateY });
+    obj.set({ top: canvasHeight - obj.height * obj.scaleY });
     if (!guidelineExists(canvas, "horizontal-bottom")) {
       const line = createHorizontalGuideline(
         canvas,
-        canvasHeight + translateY,
+        canvasHeight,
         "horizontal-bottom"
       );
       newGuidelines.push(line);
@@ -109,11 +92,11 @@ export const handleObjectMoving = (
 
   // 檢查水平中心線
   if (Math.abs(centerX - canvasWidth / 2) < snappingDistance) {
-    obj.set({ left: canvasWidth / 2 - width / 2 + translateX });
+    obj.set({ left: canvasWidth / 2 - (obj.width * obj.scaleX) / 2 });
     if (!guidelineExists(canvas, "vertical-center")) {
       const line = createVerticalGuideline(
         canvas,
-        canvasWidth / 2 + translateX,
+        canvasWidth / 2,
         "vertical-center"
       );
       newGuidelines.push(line);
@@ -124,11 +107,11 @@ export const handleObjectMoving = (
 
   // 檢查垂直中心線
   if (Math.abs(centerY - canvasHeight / 2) < snappingDistance) {
-    obj.set({ top: canvasHeight / 2 - height / 2 + translateY });
+    obj.set({ top: canvasHeight / 2 - (obj.height * obj.scaleY) / 2 });
     if (!guidelineExists(canvas, "horizontal-center")) {
       const line = createHorizontalGuideline(
         canvas,
-        canvasHeight / 2 + translateY,
+        canvasHeight / 2,
         "horizontal-center"
       );
       newGuidelines.push(line);
@@ -149,8 +132,8 @@ export const clearGuidelines = (canvas: Canvas) => {
 
   objects.forEach((obj) => {
     if (
-      (obj?.id && obj?.id?.startsWith("vertical-")) ||
-      obj?.id?.startsWith("horizontal-")
+      (obj.id && obj.id.startsWith("vertical-")) ||
+      obj.id.startsWith("horizontal-")
     ) {
       canvas.remove(obj);
     }
@@ -164,7 +147,7 @@ export const createVerticalGuideline = (
   id: string
 ) => {
   return new Line([x, 0, x, canvas.height ?? 0], {
-    id, // 自定義標記
+    id,
     stroke: "red",
     strokeWidth: 1,
     selectable: false,
@@ -180,7 +163,7 @@ export const createHorizontalGuideline = (
   id: string
 ) => {
   return new Line([0, y, canvas.width ?? 0, y], {
-    id, // 自定義標記
+    id,
     stroke: "red",
     strokeWidth: 1,
     selectable: false,

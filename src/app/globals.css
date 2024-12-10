@@ -15,7 +15,7 @@
 
   /* borderRadius */
   --default-radius: 6px;
-  --card-radius: 20px;
+  --card-radius: 12px;
 }
 
 @media (prefers-color-scheme: dark) {

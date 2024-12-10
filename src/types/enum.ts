@@ -8,6 +8,7 @@ export enum CanvasAction {
   EXPORT_PNG = "exportPNG",
   SELECT_OBJECT = "selectObject",
   PAN_CANVAS = "panCanvas",
+  UNDO = "undo",
   SAVE = "save",
 }
 

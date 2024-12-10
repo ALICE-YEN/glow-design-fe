@@ -11,6 +11,8 @@ import {
   Image,
   FabricImage,
   Polygon,
+  StaticCanvas,
+  Pattern,
 } from "fabric";
 import { useAppSelector, useAppDispatch } from "@/hooks/redux";
 import { resetAction } from "@/store/canvasSlice";
@@ -30,7 +32,7 @@ import {
 import {
   handleObjectMoving,
   clearGuidelines,
-} from "@/app/design/utils/snappingHelpers"; // 網格之後壞掉，要修！
+} from "@/app/design/utils/snappingHelpers"; // 暫時修復因網格壞掉的指導線，但物件移動變很緩慢，畫布平移、縮放時還是異常!!!
 import Cropping from "@/app/design/components/Cropping";
 import LayerList from "@/app/design/components/LayerList";
 import Sidebar from "@/app/design/components/Sidebar";
@@ -45,7 +47,6 @@ export default function Design() {
 
   const pointsRef = useRef<Point[]>([]); // 保存最新的點資料，用於即時操作，避免 React 狀態更新的非同步問題。
   const tempLineRef = useRef<Line | null>(null); // 表示模擬線，隨滑鼠移動動態更新，用於即時操作，避免 React 狀態更新的非同步問題。
-  const [points, setPoints] = useState([]); // 用於追蹤點座標  這還需要嗎？
 
   const GRID_SIZE = 20; // 網格大小
   const ZOOM_FACTOR = 0.001; // 縮放比例
@@ -84,7 +85,6 @@ export default function Design() {
     if (!canvas) return;
 
     // 重置點資料和模擬線
-    setPoints([]);
     pointsRef.current = [];
     tempLineRef.current = null;
 
@@ -97,7 +97,7 @@ export default function Design() {
     };
   };
 
-  const checkClosure = (x, y) => {
+  const checkClosure = ({ x, y }: Point) => {
     if (pointsRef.current.length >= 3) {
       const { x: firstX, y: firstY } = pointsRef.current[0];
       if (
@@ -106,7 +106,6 @@ export default function Design() {
       ) {
         fillPolygonWithLines(canvas, pointsRef.current);
         pointsRef.current = [];
-        setPoints([]);
       }
     }
   };
@@ -120,13 +119,12 @@ export default function Design() {
 
     // 更新點資料
     pointsRef.current = [...pointsRef.current, { x, y }];
-    setPoints(pointsRef.current);
 
     // 固定模擬線為黑色直線
     finalizeTempLine(canvas, tempLineRef);
 
     // 檢查是否閉合
-    checkClosure(x, y);
+    checkClosure({ x, y });
   };
 
   const handleMouseMove = (event: TEvent) => {
@@ -146,40 +144,60 @@ export default function Design() {
   };
 
   const fillPolygonWithLines = async (canvas: Canvas, points: Point[]) => {
+    // 清理舊的線
+    const finalizedLines = canvas
+      .getObjects("line")
+      .filter((obj) => obj?.id === "finalizedLine");
+    finalizedLines.forEach((obj) => canvas.remove(obj));
+    // 為什麽 Group 的線不能用 finalizedLines，是因為沒照順序嗎???
+
     // 建立線條
-    console.log("points", points);
     // points 有包含最後一點(就是第一個點)，閉合
     const lines = points.slice(0, -1).map((point, index) => {
-      console.log("建立線條", index);
       const nextPoint = points[index + 1];
       return new Line([point.x, point.y, nextPoint.x, nextPoint.y], {
         stroke: "black",
-        strokeWidth: 2,
+        strokeWidth: 5,
         selectable: false,
         evented: false,
       });
     });
     console.log("lines", lines);
 
+    // 設定 Polygon 底圖
     const imgData = await FabricImage.fromURL(
-      "https://www.google.com/images/srpr/logo3w.png"
+      "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSHTewZHbRfZqXytUaGYzb1YonM8-bBbGLjVA&s"
     );
+    imgData.scaleToWidth(75); // Scales an object to a given width
 
-    // 將線條組合成 Group
-    const group = new Group([...lines], {
-      fill: "rgba(0, 255, 0, 0.3)",
+    // 專門用來生成圖像或模式的輔助畫布，不會影響主畫布，提供了一個獨立的渲染環境，允許你創建圖案並用作其他對象的填充
+    const patternSourceCanvas = new StaticCanvas();
+    patternSourceCanvas.add(imgData);
+    patternSourceCanvas.setDimensions({
+      width: imgData.getScaledWidth(),
+      height: imgData.getScaledHeight(),
+    });
+    patternSourceCanvas.renderAll();
+
+    // Pattern 用來定義物件的填充模式
+    const pattern = new Pattern({
+      source: patternSourceCanvas.getElement(),
+      repeat: "repeat",
+    });
+
+    const polygon = new Polygon(points, {
+      fill: pattern,
+      selectable: true,
+      evented: false,
+    });
+
+    // 將 polygon、lines 組合成 Group
+    const group = new Group([...lines, polygon], {
       selectable: true,
       evented: true,
     });
     console.log("group", group);
     canvas.add(group);
-
-    // const polygon = new Polygon(points, {
-    //   fill: "rgba(0, 255, 0, 0.3)",
-    //   selectable: true,
-    //   // evented: false,
-    // });
-    // canvas.add(polygon);
 
     // 移除 mouse:down 和 mouse:move 监听器
     canvas.off("mouse:down", handleMouseDown);
@@ -239,6 +257,14 @@ export default function Design() {
         break;
       case CanvasAction.SELECT_OBJECT:
         break;
+      // case CanvasAction.UNDO:
+      //   if (undoStack.length > 0) {
+      //     const lastState = undoStack.pop();
+      //     canvas.loadFromJSON(lastState, () => {
+      //       canvas.renderAll();
+      //     });
+      //   }
+      //   break;
       case CanvasAction.PAN_CANVAS:
         setupPan(canvas); // 還不知道怎麼清理事件監聽器
         break;
@@ -306,9 +332,6 @@ export default function Design() {
     canvas.add(imgData);
     // imgData.setCoords(); // 當對象的屬性（如位置、縮放、旋轉）通過程式碼修改時，需要調用 setCoords()，以同步內部的坐標數據
     canvas.renderAll();
-
-    // const json = canvas.toJSON(); // 導出畫布狀態
-    // console.log("Canvas JSON:", json);
   };
 
   const handleFramesUpdated = () => {
@@ -371,7 +394,6 @@ export default function Design() {
 
         <input
           type="file"
-          // ref={inputRef}
           accept="image/*"
           onChange={handleFileUpload}
           style={{ position: "absolute", top: 10, left: 10, zIndex: 1000 }}

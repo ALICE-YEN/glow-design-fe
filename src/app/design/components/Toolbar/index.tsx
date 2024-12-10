@@ -33,6 +33,10 @@ export default function Toolbar() {
     dispatch(setAction(CanvasAction.PAN_CANVAS));
   };
 
+  const handleUndoClick = () => {
+    dispatch(setAction(CanvasAction.UNDO));
+  };
+
   const handleSaveClick = () => {
     dispatch(setAction(CanvasAction.SAVE));
   };
@@ -58,7 +62,7 @@ export default function Toolbar() {
       {
         icon: faArrowLeft,
         label: "Undo",
-        handleClick: () => console.log("Undo clicked"),
+        handleClick: handleUndoClick,
       },
       {
         icon: faArrowRight,
