@@ -4,6 +4,7 @@ export enum CanvasAction {
   CLEAR = "clear",
   PLACE_DOOR = "placeDoor",
   PLACE_WINDOW = "placeWindow",
+  PLACE_FLOORING = "placeFlooring",
   PLACE_FURNITURE = "placeFurniture",
   EXPORT_PNG = "exportPNG",
   SELECT_OBJECT = "selectObject",

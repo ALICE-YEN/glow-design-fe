@@ -48,6 +48,8 @@ export default function Design() {
   const pointsRef = useRef<Point[]>([]); // 保存最新的點資料，用於即時操作，避免 React 狀態更新的非同步問題。
   const tempLineRef = useRef<Line | null>(null); // 表示模擬線，隨滑鼠移動動態更新，用於即時操作，避免 React 狀態更新的非同步問題。
 
+  const selectedObjectRef = useRef<any>(null); // 選取到的物件
+
   const GRID_SIZE = 20; // 網格大小
   const ZOOM_FACTOR = 0.001; // 縮放比例
   const MIN_ZOOM = 0.5; // 限制最大縮放
@@ -97,19 +99,6 @@ export default function Design() {
     };
   };
 
-  const checkClosure = ({ x, y }: Point) => {
-    if (pointsRef.current.length >= 3) {
-      const { x: firstX, y: firstY } = pointsRef.current[0];
-      if (
-        Math.abs(x - firstX) < GRID_SIZE &&
-        Math.abs(y - firstY) < GRID_SIZE
-      ) {
-        fillPolygonWithLines(canvas, pointsRef.current);
-        pointsRef.current = [];
-      }
-    }
-  };
-
   const handleMouseDown = (event: TEvent): void => {
     if (!canvas) return;
 
@@ -143,7 +132,23 @@ export default function Design() {
     updateTempLine(canvas, tempLineRef, startX, startY, endX, endY);
   };
 
-  const fillPolygonWithLines = async (canvas: Canvas, points: Point[]) => {
+  const checkClosure = ({ x, y }: Point) => {
+    if (pointsRef.current.length >= 3) {
+      const { x: firstX, y: firstY } = pointsRef.current[0];
+      if (
+        Math.abs(x - firstX) < GRID_SIZE &&
+        Math.abs(y - firstY) < GRID_SIZE
+      ) {
+        fillPolygonWithLinesIntoGroup(canvas, pointsRef.current);
+        pointsRef.current = [];
+      }
+    }
+  };
+
+  const fillPolygonWithLinesIntoGroup = async (
+    canvas: Canvas,
+    points: Point[]
+  ) => {
     // 清理舊的線
     const finalizedLines = canvas
       .getObjects("line")
@@ -207,33 +212,86 @@ export default function Design() {
     dispatch(resetAction());
   };
 
+  const updateFlooringImage = async (newImageUrl: string) => {
+    // Flooring 一定是 polygon
+    if (
+      !selectedObjectRef.current ||
+      selectedObjectRef.current.type !== "polygon"
+    ) {
+      console.warn("請選擇房間");
+      return;
+    }
+
+    const imgData = await Image.fromURL(newImageUrl);
+    imgData.scaleToWidth(75);
+
+    const patternSourceCanvas = new StaticCanvas();
+    patternSourceCanvas.add(imgData);
+    patternSourceCanvas.setDimensions({
+      width: imgData.getScaledWidth(),
+      height: imgData.getScaledHeight(),
+    });
+    patternSourceCanvas.renderAll();
+
+    const pattern = new Pattern({
+      source: patternSourceCanvas.getElement(),
+      repeat: "repeat",
+    });
+
+    // 更新 Polygon 的填充模式
+    selectedObjectRef.current.set("fill", pattern);
+    selectedObjectRef.current.canvas?.renderAll();
+  };
+
+  const handleCanvasObjectSelection = (
+    currentSelection: any,
+    selectedObjectRef: React.MutableRefObject<any>
+  ) => {
+    if (currentSelection.type === "group") {
+      // 如果是 Group，遍歷其中的子物件
+      currentSelection._objects.forEach((obj) => {
+        if (obj.type === "polygon") {
+          // 處理 Group 內的 Polygon
+          selectedObjectRef.current = obj as Polygon;
+        }
+      });
+    } else {
+      selectedObjectRef.current = currentSelection;
+    }
+  };
+
   useEffect(() => {
     if (!canvas) return;
 
     canvas.on("selection:created", (e) => {
-      // console.log("select a new object on canvas", e.selected[0]);
+      console.log("事件select a new object on canvas", e.selected[0]);
+      handleCanvasObjectSelection(e.selected[0], selectedObjectRef);
+      console.log("selectedObjectRef", selectedObjectRef);
     });
     canvas.on("selection:updated", (e) => {
-      // console.log("update the selection", e.selected[0]);
+      console.log("事件update the selection", e.selected[0]);
+      handleCanvasObjectSelection(e.selected[0], selectedObjectRef);
     });
     canvas.on("selection:cleared", () => {
-      // console.log("deselect all objects");
+      console.log("事件deselect all objects");
+      selectedObjectRef.current = null;
     });
     canvas.on("object:modified", (e) => {
-      // console.log(
-      //   "object property is modified(resized or rotated)",
-      //   e.target
-      // );
+      console.log(
+        "事件object property is modified(resized or rotated)",
+        e.target
+      );
       // clearGuidelines(canvas);
     });
     canvas.on("object:scaling", (e) => {
-      // console.log("object property is scaling", e.target);
+      console.log("事件object property is scaling", e.target);
     });
 
     canvas.on("object:moving", (e) => {
+      console.log("事件object property is moving", e.target);
       // handleObjectMoving(canvas, e.target, guidelines, setGuidelines);
     });
-  }, [canvas, currentAction]);
+  }, [canvas]);
 
   useEffect(() => {
     if (!canvas) return;
@@ -271,6 +329,9 @@ export default function Design() {
       case CanvasAction.DRAW_WALL:
         canvas.isDrawingMode = true;
         startDrawingWall();
+        break;
+      case CanvasAction.PLACE_FLOORING:
+        updateFlooringImage(selectedImage);
         break;
       case CanvasAction.PLACE_FURNITURE:
       case CanvasAction.PLACE_WINDOW:

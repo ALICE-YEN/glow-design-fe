@@ -1,9 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import { useAppDispatch } from "@/hooks/redux";
-import { setAction, setSelectedImage } from "@/store/canvasSlice";
-import { CanvasAction } from "@/types/enum";
 import type {
   Material,
   CategoryWithMaterials,
@@ -12,24 +9,19 @@ import MaterialCard from "./MaterialCard";
 
 interface MaterialLibraryProps {
   categoriesWithMaterials: CategoryWithMaterials[];
+  handleMaterialClick: (material: Material) => void;
 }
 
 export default function MaterialLibrary({
   categoriesWithMaterials,
+  handleMaterialClick,
 }: MaterialLibraryProps) {
-  const dispatch = useAppDispatch();
-
   const [activeCategory, setActiveCategory] = useState<string>(
     categoriesWithMaterials[0].id
   );
 
   const handleCategoryClick = (categoryId: string) => {
     setActiveCategory(categoryId);
-  };
-
-  const handleMaterialClick = (material: Material) => {
-    dispatch(setAction(CanvasAction.PLACE_FURNITURE));
-    dispatch(setSelectedImage(material.url));
   };
 
   return (

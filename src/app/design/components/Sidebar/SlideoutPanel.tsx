@@ -1,5 +1,8 @@
 "use client";
 
+import { useAppDispatch } from "@/hooks/redux";
+import { setAction, setSelectedImage } from "@/store/canvasSlice";
+import { CanvasAction } from "@/types/enum";
 // 假資料
 import RockImg from "@/assets/imgs/rock.jpeg";
 import WoodImg from "@/assets/imgs/wood.jpeg";
@@ -10,6 +13,7 @@ import ChairImg from "@/assets/imgs/chair.jpg";
 import type {
   SidebarButtonConfig,
   CategoryWithMaterials,
+  Material,
 } from "@/app/design/types/interfaces";
 import MaterialLibrary from "./SlideoutPanelContent/MaterialLibrary";
 import WallDrawing from "./SlideoutPanelContent/WallDrawing";
@@ -187,9 +191,31 @@ export default function SlideoutPanel({
   handleAnimationEnd,
   handleCloseSlideoutPanel,
 }: SlideoutPanelProps) {
+  const dispatch = useAppDispatch();
+
+  const handleMaterialClick = (material: Material) => {
+    dispatch(setSelectedImage(material.url));
+    if (content.id === "furniture") {
+      dispatch(setAction(CanvasAction.PLACE_FURNITURE));
+    }
+    if (content.id === "flooring") {
+      dispatch(setAction(CanvasAction.PLACE_FLOORING));
+    }
+  };
+
   const renderContentMap: Record<string, JSX.Element | null> = {
-    flooring: <MaterialLibrary categoriesWithMaterials={flooring} />,
-    furniture: <MaterialLibrary categoriesWithMaterials={furniture} />,
+    flooring: (
+      <MaterialLibrary
+        categoriesWithMaterials={flooring}
+        handleMaterialClick={handleMaterialClick}
+      />
+    ),
+    furniture: (
+      <MaterialLibrary
+        categoriesWithMaterials={furniture}
+        handleMaterialClick={handleMaterialClick}
+      />
+    ),
     decorate: <WallDrawing />,
     export: <ExportImg handleCloseSlideoutPanel={handleCloseSlideoutPanel} />,
   };
