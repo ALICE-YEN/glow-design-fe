@@ -21,7 +21,7 @@ const BUTTON_CONFIG: SidebarButtonConfig[] = [
     description: "",
   },
   {
-    id: "materials",
+    id: "flooring",
     icon: faPalette,
     label: "材質庫",
     title: "材質庫管理",
