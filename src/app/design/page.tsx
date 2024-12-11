@@ -156,7 +156,7 @@ export default function Design() {
     const lines = points.slice(0, -1).map((point, index) => {
       const nextPoint = points[index + 1];
       return new Line([point.x, point.y, nextPoint.x, nextPoint.y], {
-        stroke: "black",
+        stroke: "gray",
         strokeWidth: 5,
         selectable: false,
         evented: false,

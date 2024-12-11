@@ -6,7 +6,8 @@
   /* colors */
   --background: #b2ac88;
   --contrast: #a63a3a;
-  --contrast-hover: #933434;
+  /* --contrast-hover: #933434; */
+  --contrast-hover: #b84a4a;
   --panel-background: rgb(245 245 244); /* stone-100 */
   --button-hover: rgb(229 231 235); /* gray-200 */
   --button-active: rgb(229 231 235); /* gray-200 */

@@ -11,7 +11,7 @@ export const finalizeTempLine = (
 ): void => {
   if (!tempLineRef.current) return;
   tempLineRef.current.set({
-    stroke: "black",
+    stroke: "gray",
     strokeWidth: 5,
     id: "finalizedLine",
   });
