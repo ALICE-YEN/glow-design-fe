@@ -41,7 +41,7 @@ export default function DesignList() {
                 : "transform -translate-y-4 text-4xl"
             }`}
           >
-            plan A
+            居然好設計 Glow Design
           </h1>
 
           {/* Login Button */}
