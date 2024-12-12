@@ -1,7 +1,7 @@
 "use client";
 
-import { ReactNode, useState } from "react";
-import { useAppDispatch } from "@/hooks/redux";
+import { useEffect, ReactNode } from "react";
+import { useAppSelector, useAppDispatch } from "@/hooks/redux";
 import { setAction, setSelectedImage } from "@/store/canvasSlice";
 import { CanvasAction } from "@/types/enum";
 
@@ -24,9 +24,25 @@ function DrawingButton({ label, icon, handleClick }: ItemConfig) {
 }
 
 export default function WallDrawing() {
-  const [isDrawing, setIsDrawing] = useState<boolean>(false);
+  const currentAction = useAppSelector((state) => state.canvas.currentAction);
+  const isDrawing = currentAction === CanvasAction.DRAW_WALL;
 
   const dispatch = useAppDispatch();
+
+  // 鍵盤操作
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "L" || e.key === "l") {
+        dispatch(setAction(CanvasAction.DRAW_WALL));
+      }
+      if (e.key === "Escape") {
+        dispatch(setAction(CanvasAction.NONE));
+      }
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [dispatch]);
 
   const DRAWING_ITEM: ItemConfig = {
     id: "draw-wall",
@@ -42,13 +58,12 @@ export default function WallDrawing() {
     ),
     handleClick: () => {
       dispatch(setAction(CanvasAction.DRAW_WALL));
-      setIsDrawing(true);
     },
   };
 
   const EXIT_DRAWING_ITEM: ItemConfig = {
     id: "exit-draw",
-    label: "退出繪製",
+    label: "退出繪製 Esc",
     icon: (
       <svg
         xmlns="http://www.w3.org/2000/svg"
@@ -69,7 +84,7 @@ export default function WallDrawing() {
       </svg>
     ),
     handleClick: () => {
-      setIsDrawing(false);
+      dispatch(setAction(CanvasAction.NONE));
     },
   };
 

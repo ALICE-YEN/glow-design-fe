@@ -15,8 +15,9 @@ import {
   Pattern,
 } from "fabric";
 import { useAppSelector, useAppDispatch } from "@/hooks/redux";
-import { resetAction } from "@/store/canvasSlice";
+import { setAction, resetAction } from "@/store/canvasSlice";
 import { CanvasAction } from "@/types/enum";
+import { Point } from "@/app/design/types/interfaces";
 import {
   initializeCanvasWithGrid,
   drawGrid,
@@ -28,6 +29,8 @@ import {
   snapToGrid,
   finalizeTempLine,
   updateTempLine,
+  checkClosure,
+  createPatternFromImage,
 } from "@/app/design/utils/drawingHelpers";
 import {
   handleObjectMoving,
@@ -37,8 +40,6 @@ import Cropping from "@/app/design/components/Cropping";
 import LayerList from "@/app/design/components/LayerList";
 import Sidebar from "@/app/design/components/Sidebar";
 import Toolbar from "@/app/design/components/Toolbar";
-
-type Point = { x: number; y: number };
 
 export default function Design() {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
@@ -54,6 +55,7 @@ export default function Design() {
   const ZOOM_FACTOR = 0.001; // 縮放比例
   const MIN_ZOOM = 0.5; // 限制最大縮放
   const MAX_ZOOM = 2; // 限制最小縮放
+  const FLOORING_PATTERN_IMG_WIDTH = 75; // 地板圖案中使用的圖片寬度（用於生成模式填充）
 
   const currentAction = useAppSelector((state) => state.canvas.currentAction);
   const selectedImage = useAppSelector((state) => state.canvas.selectedImage);
@@ -109,11 +111,14 @@ export default function Design() {
     // 更新點資料
     pointsRef.current = [...pointsRef.current, { x, y }];
 
-    // 固定模擬線為黑色直線
+    // 固定模擬線為不同顏色的直線
     finalizeTempLine(canvas, tempLineRef);
 
-    // 檢查是否閉合
-    checkClosure({ x, y });
+    // 檢查 points 組合成的線是否閉合
+    if (checkClosure(pointsRef.current, { x, y }, GRID_SIZE)) {
+      fillPolygonWithLinesIntoGroup(canvas, pointsRef.current);
+      pointsRef.current = [];
+    }
   };
 
   const handleMouseMove = (event: TEvent) => {
@@ -130,19 +135,6 @@ export default function Design() {
 
     // 更新模擬線
     updateTempLine(canvas, tempLineRef, startX, startY, endX, endY);
-  };
-
-  const checkClosure = ({ x, y }: Point) => {
-    if (pointsRef.current.length >= 3) {
-      const { x: firstX, y: firstY } = pointsRef.current[0];
-      if (
-        Math.abs(x - firstX) < GRID_SIZE &&
-        Math.abs(y - firstY) < GRID_SIZE
-      ) {
-        fillPolygonWithLinesIntoGroup(canvas, pointsRef.current);
-        pointsRef.current = [];
-      }
-    }
   };
 
   const fillPolygonWithLinesIntoGroup = async (
@@ -169,26 +161,11 @@ export default function Design() {
     });
     console.log("lines", lines);
 
-    // 設定 Polygon 底圖
-    const imgData = await FabricImage.fromURL(
-      "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSHTewZHbRfZqXytUaGYzb1YonM8-bBbGLjVA&s"
+    // Pattern 用來定義 Polygon 的填充模式
+    const pattern = await createPatternFromImage(
+      "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSHTewZHbRfZqXytUaGYzb1YonM8-bBbGLjVA&s",
+      FLOORING_PATTERN_IMG_WIDTH
     );
-    imgData.scaleToWidth(75); // Scales an object to a given width
-
-    // 專門用來生成圖像或模式的輔助畫布，不會影響主畫布，提供了一個獨立的渲染環境，允許你創建圖案並用作其他對象的填充
-    const patternSourceCanvas = new StaticCanvas();
-    patternSourceCanvas.add(imgData);
-    patternSourceCanvas.setDimensions({
-      width: imgData.getScaledWidth(),
-      height: imgData.getScaledHeight(),
-    });
-    patternSourceCanvas.renderAll();
-
-    // Pattern 用來定義物件的填充模式
-    const pattern = new Pattern({
-      source: patternSourceCanvas.getElement(),
-      repeat: "repeat",
-    });
 
     const polygon = new Polygon(points, {
       fill: pattern,
@@ -203,6 +180,7 @@ export default function Design() {
     });
     console.log("group", group);
     canvas.add(group);
+    dispatch(setAction(CanvasAction.NONE));
 
     // 移除 mouse:down 和 mouse:move 监听器
     canvas.off("mouse:down", handleMouseDown);
@@ -218,25 +196,15 @@ export default function Design() {
       !selectedObjectRef.current ||
       selectedObjectRef.current.type !== "polygon"
     ) {
-      console.warn("請選擇房間");
+      window.alert("請選擇房間");
       return;
     }
 
-    const imgData = await Image.fromURL(newImageUrl);
-    imgData.scaleToWidth(75);
-
-    const patternSourceCanvas = new StaticCanvas();
-    patternSourceCanvas.add(imgData);
-    patternSourceCanvas.setDimensions({
-      width: imgData.getScaledWidth(),
-      height: imgData.getScaledHeight(),
-    });
-    patternSourceCanvas.renderAll();
-
-    const pattern = new Pattern({
-      source: patternSourceCanvas.getElement(),
-      repeat: "repeat",
-    });
+    // Pattern 用來定義 Polygon 的填充模式
+    const pattern = await createPatternFromImage(
+      newImageUrl,
+      FLOORING_PATTERN_IMG_WIDTH
+    );
 
     // 更新 Polygon 的填充模式
     selectedObjectRef.current.set("fill", pattern);
@@ -266,7 +234,6 @@ export default function Design() {
     canvas.on("selection:created", (e) => {
       console.log("事件select a new object on canvas", e.selected[0]);
       handleCanvasObjectSelection(e.selected[0], selectedObjectRef);
-      console.log("selectedObjectRef", selectedObjectRef);
     });
     canvas.on("selection:updated", (e) => {
       console.log("事件update the selection", e.selected[0]);

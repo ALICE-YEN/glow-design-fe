@@ -21,7 +21,7 @@ import ExportImg from "./SlideoutPanelContent/ExportImg";
 
 interface SlideoutPanelProps {
   isActive: boolean;
-  content: SidebarButtonConfig;
+  content?: SidebarButtonConfig;
   handleAnimationEnd: () => void;
   handleCloseSlideoutPanel: () => void;
 }
@@ -195,10 +195,10 @@ export default function SlideoutPanel({
 
   const handleMaterialClick = (material: Material) => {
     dispatch(setSelectedImage(material.url));
-    if (content.id === "furniture") {
+    if (content?.id === "furniture") {
       dispatch(setAction(CanvasAction.PLACE_FURNITURE));
     }
-    if (content.id === "flooring") {
+    if (content?.id === "flooring") {
       dispatch(setAction(CanvasAction.PLACE_FLOORING));
     }
   };
@@ -206,12 +206,14 @@ export default function SlideoutPanel({
   const renderContentMap: Record<string, JSX.Element | null> = {
     flooring: (
       <MaterialLibrary
+        key="flooring"
         categoriesWithMaterials={flooring}
         handleMaterialClick={handleMaterialClick}
       />
     ),
     furniture: (
       <MaterialLibrary
+        key="furniture"
         categoriesWithMaterials={furniture}
         handleMaterialClick={handleMaterialClick}
       />
@@ -229,11 +231,13 @@ export default function SlideoutPanel({
         if (!isActive) handleAnimationEnd();
       }}
     >
-      <div className="p-6">
-        <h2 className="text-lg font-bold mb-2.5">{content.title}</h2>
-        <p className="text-sm text-secondary mb-2.5">{content.description}</p>
-        {renderContentMap[content.id]}
-      </div>
+      {content && (
+        <div className="p-6">
+          <h2 className="text-lg font-bold mb-2.5">{content.title}</h2>
+          <p className="text-sm text-secondary mb-2.5">{content.description}</p>
+          {renderContentMap[content.id]}
+        </div>
+      )}
     </div>
   );
 }

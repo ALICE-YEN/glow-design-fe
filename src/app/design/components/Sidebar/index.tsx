@@ -47,6 +47,10 @@ export default function Sidebar() {
   const [activeIndex, setActiveIndex] = useState<string | null>(null);
   const [isAnimating, setIsAnimating] = useState(false); // SlideoutPanel 動畫
 
+  const activeContent = (BUTTON_CONFIG ?? []).find(
+    (obj) => obj.id === activeIndex
+  );
+
   const handleButtonClick = (index: string) => {
     setIsAnimating(true);
     setActiveIndex(activeIndex === index ? null : index);
@@ -76,15 +80,12 @@ export default function Sidebar() {
         ))}
       </nav>
 
-      {BUTTON_CONFIG.map((btn) => (
-        <SlideoutPanel
-          key={btn.id}
-          isActive={activeIndex === btn.id}
-          content={btn}
-          handleAnimationEnd={handleAnimationEnd}
-          handleCloseSlideoutPanel={() => setActiveIndex(null)}
-        />
-      ))}
+      <SlideoutPanel
+        isActive={!!activeIndex}
+        content={activeContent}
+        handleAnimationEnd={handleAnimationEnd}
+        handleCloseSlideoutPanel={() => setActiveIndex(null)}
+      />
     </div>
   );
 }

@@ -22,3 +22,8 @@ export interface Material {
   description: string;
   url: string; // 之後就不會有分開
 }
+
+export interface Point {
+  x: number;
+  y: number;
+}
