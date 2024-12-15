@@ -36,7 +36,7 @@ export default function WallDrawing() {
         dispatch(setAction(CanvasAction.DRAW_WALL));
       }
       if (e.key === "Escape") {
-        dispatch(setAction(CanvasAction.NONE));
+        dispatch(setAction(CanvasAction.EXIT_DRAW_WALL));
       }
     };
 
@@ -84,7 +84,7 @@ export default function WallDrawing() {
       </svg>
     ),
     handleClick: () => {
-      dispatch(setAction(CanvasAction.NONE));
+      dispatch(setAction(CanvasAction.EXIT_DRAW_WALL));
     },
   };
 

@@ -1,18 +1,14 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, useCallback } from "react";
 import {
   Canvas,
   TEvent,
-  PencilBrush,
   Group,
   Line,
   Rect,
-  Image,
   FabricImage,
   Polygon,
-  StaticCanvas,
-  Pattern,
 } from "fabric";
 import { useAppSelector, useAppDispatch } from "@/hooks/redux";
 import { setAction, resetAction } from "@/store/canvasSlice";
@@ -26,7 +22,7 @@ import {
   handleResize,
 } from "@/app/design/utils/basicCanvasHelpers";
 import {
-  snapToGrid,
+  getSnappedPointer,
   finalizeTempLine,
   updateTempLine,
   checkClosure,
@@ -85,57 +81,76 @@ export default function Design() {
     }
   }, []);
 
-  const startDrawingWall = () => {
+  const toggleDrawingMode = (enable: boolean) => {
     if (!canvas) return;
 
-    // 重置點資料和模擬線
-    pointsRef.current = [];
-    tempLineRef.current = null;
+    if (enable) {
+      if (pointsRef.current.length === 0) {
+        console.log("開始新的牆體繪製");
+      } else {
+        console.log("繼續未完成牆體的繪製, 點數: ", pointsRef.current.length);
+      }
 
-    canvas.on("mouse:down", handleMouseDown);
-    canvas.on("mouse:move", handleMouseMove);
-
-    return () => {
+      console.log("綁定繪圖事件");
+      canvas.on("mouse:down", handleMouseDown);
+      canvas.on("mouse:move", handleMouseMove);
+    } else {
+      console.log("解除繪圖事件綁定");
       canvas.off("mouse:down", handleMouseDown);
       canvas.off("mouse:move", handleMouseMove);
-    };
+    }
   };
+  const startDrawingWall = () => toggleDrawingMode(true);
+  const stopDrawingWall = () => toggleDrawingMode(false);
 
-  const handleMouseDown = (event: TEvent): void => {
-    if (!canvas) return;
-
-    const pointer = canvas.getPointer(event.e);
-    const x = snapToGrid(pointer.x, GRID_SIZE);
-    const y = snapToGrid(pointer.y, GRID_SIZE);
-
-    // 更新點資料
-    pointsRef.current = [...pointsRef.current, { x, y }];
-
-    // 固定模擬線為不同顏色的直線
-    finalizeTempLine(canvas, tempLineRef);
-
-    // 檢查 points 組合成的線是否閉合
-    if (checkClosure(pointsRef.current, { x, y }, GRID_SIZE)) {
-      fillPolygonWithLinesIntoGroup(canvas, pointsRef.current);
-      pointsRef.current = [];
+  const cleanupTempLine = () => {
+    if (canvas && tempLineRef.current) {
+      canvas.remove(tempLineRef.current);
+      tempLineRef.current = null;
     }
   };
 
-  const handleMouseMove = (event: TEvent) => {
-    if (!canvas || pointsRef.current.length === 0) return;
+  const handleMouseDown = useCallback(
+    (event: TEvent): void => {
+      if (!canvas) return;
 
-    // 目前 handleMouseDown 的座標
-    const pointer = canvas.getPointer(event.e);
-    const endX = snapToGrid(pointer.x, GRID_SIZE);
-    const endY = snapToGrid(pointer.y, GRID_SIZE);
+      // 目前的座標
+      const { x, y } = getSnappedPointer(canvas, event, GRID_SIZE);
 
-    // 前次 handleMouseDown 的座標
-    const { x: startX, y: startY } =
-      pointsRef.current[pointsRef.current.length - 1];
+      // 更新點資料
+      pointsRef.current = [...pointsRef.current, { x, y }];
 
-    // 更新模擬線
-    updateTempLine(canvas, tempLineRef, startX, startY, endX, endY);
-  };
+      // 固定模擬線為不同顏色的直線
+      finalizeTempLine(canvas, tempLineRef);
+
+      // 檢查 points 組合成的線是否閉合
+      if (checkClosure(pointsRef.current, { x, y }, GRID_SIZE)) {
+        console.log("檢測到封閉空間，創建房間");
+        fillPolygonWithLinesIntoGroup(canvas, pointsRef.current);
+
+        // 重置點資料
+        pointsRef.current = [];
+      }
+    },
+    [canvas, pointsRef, tempLineRef]
+  );
+
+  const handleMouseMove = useCallback(
+    (event: TEvent) => {
+      if (!canvas || pointsRef.current.length === 0) return;
+
+      // 目前的座標
+      const { x: endX, y: endY } = getSnappedPointer(canvas, event, GRID_SIZE);
+
+      // 前次 handleMouseDown 的座標
+      const { x: startX, y: startY } =
+        pointsRef.current[pointsRef.current.length - 1];
+
+      // 更新模擬線
+      updateTempLine(canvas, tempLineRef, startX, startY, endX, endY);
+    },
+    [canvas, pointsRef, tempLineRef]
+  );
 
   const fillPolygonWithLinesIntoGroup = async (
     canvas: Canvas,
@@ -159,7 +174,6 @@ export default function Design() {
         evented: false,
       });
     });
-    console.log("lines", lines);
 
     // Pattern 用來定義 Polygon 的填充模式
     const pattern = await createPatternFromImage(
@@ -178,16 +192,13 @@ export default function Design() {
       selectable: true,
       evented: true,
     });
-    console.log("group", group);
     canvas.add(group);
-    dispatch(setAction(CanvasAction.NONE));
+    dispatch(setAction(CanvasAction.EXIT_DRAW_WALL));
 
-    // 移除 mouse:down 和 mouse:move 监听器
-    canvas.off("mouse:down", handleMouseDown);
-    canvas.off("mouse:move", handleMouseMove);
+    // 移除 mouse:down 和 mouse:move 監聽器
+    stopDrawingWall();
 
-    canvas.renderAll();
-    dispatch(resetAction());
+    canvas.requestRenderAll();
   };
 
   const updateFlooringImage = async (newImageUrl: string) => {
@@ -208,7 +219,7 @@ export default function Design() {
 
     // 更新 Polygon 的填充模式
     selectedObjectRef.current.set("fill", pattern);
-    selectedObjectRef.current.canvas?.renderAll();
+    selectedObjectRef.current.canvas?.requestRenderAll();
   };
 
   const handleCanvasObjectSelection = (
@@ -278,6 +289,10 @@ export default function Design() {
         //   }
         // });
 
+        pointsRef.current = []; // 重置點資料和模擬線
+        cleanupTempLine();
+        stopDrawingWall(); // 移除 mouse:down 和 mouse:move 監聽器
+
         canvas.renderAll();
         break;
       case CanvasAction.SELECT_OBJECT:
@@ -297,6 +312,16 @@ export default function Design() {
         canvas.isDrawingMode = true;
         startDrawingWall();
         break;
+      case CanvasAction.EXIT_DRAW_WALL:
+        canvas.isDrawingMode = false;
+        cleanupTempLine();
+        stopDrawingWall(); // 移除 mouse:down 和 mouse:move 監聽器
+
+        if (pointsRef.current.length > 0) {
+          console.log("未形成封閉空間，未完成牆體");
+        }
+
+        break;
       case CanvasAction.PLACE_FLOORING:
         updateFlooringImage(selectedImage);
         break;
@@ -310,10 +335,7 @@ export default function Design() {
     }
 
     // 完成操作後，重置當前操作(除了持續性操作（如繪圖模式）不重置狀態)
-    if (
-      currentAction !== CanvasAction.NONE &&
-      currentAction !== CanvasAction.DRAW_WALL
-    ) {
+    if (![CanvasAction.NONE, CanvasAction.DRAW_WALL].includes(currentAction)) {
       dispatch(resetAction());
     }
   }, [currentAction, canvas, dispatch, selectedImage]);

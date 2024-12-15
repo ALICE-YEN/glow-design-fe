@@ -1,8 +1,28 @@
-import { Canvas, Line, StaticCanvas, FabricImage, Pattern } from "fabric";
+import {
+  Canvas,
+  Line,
+  StaticCanvas,
+  FabricImage,
+  Pattern,
+  TEvent,
+} from "fabric";
 import { Point } from "@/app/design/types/interfaces";
 
 export const snapToGrid = (value: number, gridSize: number): number => {
   return Math.round(value / gridSize) * gridSize;
+};
+
+// 將滑鼠指針的位置對齊到網格上，返回修正後的座標點
+export const getSnappedPointer = (
+  canvasInstance: Canvas,
+  event: TEvent,
+  gridSize: number
+): Point => {
+  const pointer = canvasInstance.getPointer(event.e);
+  return {
+    x: snapToGrid(pointer.x, gridSize),
+    y: snapToGrid(pointer.y, gridSize),
+  };
 };
 
 // 固定模擬線為不同顏色的直線
@@ -11,12 +31,13 @@ export const finalizeTempLine = (
   tempLineRef: React.MutableRefObject<Line | null>
 ): void => {
   if (!tempLineRef.current) return;
+
   tempLineRef.current.set({
     stroke: "gray",
     strokeWidth: 5,
     id: "finalizedLine",
   });
-  canvasInstance.add(tempLineRef.current);
+  canvasInstance.requestRenderAll();
 
   tempLineRef.current = null;
 };
@@ -45,18 +66,20 @@ export const updateTempLine = (
 
   tempLineRef.current = line;
   canvasInstance.add(line);
-  canvasInstance.renderAll();
+  canvasInstance.requestRenderAll();
 };
 
 // 檢查 points 組合成的線是否閉合
 export const checkClosure = (
   points: Point[],
-  { x, y }: Point,
+  { x: endX, y: endY }: Point,
   gridSize: number
 ): boolean => {
   if (points.length >= 3) {
     const { x: firstX, y: firstY } = points[0];
-    return Math.abs(x - firstX) < gridSize && Math.abs(y - firstY) < gridSize;
+    return (
+      Math.abs(endX - firstX) < gridSize && Math.abs(endY - firstY) < gridSize
+    );
   }
   return false;
 };
