@@ -3,6 +3,7 @@
 // header 退場動畫有點怪
 
 import { useEffect, useState } from "react";
+import Link from "next/link";
 import Card from "@/app/design-list/components/Card";
 import Footer from "@/app/design-list/components/Footer";
 
@@ -26,30 +27,29 @@ export default function DesignList() {
   return (
     <div className="bg-panel-background min-h-screen">
       <header
-        className={`fixed top-0 left-0 w-full z-50 transition-all duration-500 ${
+        className={`fixed top-0 left-0 w-full z-10 duration-300 ${
           showDetailedHeader
-            ? "bg-white shadow-md border-b border-gray-300 py-2"
-            : "bg-transparent py-10"
+            ? "bg-white shadow border-b border-panel-background py-2.5"
+            : "bg-transparent py-16"
         }`}
       >
-        <div className="container mx-auto px-6 flex justify-between items-center">
+        <div className="container mx-auto flex justify-between items-center">
           {/* Logo */}
-          <h1
-            className={`text-contrast font-bold transition-transform duration-500 ${
+          <Link
+            href="/"
+            className={`text-contrast font-bold transition-transform duration-300 ${
               showDetailedHeader
-                ? "transform translate-y-0 text-xl"
-                : "transform -translate-y-4 text-4xl"
+                ? "translate-y-0 text-2xl"
+                : "-translate-y-4 text-4xl"
             }`}
           >
             居然好設計 Glow Design
-          </h1>
+          </Link>
 
           {/* Login Button */}
           <button
-            className={`transition-transform duration-500 p-2 text-white rounded-full ${
-              showDetailedHeader
-                ? "transform translate-y-0 bg-contrast"
-                : "transform -translate-y-4 bg-contrast"
+            className={`px-3 py-2 text-white font-bold rounded-full bg-contrast ${
+              showDetailedHeader ? "translate-y-0" : "-translate-y-4"
             }`}
           >
             登入
@@ -58,9 +58,9 @@ export default function DesignList() {
       </header>
 
       {/* Design List */}
-      <main className="pt-28 container mx-auto px-6">
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-          <div className="flex flex-col justify-center items-center bg-contrast text-white rounded-lg h-48 cursor-pointer hover:bg-contrast-hover">
+      <main className="pt-40 container mx-auto px-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6">
+          <div className="flex flex-col justify-center items-center bg-contrast text-white rounded-card cursor-pointer hover:bg-contrast-hover">
             <span className="text-4xl">+</span>
             <p className="mt-2">開新設計</p>
           </div>

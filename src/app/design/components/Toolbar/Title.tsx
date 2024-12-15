@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 
 interface TitleProps {
   designTitle: string;
@@ -53,7 +54,9 @@ export default function Title({ designTitle, updateTitle }: TitleProps) {
 
   return (
     <div className="flex items-center space-x-6 font-bold">
-      <span className="text-contrast text-xl">居然好設計</span>
+      <Link href="/" className="text-contrast text-xl">
+        居然好設計
+      </Link>
       {isEditing ? (
         <input
           type="text"

@@ -9,8 +9,8 @@ interface CardProps {
 
 export default function Card({ src, title }: CardProps) {
   return (
-    <div className="bg-white rounded-lg shadow-md overflow-hidden cursor-pointer">
-      <img src={src} alt={title} className="w-full h-32 object-cover" />
+    <div className="bg-white rounded-card shadow-md overflow-hidden cursor-pointer hover:shadow-xl">
+      <img src={src} alt={title} className="w-full h-56 object-cover" />
       {/* <Image
         src={src}
         alt={title}
@@ -19,8 +19,8 @@ export default function Card({ src, title }: CardProps) {
         className="card__img object-cover"
       /> */}
       <div className="p-4 text-center">
-        <p className="text-lg font-bold">{title}</p>
-        <p className="text-sm text-gray-500">2 天前</p>
+        <p className="text-base font-bold">{title}</p>
+        <p className="text-sm text-secondary">2 天前</p>
       </div>
     </div>
   );

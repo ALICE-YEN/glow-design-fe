@@ -13,6 +13,7 @@ export default function MaterialCard({
   handleClick,
 }: MaterialCardProps) {
   return (
+    // 樣式放在 design.css
     <div className="card cursor-pointer" onClick={() => handleClick(material)}>
       <Image
         src={material.src}

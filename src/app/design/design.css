@@ -4,7 +4,6 @@
 .card {
   width: 140px;
   height: 140px;
-  background-color: #fff;
   border-radius: var(--card-radius);
   overflow: hidden;
   position: relative;
