@@ -2,16 +2,16 @@ export enum CanvasAction {
   NONE = "none",
   DRAW_WALL = "drawWall",
   EXIT_DRAW_WALL = "exitDrawWall",
-  CLEAR = "clear",
   PLACE_DOOR = "placeDoor",
   PLACE_WINDOW = "placeWindow",
   PLACE_FLOORING = "placeFlooring",
   PLACE_FURNITURE = "placeFurniture",
-  EXPORT_PNG = "exportPNG",
-  SELECT_OBJECT = "selectObject",
   PAN_CANVAS = "panCanvas",
+  SELECT_OBJECT = "selectObject",
+  CLEAR = "clear",
   UNDO = "undo",
   SAVE = "save",
+  EXPORT_PNG = "exportPNG",
 }
 
 export enum ImgSize {

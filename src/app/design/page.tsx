@@ -1,3 +1,5 @@
+// useCallback dependency 到底應不應該放 useRef
+
 "use client";
 
 import { useEffect, useRef, useState, useCallback } from "react";
@@ -9,15 +11,15 @@ import {
   Rect,
   FabricImage,
   Polygon,
+  Point,
 } from "fabric";
 import { useAppSelector, useAppDispatch } from "@/hooks/redux";
 import { setAction, resetAction } from "@/store/canvasSlice";
 import { CanvasAction } from "@/types/enum";
-import { Point } from "@/app/design/types/interfaces";
+import { Point as IPoint } from "@/app/design/types/interfaces";
 import {
   initializeCanvasWithGrid,
   drawGrid,
-  setupPan,
   setupZoom,
   handleResize,
 } from "@/app/design/utils/basicCanvasHelpers";
@@ -42,11 +44,15 @@ export default function Design() {
   const [canvas, setCanvas] = useState<Canvas | null>(null);
   const [guidelines, setGuidelines] = useState([]);
 
-  const pointsRef = useRef<Point[]>([]); // 保存最新的點資料，用於即時操作，避免 React 狀態更新的非同步問題。
+  const isPanningRef = useRef<boolean>(false); // 可否平移畫布
+
+  const pointsRef = useRef<IPoint[]>([]); // 保存最新的點資料，用於即時操作，避免 React 狀態更新的非同步問題。
   const tempLineRef = useRef<Line | null>(null); // 表示模擬線，隨滑鼠移動動態更新，用於即時操作，避免 React 狀態更新的非同步問題。
 
   const selectedObjectRef = useRef<any>(null); // 選取到的物件
 
+  const CANVAS_WIDTH = 3000; // 邏輯畫布寬度
+  const CANVAS_HEIGHT = 3000; // 邏輯畫布高度
   const GRID_SIZE = 20; // 網格大小
   const ZOOM_FACTOR = 0.001; // 縮放比例
   const MIN_ZOOM = 0.5; // 限制最大縮放
@@ -59,7 +65,12 @@ export default function Design() {
 
   useEffect(() => {
     if (canvasRef.current) {
-      const initCanvas = initializeCanvasWithGrid(canvasRef.current, GRID_SIZE);
+      const initCanvas = initializeCanvasWithGrid(
+        canvasRef.current,
+        GRID_SIZE,
+        CANVAS_WIDTH,
+        CANVAS_HEIGHT
+      );
 
       initCanvas.requestRenderAll();
       setCanvas(initCanvas);
@@ -81,6 +92,50 @@ export default function Design() {
     }
   }, []);
 
+  const togglePanMode = (enable: boolean) => {
+    if (!canvas) return;
+
+    if (enable) {
+      console.log("啟用平移模式，綁定平移事件");
+      canvas.on("mouse:down", handlePanMouseDown);
+      canvas.on("mouse:move", handlePanMouseMove);
+      canvas.on("mouse:up", handlePanMouseUp);
+    } else {
+      console.log("停用平移模式，解除事件綁定");
+      canvas.off("mouse:down", handlePanMouseDown);
+      canvas.off("mouse:move", handlePanMouseMove);
+      canvas.off("mouse:up", handlePanMouseUp);
+      console.log("監聽的事件", canvas.__eventListeners);
+    }
+  };
+
+  const startPanMode = () => togglePanMode(true);
+  const stopPanMode = () => togglePanMode(false);
+
+  const handlePanMouseDown = useCallback(() => {
+    isPanningRef.current = true;
+  }, [isPanningRef]);
+
+  const handlePanMouseUp = useCallback(() => {
+    isPanningRef.current = false;
+  }, [isPanningRef]);
+
+  const handlePanMouseMove = useCallback(
+    (opt: any) => {
+      if (!canvas) return;
+
+      if (isPanningRef.current && opt.e) {
+        // opt.e.movementX：滑鼠自上一次事件到目前事件在 X 軸 上的移動距離（以像素為單位）。
+        // opt.e.movementY：滑鼠自上一次事件到目前事件在 Y 軸 上的移動距離。
+        const delta = new Point(opt.e.movementX, opt.e.movementY);
+
+        // 用於相對平移畫布的視口。平移的效果是整個畫布（內容和背景）一起移動，但實際上只是改變了視口的偏移量。
+        canvas.relativePan(delta);
+      }
+    },
+    [canvas, isPanningRef]
+  );
+
   const toggleDrawingMode = (enable: boolean) => {
     if (!canvas) return;
 
@@ -92,12 +147,12 @@ export default function Design() {
       }
 
       console.log("綁定繪圖事件");
-      canvas.on("mouse:down", handleMouseDown);
-      canvas.on("mouse:move", handleMouseMove);
+      canvas.on("mouse:down", handleDrawMouseDown);
+      canvas.on("mouse:move", handleDrawMouseMove);
     } else {
       console.log("解除繪圖事件綁定");
-      canvas.off("mouse:down", handleMouseDown);
-      canvas.off("mouse:move", handleMouseMove);
+      canvas.off("mouse:down", handleDrawMouseDown);
+      canvas.off("mouse:move", handleDrawMouseMove);
     }
   };
   const startDrawingWall = () => toggleDrawingMode(true);
@@ -110,7 +165,7 @@ export default function Design() {
     }
   };
 
-  const handleMouseDown = useCallback(
+  const handleDrawMouseDown = useCallback(
     (event: TEvent): void => {
       if (!canvas) return;
 
@@ -135,7 +190,7 @@ export default function Design() {
     [canvas, pointsRef, tempLineRef]
   );
 
-  const handleMouseMove = useCallback(
+  const handleDrawMouseMove = useCallback(
     (event: TEvent) => {
       if (!canvas || pointsRef.current.length === 0) return;
 
@@ -154,7 +209,7 @@ export default function Design() {
 
   const fillPolygonWithLinesIntoGroup = async (
     canvas: Canvas,
-    points: Point[]
+    points: IPoint[]
   ) => {
     // 清理舊的線
     const finalizedLines = canvas
@@ -243,30 +298,30 @@ export default function Design() {
     if (!canvas) return;
 
     canvas.on("selection:created", (e) => {
-      console.log("事件select a new object on canvas", e.selected[0]);
+      // console.log("事件select a new object on canvas", e.selected[0]);
       handleCanvasObjectSelection(e.selected[0], selectedObjectRef);
     });
     canvas.on("selection:updated", (e) => {
-      console.log("事件update the selection", e.selected[0]);
+      // console.log("事件update the selection", e.selected[0]);
       handleCanvasObjectSelection(e.selected[0], selectedObjectRef);
     });
     canvas.on("selection:cleared", () => {
-      console.log("事件deselect all objects");
+      // console.log("事件deselect all objects");
       selectedObjectRef.current = null;
     });
     canvas.on("object:modified", (e) => {
-      console.log(
-        "事件object property is modified(resized or rotated)",
-        e.target
-      );
+      // console.log(
+      //   "事件object property is modified(resized or rotated)",
+      //   e.target
+      // );
       // clearGuidelines(canvas);
     });
     canvas.on("object:scaling", (e) => {
-      console.log("事件object property is scaling", e.target);
+      // console.log("事件object property is scaling", e.target);
     });
 
     canvas.on("object:moving", (e) => {
-      console.log("事件object property is moving", e.target);
+      // console.log("事件object property is moving", e.target);
       // handleObjectMoving(canvas, e.target, guidelines, setGuidelines);
     });
   }, [canvas]);
@@ -280,7 +335,7 @@ export default function Design() {
       case CanvasAction.CLEAR:
         // 1.清除所有物件後直接重新繪製網格
         canvas.clear();
-        drawGrid(canvas, GRID_SIZE);
+        drawGrid(canvas, GRID_SIZE, CANVAS_WIDTH, CANVAS_HEIGHT);
 
         // 2.只清除非網格物件
         // canvas.getObjects().forEach((obj) => {
@@ -306,7 +361,7 @@ export default function Design() {
       //   }
       //   break;
       case CanvasAction.PAN_CANVAS:
-        setupPan(canvas); // 還不知道怎麼清理事件監聽器
+        startPanMode();
         break;
       case CanvasAction.DRAW_WALL:
         canvas.isDrawingMode = true;
@@ -334,8 +389,19 @@ export default function Design() {
         break;
     }
 
+    if (currentAction !== CanvasAction.PAN_CANVAS) {
+      stopPanMode();
+    }
+
     // 完成操作後，重置當前操作(除了持續性操作（如繪圖模式）不重置狀態)
-    if (![CanvasAction.NONE, CanvasAction.DRAW_WALL].includes(currentAction)) {
+    if (
+      ![
+        CanvasAction.NONE,
+        CanvasAction.DRAW_WALL,
+        CanvasAction.SELECT_OBJECT,
+        CanvasAction.PAN_CANVAS,
+      ].includes(currentAction)
+    ) {
       dispatch(resetAction());
     }
   }, [currentAction, canvas, dispatch, selectedImage]);
@@ -370,13 +436,12 @@ export default function Design() {
       imgData.scale(scaleFactor); // 等比例縮放
     }
 
+    // 將圖片放置在畫布的絕對中心點
     imgData.set({
-      left:
-        canvas.getWidth() / 2 -
-        (customWidth ? imgData.getScaledWidth() : imgData.width) / 2,
-      top:
-        canvas.getHeight() / 2 -
-        (customWidth ? imgData.getScaledHeight() : imgData.height) / 2,
+      left: CANVAS_WIDTH / 2,
+      top: CANVAS_HEIGHT / 2,
+      originX: "center",
+      originY: "center",
     });
 
     canvas.add(imgData);

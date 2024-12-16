@@ -3,43 +3,85 @@ import { Canvas, Line, Point } from "fabric";
 // 初始化 Canvas，繪製網格，回傳 Canvas 實例
 export const initializeCanvasWithGrid = (
   canvasElement: HTMLCanvasElement,
-  gridSize: number
+  gridSize: number,
+  canvasWidth: number,
+  canvasHeight: number
 ): Canvas => {
   const canvas = new Canvas(canvasElement, {
     // backgroundColor: "#FFFFF0",
     backgroundColor: "#B2AC88",
-    width: 2000,
-    height: 2000,
+    width: canvasWidth,
+    height: canvasHeight,
     isDrawingMode: false, // 畫布的繪畫模式
     selection: false,
   });
 
-  drawGrid(canvas, gridSize);
+  // 計算畫布中心
+  const canvasCenterX = canvas.width / 2;
+  const canvasCenterY = canvas.height / 2;
+
+  // 平移視口到畫布的中心
+  canvas.absolutePan({
+    x: canvasCenterX - window.innerWidth / 2,
+    y: canvasCenterY - window.innerHeight / 2,
+  } as Point);
+
+  drawGrid(canvas, gridSize, canvasWidth, canvasHeight);
   return canvas;
 };
 
+const STROKE_WIDTHS = {
+  THIN: 0.5, // 細網格線
+  MEDIUM: 1.5, // 粗網格線
+  BOLD: 2.5, // 中心線
+};
+
 // 繪製網格
-export const drawGrid = (canvasInstance: Canvas, gridSize: number): void => {
+export const drawGrid = (
+  canvasInstance: Canvas,
+  gridSize: number,
+  canvasWidth: number,
+  canvasHeight: number
+): void => {
   // 清理舊的網格
   const gridObjects = canvasInstance
     .getObjects("line")
     .filter((obj) => obj?.data === "grid");
   gridObjects.forEach((obj) => canvasInstance.remove(obj));
 
-  for (let i = 0; i < (canvasInstance.width ?? 0); i += gridSize) {
+  // 計算畫布中心
+  const centerX = canvasWidth / 2;
+  const centerY = canvasHeight / 2;
+
+  // 中心線、主網格線及細網格
+  for (let x = 0; x <= canvasWidth; x += gridSize) {
+    let strokeWidth = STROKE_WIDTHS.THIN;
+    if (Math.abs(x - centerX) < gridSize / 2) {
+      strokeWidth = STROKE_WIDTHS.BOLD;
+    } else if ((x - centerX) % (gridSize * 10) === 0) {
+      strokeWidth = STROKE_WIDTHS.MEDIUM;
+    }
     canvasInstance.add(
-      new Line([i, 0, i, canvasInstance.height ?? 0], {
+      new Line([x, 0, x, canvasHeight], {
         stroke: "#D3D3D3",
+        strokeWidth,
         selectable: false,
         evented: false,
         data: "grid", // 自定義標記為網格物件
       })
     );
   }
-  for (let i = 0; i < (canvasInstance.height ?? 0); i += gridSize) {
+  for (let y = 0; y <= canvasHeight; y += gridSize) {
+    let strokeWidth = STROKE_WIDTHS.THIN;
+    if (Math.abs(y - centerY) < gridSize / 2) {
+      strokeWidth = STROKE_WIDTHS.BOLD;
+    } else if ((y - centerY) % (gridSize * 10) === 0) {
+      strokeWidth = STROKE_WIDTHS.MEDIUM;
+    }
     canvasInstance.add(
-      new Line([0, i, canvasInstance.width ?? 0, i], {
+      new Line([0, y, canvasWidth, y], {
         stroke: "#D3D3D3",
+        strokeWidth,
         selectable: false,
         evented: false,
         data: "grid", // 自定義標記為網格物件
@@ -61,39 +103,6 @@ export const drawGrid = (canvasInstance: Canvas, gridSize: number): void => {
 
 //   drawGrid(canvasInstance, gridSize);
 // };
-
-export const setupPan = (canvasInstance: Canvas) => {
-  let isPanning = false;
-
-  const onMouseDown = () => {
-    isPanning = true;
-  };
-
-  const onMouseUp = () => {
-    isPanning = false;
-  };
-
-  const onMouseMove = (opt) => {
-    if (isPanning && opt.e) {
-      // opt.e.movementX：滑鼠自上一次事件到目前事件在 X 軸 上的移動距離（以像素為單位）。
-      // opt.e.movementY：滑鼠自上一次事件到目前事件在 Y 軸 上的移動距離。
-      const delta = new Point(opt.e.movementX, opt.e.movementY);
-
-      // 用於相對平移畫布的視口。平移的效果是整個畫布（內容和背景）一起移動，但實際上只是改變了視口的偏移量。
-      canvasInstance.relativePan(delta);
-    }
-  };
-
-  canvasInstance.on("mouse:down", onMouseDown);
-  canvasInstance.on("mouse:up", onMouseUp);
-  canvasInstance.on("mouse:move", onMouseMove);
-
-  return () => {
-    canvasInstance.off("mouse:down", onMouseDown);
-    canvasInstance.off("mouse:up", onMouseUp);
-    canvasInstance.off("mouse:move", onMouseMove);
-  };
-};
 
 export const setupZoom = (
   canvasInstance: Canvas,

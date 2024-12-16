@@ -10,19 +10,23 @@ import {
   IconDefinition,
 } from "@fortawesome/free-solid-svg-icons";
 import { faMoon, faUser } from "@fortawesome/free-regular-svg-icons";
-import { useAppDispatch } from "@/hooks/redux";
+import { useAppSelector, useAppDispatch } from "@/hooks/redux";
 import { setAction } from "@/store/canvasSlice";
 import { CanvasAction } from "@/types/enum";
 import Button from "./Button";
 import Title from "./Title";
 
 interface ToolbarButtonConfig {
+  id: string;
   icon: IconDefinition;
   label: string;
   handleClick: () => void;
+  isActive?: (currentAction: CanvasAction) => boolean;
 }
 
 export default function Toolbar() {
+  const currentAction = useAppSelector((state) => state.canvas.currentAction);
+
   const dispatch = useAppDispatch();
 
   const handleSelectObjectClick = () => {
@@ -50,31 +54,41 @@ export default function Toolbar() {
   } = {
     middle: [
       {
+        id: CanvasAction.SELECT_OBJECT,
         icon: faMousePointer,
         label: "Select Object",
         handleClick: handleSelectObjectClick,
+        isActive: (currentAction: CanvasAction) =>
+          currentAction === CanvasAction.SELECT_OBJECT,
       },
       {
+        id: CanvasAction.PAN_CANVAS,
         icon: faHand,
         label: "Pan Canvas",
         handleClick: handlePanCanvasClick,
+        isActive: (currentAction: CanvasAction) =>
+          currentAction === CanvasAction.PAN_CANVAS,
       },
       {
+        id: "undo",
         icon: faArrowLeft,
         label: "Undo",
         handleClick: handleUndoClick,
       },
       {
+        id: "redo",
         icon: faArrowRight,
         label: "Redo",
         handleClick: () => console.log("Redo clicked"),
       },
       {
+        id: "save",
         icon: faSave,
         label: "Save",
         handleClick: handleSaveClick,
       },
       {
+        id: "clear",
         icon: faEraser,
         label: "Clear",
         handleClick: handleClearClick,
@@ -82,11 +96,13 @@ export default function Toolbar() {
     ],
     right: [
       {
+        id: "toggleTheme",
         icon: faMoon,
         label: "Toggle Theme",
         handleClick: () => console.log("Toggle Theme clicked"),
       },
       {
+        id: "userProfile",
         icon: faUser,
         label: "User Profile",
         handleClick: () => console.log("User Profile clicked"),
@@ -104,11 +120,12 @@ export default function Toolbar() {
 
       {/* 中間工具按鈕 */}
       <div className="flex space-x-4">
-        {TOOLBAR_BUTTONS.middle.map((button, index) => (
+        {TOOLBAR_BUTTONS.middle.map((button) => (
           <Button
-            key={index}
+            key={button.id}
             icon={button.icon}
             label={button.label}
+            isActive={button.isActive ? button.isActive(currentAction) : false}
             handleClick={button.handleClick}
           />
         ))}
@@ -116,11 +133,12 @@ export default function Toolbar() {
 
       {/* 右側按鈕 */}
       <div className="flex space-x-4">
-        {TOOLBAR_BUTTONS.right.map((button, index) => (
+        {TOOLBAR_BUTTONS.right.map((button) => (
           <Button
-            key={index}
+            key={button.id}
             icon={button.icon}
             label={button.label}
+            isActive={false}
             handleClick={button.handleClick}
           />
         ))}

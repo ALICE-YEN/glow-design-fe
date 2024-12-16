@@ -8,6 +8,9 @@ import {
   faFileExport,
 } from "@fortawesome/free-solid-svg-icons"; // SVG 模式，只會加載代碼中使用的圖標，避免不必要的資源浪費
 // import * as Icons from "@fortawesome/free-solid-svg-icons"; // 導入整個庫，無法 Tree Shaking，之後再來用 build 比較打包大小吧XD(等 lint 錯誤都解完)
+import { useAppDispatch } from "@/hooks/redux";
+import { setAction } from "@/store/canvasSlice";
+import { CanvasAction } from "@/types/enum";
 import SidebarButton from "@/app/design/components/Sidebar/SidebarButton";
 import SlideoutPanel from "@/app/design/components/Sidebar/SlideoutPanel";
 import type { SidebarButtonConfig } from "@/app/design/types/interfaces";
@@ -47,6 +50,8 @@ export default function Sidebar() {
   const [activeIndex, setActiveIndex] = useState<string | null>(null);
   const [isAnimating, setIsAnimating] = useState(false); // SlideoutPanel 動畫
 
+  const dispatch = useAppDispatch();
+
   const activeContent = (BUTTON_CONFIG ?? []).find(
     (obj) => obj.id === activeIndex
   );
@@ -54,6 +59,7 @@ export default function Sidebar() {
   const handleButtonClick = (index: string) => {
     setIsAnimating(true);
     setActiveIndex(activeIndex === index ? null : index);
+    dispatch(setAction(CanvasAction.NONE));
   };
 
   const handleAnimationEnd = () => {
