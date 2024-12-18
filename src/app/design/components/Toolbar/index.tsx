@@ -41,6 +41,10 @@ export default function Toolbar() {
     dispatch(setAction(CanvasAction.UNDO));
   };
 
+  const handleRedoClick = () => {
+    dispatch(setAction(CanvasAction.REDO));
+  };
+
   const handleSaveClick = () => {
     dispatch(setAction(CanvasAction.SAVE));
   };
@@ -79,7 +83,7 @@ export default function Toolbar() {
         id: "redo",
         icon: faArrowRight,
         label: "Redo",
-        handleClick: () => console.log("Redo clicked"),
+        handleClick: handleRedoClick,
       },
       {
         id: "save",

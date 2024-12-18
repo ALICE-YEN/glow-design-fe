@@ -1,6 +1,6 @@
 "use client"; // CSR 模式
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   faHome,
   faPalette,
@@ -8,7 +8,7 @@ import {
   faFileExport,
 } from "@fortawesome/free-solid-svg-icons"; // SVG 模式，只會加載代碼中使用的圖標，避免不必要的資源浪費
 // import * as Icons from "@fortawesome/free-solid-svg-icons"; // 導入整個庫，無法 Tree Shaking，之後再來用 build 比較打包大小吧XD(等 lint 錯誤都解完)
-import { useAppDispatch } from "@/hooks/redux";
+import { useAppSelector, useAppDispatch } from "@/hooks/redux";
 import { setAction } from "@/store/canvasSlice";
 import { CanvasAction } from "@/types/enum";
 import SidebarButton from "@/app/design/components/Sidebar/SidebarButton";
@@ -50,6 +50,8 @@ export default function Sidebar() {
   const [activeIndex, setActiveIndex] = useState<string | null>(null);
   const [isAnimating, setIsAnimating] = useState(false); // SlideoutPanel 動畫
 
+  const currentAction = useAppSelector((state) => state.canvas.currentAction);
+
   const dispatch = useAppDispatch();
 
   const activeContent = (BUTTON_CONFIG ?? []).find(
@@ -66,6 +68,16 @@ export default function Sidebar() {
     setIsAnimating(false);
   };
 
+  // 點選 Toolbar SELECT_OBJECT、PAN_CANVAS，關閉 SlideoutPanel
+  useEffect(() => {
+    if (
+      [CanvasAction.SELECT_OBJECT, CanvasAction.PAN_CANVAS].includes(
+        currentAction
+      )
+    ) {
+      setActiveIndex(null);
+    }
+  }, [currentAction]);
   return (
     <div className="flex">
       <nav

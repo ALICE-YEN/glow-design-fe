@@ -13,7 +13,7 @@ export const initializeCanvasWithGrid = (
     width: canvasWidth,
     height: canvasHeight,
     isDrawingMode: false, // 畫布的繪畫模式
-    selection: false,
+    selection: false, // 禁用組選框
   });
 
   // 計算畫布中心
