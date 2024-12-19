@@ -90,20 +90,6 @@ export const drawGrid = (
   }
 };
 
-// 調整 Canvas 尺寸為視窗大小並繪製網格
-// export const fitCanvasToWindowAndDrawGrid = (
-//   canvasInstance: Canvas,
-//   gridSize: number
-// ): void => {
-//   const windowWidth = window.innerWidth;
-//   const windowHeight = window.innerHeight;
-
-//   canvasInstance.setWidth(windowWidth);
-//   canvasInstance.setHeight(windowHeight);
-
-//   drawGrid(canvasInstance, gridSize);
-// };
-
 export const setupZoom = (
   canvasInstance: Canvas,
   zoomFactor = 0.001, // 縮放比例
@@ -132,3 +118,19 @@ export const handleResize = (canvasInstance: Canvas) => {
     height: window.innerHeight,
   });
 };
+
+export const handleCanvasKeyDown =
+  (canvasInstance: Canvas, saveToUndoStack: (canvasInstance: Canvas) => void) =>
+  (e: KeyboardEvent): void => {
+    if (e.key === "Delete" || e.key === "Backspace") {
+      const activeObject = canvasInstance.getActiveObject();
+      if (activeObject) {
+        canvasInstance.remove(activeObject); // 從畫布中移除物件
+        canvasInstance.discardActiveObject(); // 清除選中狀態，觸發 selection:cleared
+        canvasInstance.requestRenderAll(); // 重新渲染畫布
+
+        saveToUndoStack(canvasInstance); // 操作後儲存狀態
+        console.log("物件已刪除");
+      }
+    }
+  };

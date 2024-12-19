@@ -1,5 +1,23 @@
 // useCallback dependency 到底應不應該放 useRef
 
+// 上一步、下一步情境：
+// 家具 ok
+// 1. 放置家具
+// 2. 拖移家具
+// 3. 縮放家具
+// 4. 刪除家具
+// 門、窗 ok
+// 1. 放置門、窗
+// 2. 拖移門、窗
+// 3. 縮放門、窗
+// 4. 刪除門、窗
+// 牆體
+// 1. 繪製牆體
+// 2. 置換地板材質
+// 3. 拖移牆體
+// 畫布 ok
+// 1. 清空畫布
+
 "use client";
 
 import { useEffect, useRef, useState, useCallback } from "react";
@@ -22,6 +40,7 @@ import {
   drawGrid,
   setupZoom,
   handleResize,
+  handleCanvasKeyDown,
 } from "@/app/design/utils/basicCanvasHelpers";
 import {
   getSnappedPointer,
@@ -44,12 +63,15 @@ export default function Design() {
   const [canvas, setCanvas] = useState<Canvas | null>(null);
   const [guidelines, setGuidelines] = useState([]);
 
+  const undoStackRef = useRef([]);
+  const redoStackRef = useRef([]); // 最近被 Undo 的狀態。如果有新的操作（如新增家具或移動物件）之後，redoStack 中的舊狀態就已經過時，無法再用於「下一步」
+
   const isPanningRef = useRef<boolean>(false); // 可否平移畫布
 
   const pointsRef = useRef<IPoint[]>([]); // 保存最新的點資料，用於即時操作，避免 React 狀態更新的非同步問題。
   const tempLineRef = useRef<Line | null>(null); // 表示模擬線，隨滑鼠移動動態更新，用於即時操作，避免 React 狀態更新的非同步問題。
 
-  const selectedObjectRef = useRef<any>(null); // 選取到的物件
+  const selectedPolygonObjectRef = useRef<any>(null); // 選取到的物件，輔助值，便於處理 Polygon。canvas.getActiveObject() 還是作為所有選取到的物件來源。
 
   const CANVAS_WIDTH = 3000; // 邏輯畫布寬度
   const CANVAS_HEIGHT = 3000; // 邏輯畫布高度
@@ -75,6 +97,9 @@ export default function Design() {
       initCanvas.requestRenderAll();
       setCanvas(initCanvas);
 
+      // 儲存初始狀態
+      saveToUndoStack(initCanvas);
+
       // 縮放功能
       setupZoom(initCanvas, ZOOM_FACTOR, MIN_ZOOM, MAX_ZOOM);
 
@@ -85,27 +110,76 @@ export default function Design() {
       // 監聽視窗大小變化
       window.addEventListener("resize", resizeHandler);
 
+      // 監聽鍵盤事件
+      const keyDownHandler = handleCanvasKeyDown(initCanvas, saveToUndoStack);
+
+      // 綁定鍵盤事件
+      window.addEventListener("keydown", keyDownHandler);
+
       return () => {
+        window.removeEventListener("keydown", keyDownHandler);
         window.removeEventListener("resize", resizeHandler);
         initCanvas.dispose();
       };
     }
   }, []);
 
+  const saveToUndoStack = (canvasInstance = canvas) => {
+    if (!canvasInstance) return;
+
+    // const currentCanvasState = canvasInstance.toObject();
+    const currentCanvasState = canvasInstance.toJSON();
+    undoStackRef.current.push(currentCanvasState);
+    console.log("save undoStackRef", undoStackRef.current);
+    redoStackRef.current = []; // 每次新操作後，清空 redoStack
+  };
+
+  const undo = () => {
+    if (!canvas) return;
+
+    if (undoStackRef.current.length > 1) {
+      const currentCanvasState = undoStackRef.current.pop(); // 取出當前狀態
+      console.log("undoStackRef.current", undoStackRef.current);
+      redoStackRef.current.push(currentCanvasState); // 保存到 redoStack
+
+      // 從剩下的 undoStack 中取得最新的狀態
+      const prevCanvasState =
+        undoStackRef.current[undoStackRef.current.length - 1];
+      console.log("prevCanvasState", prevCanvasState);
+
+      // 恢復畫布內容
+      canvas.loadFromJSON(prevCanvasState).then(function () {
+        canvas.renderAll();
+      });
+    }
+  };
+
+  const redo = () => {
+    if (!canvas) return;
+
+    if (redoStackRef.current.length > 0) {
+      const nextCanvasState = redoStackRef.current.pop();
+      undoStackRef.current.push(nextCanvasState); // 將 redo 的狀態保存回 undoStack
+      canvas.loadFromJSON(nextCanvasState).then(function () {
+        canvas.renderAll();
+      });
+    }
+  };
+
   const togglePanMode = (enable: boolean) => {
     if (!canvas) return;
 
     if (enable) {
-      console.log("啟用平移模式，綁定平移事件");
+      // console.log("啟用平移模式，綁定平移事件");
       canvas.on("mouse:down", handlePanMouseDown);
       canvas.on("mouse:move", handlePanMouseMove);
       canvas.on("mouse:up", handlePanMouseUp);
     } else {
-      console.log("停用平移模式，解除事件綁定");
+      // console.log("停用平移模式，解除事件綁定");
       canvas.off("mouse:down", handlePanMouseDown);
       canvas.off("mouse:move", handlePanMouseMove);
       canvas.off("mouse:up", handlePanMouseUp);
-      console.log("監聽的事件", canvas.__eventListeners);
+      // console.log("監聽的事件", canvas.__eventListeners);
     }
   };
 
@@ -186,6 +260,8 @@ export default function Design() {
         // 重置點資料
         pointsRef.current = [];
       }
+
+      saveToUndoStack(); // 操作後儲存狀態
     },
     [canvas, pointsRef, tempLineRef]
   );
@@ -257,11 +333,8 @@ export default function Design() {
   };
 
   const updateFlooringImage = async (newImageUrl: string) => {
-    // Flooring 一定是 polygon
-    if (
-      !selectedObjectRef.current ||
-      selectedObjectRef.current.type !== "polygon"
-    ) {
+    // Flooring 一定是 polygon，polygon 一定是 Flooring
+    if (!selectedPolygonObjectRef.current) {
       window.alert("請選擇房間");
       return;
     }
@@ -273,24 +346,23 @@ export default function Design() {
     );
 
     // 更新 Polygon 的填充模式
-    selectedObjectRef.current.set("fill", pattern);
-    selectedObjectRef.current.canvas?.requestRenderAll();
+    selectedPolygonObjectRef.current.set("fill", pattern);
+    selectedPolygonObjectRef.current.canvas?.requestRenderAll();
   };
 
-  const handleCanvasObjectSelection = (
-    currentSelection: any,
-    selectedObjectRef: React.MutableRefObject<any>
+  const handlePolygonSelection = (
+    currentSelection: any, // 功能同 canvas.getActiveObject()
+    selectedPolygonObjectRef: React.MutableRefObject<any>
   ) => {
+    // 本專案只有在繪製牆面組成的 group 裡有 polygon
     if (currentSelection.type === "group") {
-      // 如果是 Group，遍歷其中的子物件
-      currentSelection._objects.forEach((obj) => {
-        if (obj.type === "polygon") {
-          // 處理 Group 內的 Polygon
-          selectedObjectRef.current = obj as Polygon;
-        }
-      });
+      // 如果是 Group，提取其中的 Polygon
+      const polygon = currentSelection._objects.find(
+        (obj) => obj.type === "polygon"
+      );
+      selectedPolygonObjectRef.current = polygon || null;
     } else {
-      selectedObjectRef.current = currentSelection;
+      selectedPolygonObjectRef.current = null;
     }
   };
 
@@ -298,22 +370,23 @@ export default function Design() {
     if (!canvas) return;
 
     canvas.on("selection:created", (e) => {
-      // console.log("事件select a new object on canvas", e.selected[0]);
-      handleCanvasObjectSelection(e.selected[0], selectedObjectRef);
+      console.log("事件select a new object on canvas", e.selected[0]);
+      handlePolygonSelection(e.selected[0], selectedPolygonObjectRef);
     });
     canvas.on("selection:updated", (e) => {
-      // console.log("事件update the selection", e.selected[0]);
-      handleCanvasObjectSelection(e.selected[0], selectedObjectRef);
+      console.log("事件update the selection", e.selected[0]);
+      handlePolygonSelection(e.selected[0], selectedPolygonObjectRef);
     });
     canvas.on("selection:cleared", () => {
-      // console.log("事件deselect all objects");
-      selectedObjectRef.current = null;
+      console.log("事件deselect all objects");
+      selectedPolygonObjectRef.current = null;
     });
     canvas.on("object:modified", (e) => {
-      // console.log(
-      //   "事件object property is modified(resized or rotated)",
-      //   e.target
-      // );
+      console.log(
+        "事件object property is modified(resized or rotated)",
+        e.target
+      );
+      saveToUndoStack(); // 操作後儲存狀態
       // clearGuidelines(canvas);
     });
     canvas.on("object:scaling", (e) => {
@@ -327,83 +400,90 @@ export default function Design() {
   }, [canvas]);
 
   useEffect(() => {
-    if (!canvas) return;
+    const handleAction = async () => {
+      if (!canvas) return;
 
-    canvas.isDrawingMode = false;
+      canvas.isDrawingMode = false;
 
-    switch (currentAction) {
-      case CanvasAction.CLEAR:
-        // 1.清除所有物件後直接重新繪製網格
-        canvas.clear();
-        drawGrid(canvas, GRID_SIZE, CANVAS_WIDTH, CANVAS_HEIGHT);
+      switch (currentAction) {
+        case CanvasAction.CLEAR:
+          // 1.清除所有物件後直接重新繪製網格
+          canvas.clear();
+          drawGrid(canvas, GRID_SIZE, CANVAS_WIDTH, CANVAS_HEIGHT);
 
-        // 2.只清除非網格物件
-        // canvas.getObjects().forEach((obj) => {
-        //   if (obj.data !== "grid") {
-        //     canvas.remove(obj);
-        //   }
-        // });
+          // 2.只清除非網格物件
+          // canvas.getObjects().forEach((obj) => {
+          //   if (obj.data !== "grid") {
+          //     canvas.remove(obj);
+          //   }
+          // });
 
-        pointsRef.current = []; // 重置點資料和模擬線
-        cleanupTempLine();
-        stopDrawingWall(); // 移除 mouse:down 和 mouse:move 監聽器
+          pointsRef.current = []; // 重置點資料和模擬線
+          cleanupTempLine();
+          stopDrawingWall(); // 移除 mouse:down 和 mouse:move 監聽器
 
-        canvas.renderAll();
-        break;
-      case CanvasAction.SELECT_OBJECT:
-        break;
-      // case CanvasAction.UNDO:
-      //   if (undoStack.length > 0) {
-      //     const lastState = undoStack.pop();
-      //     canvas.loadFromJSON(lastState, () => {
-      //       canvas.renderAll();
-      //     });
-      //   }
-      //   break;
-      case CanvasAction.PAN_CANVAS:
-        startPanMode();
-        break;
-      case CanvasAction.DRAW_WALL:
-        canvas.isDrawingMode = true;
-        startDrawingWall();
-        break;
-      case CanvasAction.EXIT_DRAW_WALL:
-        canvas.isDrawingMode = false;
-        cleanupTempLine();
-        stopDrawingWall(); // 移除 mouse:down 和 mouse:move 監聽器
+          saveToUndoStack(); // 操作後儲存狀態
 
-        if (pointsRef.current.length > 0) {
-          console.log("未形成封閉空間，未完成牆體");
-        }
+          canvas.renderAll();
+          break;
+        case CanvasAction.SELECT_OBJECT:
+          break;
+        case CanvasAction.UNDO:
+          undo();
+          break;
+        case CanvasAction.REDO:
+          redo();
+          break;
+        // case CanvasAction.SAVE:
+        //   break;
+        case CanvasAction.PAN_CANVAS:
+          startPanMode();
+          break;
+        case CanvasAction.DRAW_WALL:
+          canvas.isDrawingMode = true;
+          startDrawingWall();
+          break;
+        case CanvasAction.EXIT_DRAW_WALL:
+          canvas.isDrawingMode = false;
+          cleanupTempLine();
+          stopDrawingWall(); // 移除 mouse:down 和 mouse:move 監聽器
 
-        break;
-      case CanvasAction.PLACE_FLOORING:
-        updateFlooringImage(selectedImage);
-        break;
-      case CanvasAction.PLACE_FURNITURE:
-      case CanvasAction.PLACE_WINDOW:
-      case CanvasAction.PLACE_DOOR:
-        loadFromUrl({ url: selectedImage, customWidth: 300 });
-        break;
-      default:
-        break;
-    }
+          if (pointsRef.current.length > 0) {
+            console.log("未形成封閉空間，未完成牆體");
+          }
+          break;
+        case CanvasAction.PLACE_FLOORING:
+          updateFlooringImage(selectedImage);
+          // saveToUndoStack(); // 操作後儲存狀態，圖片 CORS 問題先擱置
+          break;
+        case CanvasAction.PLACE_FURNITURE:
+        case CanvasAction.PLACE_WINDOW:
+        case CanvasAction.PLACE_DOOR:
+          await loadFromUrl({ url: selectedImage, customWidth: 300 });
+          saveToUndoStack(); // 操作後儲存狀態
+          break;
+        default:
+          break;
+      }
 
-    if (currentAction !== CanvasAction.PAN_CANVAS) {
-      stopPanMode();
-    }
+      if (currentAction !== CanvasAction.PAN_CANVAS) {
+        stopPanMode();
+      }
 
-    // 完成操作後，重置當前操作(除了持續性操作（如繪圖模式）不重置狀態)
-    if (
-      ![
-        CanvasAction.NONE,
-        CanvasAction.DRAW_WALL,
-        CanvasAction.SELECT_OBJECT,
-        CanvasAction.PAN_CANVAS,
-      ].includes(currentAction)
-    ) {
-      dispatch(resetAction());
-    }
+      // 完成操作後，重置當前操作(除了持續性操作（如繪圖模式）不重置狀態)
+      if (
+        ![
+          CanvasAction.NONE,
+          CanvasAction.DRAW_WALL,
+          CanvasAction.SELECT_OBJECT,
+          CanvasAction.PAN_CANVAS,
+        ].includes(currentAction)
+      ) {
+        dispatch(resetAction());
+      }
+    };
+
+    handleAction(); // 調用異步函數
   }, [currentAction, canvas, dispatch, selectedImage]);
 
   const drawRectangle = (color: string) => {
