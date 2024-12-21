@@ -65,6 +65,8 @@ export default function Design() {
 
   const undoStackRef = useRef([]);
   const redoStackRef = useRef([]); // 最近被 Undo 的狀態。如果有新的操作（如新增家具或移動物件）之後，redoStack 中的舊狀態就已經過時，無法再用於「下一步」
+  const [canUndo, setCanUndo] = useState(false); // 用於觸發渲染
+  const [canRedo, setCanRedo] = useState(false); // 用於觸發渲染
 
   const isPanningRef = useRef<boolean>(false); // 可否平移畫布
 
@@ -132,6 +134,10 @@ export default function Design() {
     undoStackRef.current.push(currentCanvasState);
     console.log("save undoStackRef", undoStackRef.current);
     redoStackRef.current = []; // 每次新操作後，清空 redoStack
+
+    // 更新用於觸發渲染的 canUndo、canRedo
+    setCanUndo(undoStackRef.current.length > 1); // 不算儲存初始狀態
+    setCanRedo(false);
   };
 
   const undo = () => {
@@ -141,6 +147,7 @@ export default function Design() {
       const currentCanvasState = undoStackRef.current.pop(); // 取出當前狀態
       console.log("undoStackRef.current", undoStackRef.current);
       redoStackRef.current.push(currentCanvasState); // 保存到 redoStack
+      console.log("redoStackRef.current", redoStackRef.current);
 
       // 從剩下的 undoStack 中取得最新的狀態
       const prevCanvasState =
@@ -151,6 +158,10 @@ export default function Design() {
       canvas.loadFromJSON(prevCanvasState).then(function () {
         canvas.renderAll();
       });
+
+      // 更新用於觸發渲染的 canUndo、canRedo
+      setCanUndo(undoStackRef.current.length > 0);
+      setCanRedo(redoStackRef.current.length > 0);
     }
   };
 
@@ -160,9 +171,14 @@ export default function Design() {
     if (redoStackRef.current.length > 0) {
       const nextCanvasState = redoStackRef.current.pop();
       undoStackRef.current.push(nextCanvasState); // 將 redo 的狀態保存回 undoStack
+      console.log("redoStackRef.current", redoStackRef.current);
       canvas.loadFromJSON(nextCanvasState).then(function () {
         canvas.renderAll();
       });
+
+      // 更新用於觸發渲染的 canUndo、canRedo
+      setCanUndo(undoStackRef.current.length > 0);
+      setCanRedo(redoStackRef.current.length > 0);
     }
   };
 
@@ -555,7 +571,7 @@ export default function Design() {
         className="w-full h-full block"
       ></canvas>
 
-      <Toolbar />
+      <Toolbar isUndoDisabled={!canUndo} isRedoDisabled={!canRedo} />
 
       <Sidebar />
 

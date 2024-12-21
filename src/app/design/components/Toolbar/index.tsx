@@ -16,15 +16,24 @@ import { CanvasAction } from "@/types/enum";
 import Button from "./Button";
 import Title from "./Title";
 
-interface ToolbarButtonConfig {
+interface ToolbarProps {
+  isUndoDisabled: boolean;
+  isRedoDisabled: boolean;
+}
+
+interface ToolbarButton {
   id: string;
   icon: IconDefinition;
   label: string;
   handleClick: () => void;
   isActive?: (currentAction: CanvasAction) => boolean;
+  isDisabled?: boolean;
 }
 
-export default function Toolbar() {
+export default function Toolbar({
+  isUndoDisabled,
+  isRedoDisabled,
+}: ToolbarProps) {
   const currentAction = useAppSelector((state) => state.canvas.currentAction);
 
   const dispatch = useAppDispatch();
@@ -53,8 +62,8 @@ export default function Toolbar() {
     dispatch(setAction(CanvasAction.CLEAR));
   };
   const TOOLBAR_BUTTONS: {
-    middle: ToolbarButtonConfig[];
-    right: ToolbarButtonConfig[];
+    middle: ToolbarButton[];
+    right: ToolbarButton[];
   } = {
     middle: [
       {
@@ -74,25 +83,27 @@ export default function Toolbar() {
           currentAction === CanvasAction.PAN_CANVAS,
       },
       {
-        id: "undo",
+        id: CanvasAction.UNDO,
         icon: faArrowLeft,
         label: "Undo",
         handleClick: handleUndoClick,
+        isDisabled: isUndoDisabled,
       },
       {
-        id: "redo",
+        id: CanvasAction.REDO,
         icon: faArrowRight,
         label: "Redo",
         handleClick: handleRedoClick,
+        isDisabled: isRedoDisabled,
       },
       {
-        id: "save",
+        id: CanvasAction.SAVE,
         icon: faSave,
         label: "Save",
         handleClick: handleSaveClick,
       },
       {
-        id: "clear",
+        id: CanvasAction.CLEAR,
         icon: faEraser,
         label: "Clear",
         handleClick: handleClearClick,
@@ -130,6 +141,7 @@ export default function Toolbar() {
             icon={button.icon}
             label={button.label}
             isActive={button.isActive ? button.isActive(currentAction) : false}
+            isDisabled={button.isDisabled ?? false}
             handleClick={button.handleClick}
           />
         ))}

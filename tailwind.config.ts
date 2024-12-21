@@ -15,6 +15,7 @@ export default {
         "panel-background": "var(--panel-background)",
         "button-hover": "var(--button-hover)",
         "button-active": "var(--button-active)",
+        "button-disabled": "var(--button-disabled)",
         primary: "var(--primary-text)", // 文字顏色設為 primary
         secondary: "var(--secondary-text)", // 次要文字顏色設為 secondary
       },
