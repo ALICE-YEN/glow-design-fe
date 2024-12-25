@@ -112,7 +112,6 @@ export default function LayerList({ canvas }: { canvas: Canvas }) {
             !(
               obj.id.startsWith("vertical-") ||
               obj.id.startsWith("horizontal-") ||
-              obj.id.startsWith("vertical-") ||
               obj?.data === "grid"
             )
         )
