@@ -59,7 +59,7 @@ button:focus {
     font-size: 4.5rem;
   }
 
-  @media screen(lg) {
+  @media screen(xl) {
     font-size: 6rem;
   }
 }

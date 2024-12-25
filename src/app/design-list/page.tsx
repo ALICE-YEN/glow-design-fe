@@ -1,61 +1,13 @@
 "use client";
 
-// header 退場動畫有點怪
-
-import { useEffect, useState } from "react";
-import Link from "next/link";
+import Header from "@/app/components/Header";
 import Card from "@/app/design-list/components/Card";
 import Footer from "@/app/design-list/components/Footer";
 
 export default function DesignList() {
-  const [showDetailedHeader, setShowDetailedHeader] = useState(false);
-
-  useEffect(() => {
-    const handleScroll = () => {
-      const scrollTop = window.scrollY || document.documentElement.scrollTop;
-
-      // 滑動邏輯：當超過 50px 時顯示詳細 Header
-      setShowDetailedHeader(scrollTop > 50);
-    };
-
-    window.addEventListener("scroll", handleScroll);
-    return () => {
-      window.removeEventListener("scroll", handleScroll);
-    };
-  }, []);
-
   return (
     <div className="bg-panel-background min-h-screen">
-      <header
-        className={`fixed top-0 left-0 w-full z-10 duration-300 ${
-          showDetailedHeader
-            ? "bg-white shadow border-b border-panel-background py-2.5"
-            : "bg-transparent py-16"
-        }`}
-      >
-        <div className="container mx-auto flex justify-between items-center">
-          {/* Logo */}
-          <Link
-            href="/"
-            className={`text-contrast font-bold transition-transform duration-300 ${
-              showDetailedHeader
-                ? "translate-y-0 text-2xl"
-                : "-translate-y-4 text-4xl"
-            }`}
-          >
-            居然好設計 Glow Design
-          </Link>
-
-          {/* Login Button */}
-          <button
-            className={`px-3 py-2 text-white font-bold rounded-full bg-contrast ${
-              showDetailedHeader ? "translate-y-0" : "-translate-y-4"
-            }`}
-          >
-            登入
-          </button>
-        </div>
-      </header>
+      <Header />
 
       {/* Design List */}
       <main className="pt-40 container mx-auto px-4">

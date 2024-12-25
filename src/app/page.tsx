@@ -4,15 +4,14 @@
 
 import { useEffect, useRef } from "react";
 import { ReactLenis } from "lenis/react"; // 還沒有感覺用處！
-import Hero from "@/app/components/hero";
-import TextMarquee from "@/app/components/text-marquee";
+import Header from "@/app/components/Header";
+import Hero from "@/app/components/Hero";
+import About from "@/app/components/About";
+import HowItWorks from "@/app/components/HowItWorks";
 import AnchorMenu from "@/app/components/anchor-menu";
-import BuildFast from "@/app/components/build-fast";
 import TextReveal from "@/app/components/text-reveal";
-import HeresNowText from "@/app/components/heres-now-text";
-import About from "@/app/components/about";
-import Anymore from "@/app/components/anymore";
-import TheEnd from "@/app/components/the-end";
+import Steps from "@/app/components/Steps";
+import TheEnd from "@/app/components/the-end"; // 裡面的按鈕可用，待刪除
 
 export default function Home() {
   const heroRef = useRef<HTMLDivElement>(null);
@@ -29,25 +28,20 @@ export default function Home() {
 
   return (
     <main>
+      <Header showInitTitle={false} />
       <ReactLenis root>
         <div ref={heroRef}>
           <Hero />
-          <TextMarquee />
         </div>
         <div ref={howToBeginRef}>
           <About />
         </div>
         <div ref={buildFastRef}>
-          <BuildFast />
+          <HowItWorks />
         </div>
         <div ref={textRevealRef}>
-          <TextReveal />
-        </div>
-        <div ref={heresNowTextRef}>
-          <HeresNowText />
-        </div>
-        <div ref={anymoreRef}>
-          <Anymore />
+          {/* <TextReveal /> */}
+          <Steps />
         </div>
         <TheEnd />
 

@@ -10,10 +10,6 @@ const TheEnd = () => {
       >
         <div className="mx-auto max-w-[1000px]">開始創作 →</div>
       </motion.div>
-
-      <div className="heading-md mx-auto mt-20 text-center uppercase text-gray-950">
-        LEO.WEB.DEV
-      </div>
     </div>
   );
 };
