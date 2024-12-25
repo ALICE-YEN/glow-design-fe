@@ -15,6 +15,7 @@
 // 1. 繪製牆體
 // 2. 置換地板材質
 // 3. 拖移牆體
+// 問題：上一步完，重新繪製，pointsRef 起點有問題。目前 canvasInstance.toObject 還沒辦法包括自定義屬性，無法篩選去處理
 // 畫布 ok
 // 1. 清空畫布
 
@@ -264,6 +265,7 @@ export default function Design() {
 
       // 更新點資料
       pointsRef.current = [...pointsRef.current, { x, y }];
+      console.log("pointsRef.current", pointsRef.current);
 
       // 固定模擬線為不同顏色的直線
       finalizeTempLine(canvas, tempLineRef);
@@ -317,6 +319,8 @@ export default function Design() {
       return new Line([point.x, point.y, nextPoint.x, nextPoint.y], {
         stroke: "gray",
         strokeWidth: 5,
+        strokeLineJoin: "round",
+        strokeLineCap: "round",
         selectable: false,
         evented: false,
       });
@@ -429,7 +433,7 @@ export default function Design() {
 
           // 2.只清除非網格物件
           // canvas.getObjects().forEach((obj) => {
-          //   if (obj.data !== "grid") {
+          //   if (obj.id !== "grid") {
           //     canvas.remove(obj);
           //   }
           // });

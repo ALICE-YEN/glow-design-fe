@@ -35,6 +35,8 @@ export const finalizeTempLine = (
   tempLineRef.current.set({
     stroke: "gray",
     strokeWidth: 5,
+    strokeLineJoin: "round",
+    strokeLineCap: "round",
     id: "finalizedLine",
   });
   canvasInstance.requestRenderAll();

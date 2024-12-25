@@ -108,11 +108,7 @@ export default function WallDrawing() {
       ),
       handleClick: () => {
         dispatch(setAction(CanvasAction.PLACE_DOOR));
-        dispatch(
-          setSelectedImage(
-            "https://www.hung-chan.com.tw/media/k2/items/cache/a5cfeb7eb858a454222c6a713718c016_XL.jpg"
-          )
-        );
+        dispatch(setSelectedImage("door.png"));
       },
     },
     {
@@ -129,11 +125,7 @@ export default function WallDrawing() {
       ),
       handleClick: () => {
         dispatch(setAction(CanvasAction.PLACE_WINDOW));
-        dispatch(
-          setSelectedImage(
-            "https://img.lovepik.com/free-png/20211103/lovepik-window-png-image_400222125_wh1200.png"
-          )
-        );
+        dispatch(setSelectedImage("window.png"));
       },
     },
   ];

@@ -46,7 +46,7 @@ export const drawGrid = (
   // 清理舊的網格
   const gridObjects = canvasInstance
     .getObjects("line")
-    .filter((obj) => obj?.data === "grid");
+    .filter((obj) => obj?.id === "grid");
   gridObjects.forEach((obj) => canvasInstance.remove(obj));
 
   // 計算畫布中心
@@ -67,7 +67,7 @@ export const drawGrid = (
         strokeWidth,
         selectable: false,
         evented: false,
-        data: "grid", // 自定義標記為網格物件
+        id: "grid", // 自定義標記為網格物件
       })
     );
   }
@@ -84,7 +84,7 @@ export const drawGrid = (
         strokeWidth,
         selectable: false,
         evented: false,
-        data: "grid", // 自定義標記為網格物件
+        id: "grid", // 自定義標記為網格物件
       })
     );
   }
