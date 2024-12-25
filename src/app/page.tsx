@@ -1,5 +1,7 @@
 "use client";
 
+// 要改要改 components 內的檔案名稱為 Pascal Case
+
 import { useEffect, useRef } from "react";
 import { ReactLenis } from "lenis/react"; // 還沒有感覺用處！
 import Hero from "@/app/components/hero";

@@ -110,7 +110,9 @@ export default function LayerList({ canvas }: { canvas: Canvas }) {
         .filter(
           (obj: IObject) =>
             !(
-              obj.id.startsWith("vertical-") || obj.id.startsWith("horizontal-")
+              obj.id.startsWith("vertical-") ||
+              obj.id.startsWith("horizontal-") ||
+              obj?.data === "grid"
             )
         )
         .map((obj: IObject) => ({

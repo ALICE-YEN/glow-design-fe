@@ -9,15 +9,21 @@ export interface SidebarButtonConfig {
   description: string;
 }
 
+export interface CategoryWithMaterials {
+  id: string;
+  name: string;
+  materials: Material[];
+}
+
 export interface Material {
   id: string;
   name: string;
   src: string | StaticImageData;
   description: string;
-  url: string;
+  url: string; // 之後就不會有分開
 }
 
-export interface Category {
-  id: string;
-  name: string;
+export interface Point {
+  x: number;
+  y: number;
 }

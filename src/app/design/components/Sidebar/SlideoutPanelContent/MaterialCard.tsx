@@ -13,20 +13,18 @@ export default function MaterialCard({
   handleClick,
 }: MaterialCardProps) {
   return (
-    <div
-      className="rounded-md overflow-hidden border border-gray-200 hover:shadow-lg transition cursor-pointer"
-      onClick={() => handleClick(material)}
-    >
+    // 樣式放在 design.css
+    <div className="card cursor-pointer" onClick={() => handleClick(material)}>
       <Image
         src={material.src}
         alt={material.name}
-        width={128}
-        height={128}
-        className="w-full h-32 object-cover"
+        width={140}
+        height={140}
+        className="card__img object-cover"
       />
-      <div className="p-2">
-        <h3 className="text-sm font-bold">{material.name}</h3>
-        <p className="text-xs text-gray-500">{material.description}</p>
+      <div className="card__content">
+        <div className="card__content__header">{material.name}</div>
+        <p className="card__content__text">{material.description}</p>
       </div>
     </div>
   );

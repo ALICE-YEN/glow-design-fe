@@ -53,7 +53,7 @@ const BuildFast = () => {
   }, []);
 
   return (
-    <motion.div className="h-[200vh] bg-background" ref={ref}>
+    <motion.div className="h-[200vh]" ref={ref}>
       <div className="max-w-screen sticky top-0 flex h-screen items-center justify-center overflow-clip">
         <motion.h1
           className="heading-md absolute z-10 max-w-[500px] text-center text-white md:max-w-[650px]"
