@@ -6,8 +6,7 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faTimes, faEyeSlash, faEye } from "@fortawesome/free-solid-svg-icons";
 // import { faGoogle } from "@fortawesome/free-brands-svg-icons";
 
-type ModalProps = {
-  isOpen: boolean;
+type AuthModalProps = {
   onClose: () => void;
 };
 
@@ -25,17 +24,15 @@ const validationSchema = yup.object().shape({
     .matches(/[0-9]/, "密碼至少需要一個數字"),
 });
 
-export default function AuthModal({ isOpen, onClose }: ModalProps) {
+export default function AuthModal({ onClose }: AuthModalProps) {
   const [activeTab, setActiveTab] = useState<"signin" | "signup">("signin");
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
+  const [email, setEmail] = useState<string>("test@glow-design.com");
+  const [password, setPassword] = useState<string>("GlowDesign1");
   const [errors, setErrors] = useState<{ email?: string; password?: string }>(
     {}
   );
   const [hasSubmitted, setHasSubmitted] = useState(false);
   const [passwordVisible, setPasswordVisible] = useState(false);
-
-  if (!isOpen) return null;
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -52,7 +49,6 @@ export default function AuthModal({ isOpen, onClose }: ModalProps) {
     } catch (validationError: any) {
       // Map Yup validation errors to state
       const newErrors: { [key: string]: string } = {};
-      console.log("validationError", validationError.inner);
       validationError.inner.forEach((err: any) => {
         if (err.path) newErrors[err.path] = err.message;
       });
@@ -91,8 +87,8 @@ export default function AuthModal({ isOpen, onClose }: ModalProps) {
   };
 
   const handleClose = () => {
-    resetFormState();
     setActiveTab("signin");
+    resetFormState();
     onClose();
   };
 

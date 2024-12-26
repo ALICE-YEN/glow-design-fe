@@ -1,8 +1,12 @@
 // header 退場動畫有點怪
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import Link from "next/link";
+import { motion } from "motion/react";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faUser } from "@fortawesome/free-solid-svg-icons";
 import AuthModal from "@/app/components/AuthModal";
+import UserProfileDropdown from "@/app/components/UserProfileDropdown";
 
 interface HeaderProps {
   showInitTitle?: boolean;
@@ -10,7 +14,15 @@ interface HeaderProps {
 
 export default function Header({ showInitTitle = true }: HeaderProps) {
   const [showDetailedHeader, setShowDetailedHeader] = useState(false);
-  const [isModalOpen, setIsModalOpen] = useState(false);
+  // const [isLogin, setIsLogin] = useState(true);
+  const [isLogin, setIsLogin] = useState(false);
+  const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
+  const [isUserProfileDropdownOpen, setIsUserProfileDropdownOpen] =
+    useState(false);
+
+  // 用 ref 可以更精準地處理事件冒泡邏輯，而不用依賴不可靠的 id 或 event.target。待研究！！
+  const dropdownRef = useRef<HTMLDivElement>(null);
+  const profileBtnRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -26,12 +38,45 @@ export default function Header({ showInitTitle = true }: HeaderProps) {
 
   // 對首頁 ReactLenis 無效！！Modal 只會出現在首頁，暫時先移除 ReactLenis（感覺無用）
   useEffect(() => {
-    if (isModalOpen) {
+    if (isAuthModalOpen) {
       document.body.classList.add("overflow-hidden");
     } else {
       document.body.classList.remove("overflow-hidden");
     }
-  }, [isModalOpen]);
+  }, [isAuthModalOpen]);
+
+  // 頁面滾動，關閉 UserProfileDropdown
+  const handleScroll = () => {
+    setIsUserProfileDropdownOpen(false);
+  };
+
+  useEffect(() => {
+    window.addEventListener("scroll", handleScroll);
+
+    return () => {
+      window.removeEventListener("scroll", handleScroll);
+    };
+  }, []);
+
+  // 點擊外部，關閉 UserProfileDropdown
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (
+        dropdownRef.current &&
+        !dropdownRef.current.contains(event.target as Node) &&
+        profileBtnRef.current &&
+        !profileBtnRef.current.contains(event.target as Node)
+      ) {
+        setIsUserProfileDropdownOpen(false);
+      }
+    };
+
+    document.addEventListener("click", handleClickOutside);
+
+    return () => {
+      document.removeEventListener("click", handleClickOutside);
+    };
+  }, []);
 
   return (
     <div>
@@ -56,17 +101,44 @@ export default function Header({ showInitTitle = true }: HeaderProps) {
           </Link>
 
           {/* Button */}
-          <button
-            onClick={() => setIsModalOpen(true)}
-            className={`px-3 py-2 text-white font-bold rounded-full bg-contrast ${
-              showDetailedHeader ? "translate-y-0" : "-translate-y-4"
-            }`}
-          >
-            登入
-          </button>
+          {isLogin ? (
+            <button
+              ref={profileBtnRef}
+              className={`flex items-center justify-center w-10 h-10 text-white rounded-full bg-contrast ${
+                showDetailedHeader ? "translate-y-0" : "-translate-y-4"
+              }`}
+              onClick={() => setIsUserProfileDropdownOpen((prev) => !prev)}
+            >
+              <FontAwesomeIcon icon={faUser} size="xl" />
+            </button>
+          ) : (
+            // <button
+            //   onClick={() => setIsAuthModalOpen(true)}
+            //   className={`px-3 py-2 text-lg text-contrast font-bold rounded-full border border-contrast transition-transform duration-300 hover:scale-105 ${
+            //     showDetailedHeader ? "translate-y-0" : "-translate-y-4"
+            //   }`}
+            // >
+            //   開始設計
+            // </button>
+            <motion.button
+              className="px-3 py-2 text-lg text-contrast font-bold rounded-full border border-contrast"
+              onClick={() => setIsAuthModalOpen(true)}
+              whileHover={{ scale: 1.05 }}
+              transition={{ type: "spring", stiffness: 400, damping: 10 }}
+            >
+              <div className="mx-auto max-w-[1000px]">開始設計 →</div>
+            </motion.button>
+          )}
         </div>
       </header>
-      <AuthModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} />
+      {isUserProfileDropdownOpen && (
+        <div ref={dropdownRef}>
+          <UserProfileDropdown />
+        </div>
+      )}
+      {isAuthModalOpen && (
+        <AuthModal onClose={() => setIsAuthModalOpen(false)} />
+      )}
     </div>
   );
 }
