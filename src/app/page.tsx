@@ -3,7 +3,7 @@
 // 要改要改 components 內的檔案名稱為 Pascal Case
 
 import { useEffect, useRef } from "react";
-import { ReactLenis } from "lenis/react"; // 還沒有感覺用處！
+// import { ReactLenis } from "lenis/react"; // 還沒有感覺用處！
 import Header from "@/app/components/Header";
 import Hero from "@/app/components/Hero";
 import About from "@/app/components/About";
@@ -29,33 +29,33 @@ export default function Home() {
   return (
     <main>
       <Header showInitTitle={false} />
-      <ReactLenis root>
-        <div ref={heroRef}>
-          <Hero />
-        </div>
-        <div ref={howToBeginRef}>
-          <About />
-        </div>
-        <div ref={buildFastRef}>
-          <HowItWorks />
-        </div>
-        <div ref={textRevealRef}>
-          {/* <TextReveal /> */}
-          <Steps />
-        </div>
-        <TheEnd />
+      {/* <ReactLenis root> */}
+      <div ref={heroRef}>
+        <Hero />
+      </div>
+      <div ref={howToBeginRef}>
+        <About />
+      </div>
+      <div ref={buildFastRef}>
+        <HowItWorks />
+      </div>
+      <div ref={textRevealRef}>
+        {/* <TextReveal /> */}
+        <Steps />
+      </div>
+      <TheEnd />
 
-        <div className="hidden md:block">
-          <AnchorMenu
-            heroRef={heroRef}
-            howToBeginRef={howToBeginRef}
-            buildFastRef={buildFastRef}
-            textRevealRef={textRevealRef}
-            heresNowTextRef={heresNowTextRef}
-            anymoreRef={anymoreRef}
-          />
-        </div>
-      </ReactLenis>
+      <div className="hidden md:block">
+        <AnchorMenu
+          heroRef={heroRef}
+          howToBeginRef={howToBeginRef}
+          buildFastRef={buildFastRef}
+          textRevealRef={textRevealRef}
+          heresNowTextRef={heresNowTextRef}
+          anymoreRef={anymoreRef}
+        />
+      </div>
+      {/* </ReactLenis> */}
     </main>
   );
 }
