@@ -1,6 +1,6 @@
 "use client";
 
-import { useAppDispatch } from "@/hooks/redux";
+import { useAppDispatch } from "@/services/redux/hooks";
 import { setAction, setSelectedImage } from "@/store/canvasSlice";
 import { CanvasAction } from "@/types/enum";
 // 假資料

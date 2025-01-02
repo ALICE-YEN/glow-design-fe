@@ -1,10 +1,13 @@
 // 開關應該要有過場動畫
 // form: Validation、Autocomplete、Error Messages、Visibility Toggle
 import { useState } from "react";
+import Image from "next/image";
+// import { signIn } from "next-auth/react";
+import { signInUser } from "@/services/auth/actions";
 import * as yup from "yup";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faTimes, faEyeSlash, faEye } from "@fortawesome/free-solid-svg-icons";
-// import { faGoogle } from "@fortawesome/free-brands-svg-icons";
+import GoogleIcon from "@/assets/icons/google.svg";
 
 type AuthModalProps = {
   onClose: () => void;
@@ -150,7 +153,7 @@ export default function AuthModal({ onClose }: AuthModalProps) {
           <input
             type="email"
             placeholder="請輸入電子信箱"
-            className="border rounded-lg p-2"
+            className="rounded-lg p-2"
             value={email}
             onChange={handleInputChange(setEmail, "email")}
             autoComplete="email"
@@ -167,7 +170,7 @@ export default function AuthModal({ onClose }: AuthModalProps) {
                   ? "請輸入密碼"
                   : "請輸入密碼 (至少8個字元)" // 請輸入密碼(至少8個字元，含大小寫、數字)
               }
-              className="border rounded-lg p-2 w-full"
+              className="rounded-lg p-2 w-full"
               value={password}
               onChange={handleInputChange(setPassword, "password")}
               autoComplete={
@@ -200,12 +203,17 @@ export default function AuthModal({ onClose }: AuthModalProps) {
           </p>
           <button
             type="button"
-            className="flex items-center justify-center border rounded-lg py-2 hover:bg-gray-100"
+            className="flex items-center justify-center rounded-lg py-2 bg-white hover:bg-gray-100"
+            // onClick={() => SignIn("google", { redirectTo: "/" })}
+            onClick={() => signInUser()}
           >
-            {/* <FontAwesomeIcon
-            icon={faGoogle}
-            className="w-6 h-6 mr-2 text-red-500"
-          /> */}
+            <Image
+              src={GoogleIcon}
+              alt="Google Icon"
+              width={22}
+              height={22}
+              className="mr-2"
+            />
             Google
           </button>
         </form>

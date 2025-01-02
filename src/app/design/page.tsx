@@ -32,7 +32,7 @@ import {
   Polygon,
   Point,
 } from "fabric";
-import { useAppSelector, useAppDispatch } from "@/hooks/redux";
+import { useAppSelector, useAppDispatch } from "@/services/redux/hooks";
 import { setAction, resetAction } from "@/store/canvasSlice";
 import { CanvasAction } from "@/types/enum";
 import { Point as IPoint } from "@/app/design/types/interfaces";
@@ -560,7 +560,7 @@ export default function Design() {
     const reader = new FileReader();
 
     reader.onload = (e) => {
-      const result = e.target.result; // Base64 URL
+      const result = e.target.result; // DataURL(Base64 URL 超集)
       loadFromUrl({ url: result, customWidth: 300 });
     };
 

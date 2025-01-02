@@ -1,0 +1,10 @@
+{
+  "recommendations": [
+    "dbaeumer.vscode-eslint", // Linting for JavaScript/TypeScript
+    "esbenp.prettier-vscode", // Code formatting with Prettier
+    "bradlc.vscode-tailwindcss", // IntelliSense for Tailwind CSS
+    "dsznajder.es7-react-js-snippets", // Snippets for React and Redux
+    "shardulm94.trailing-spaces", // Highlight and remove trailing spaces
+    "formulahendry.auto-rename-tag" // Automatically rename paired HTML/JSX tags
+  ]
+}

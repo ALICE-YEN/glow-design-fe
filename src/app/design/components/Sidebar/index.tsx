@@ -8,7 +8,7 @@ import {
   faFileExport,
 } from "@fortawesome/free-solid-svg-icons"; // SVG 模式，只會加載代碼中使用的圖標，避免不必要的資源浪費
 // import * as Icons from "@fortawesome/free-solid-svg-icons"; // 導入整個庫，無法 Tree Shaking，之後再來用 build 比較打包大小吧XD(等 lint 錯誤都解完)
-import { useAppSelector, useAppDispatch } from "@/hooks/redux";
+import { useAppSelector, useAppDispatch } from "@/services/redux/hooks";
 import { setAction } from "@/store/canvasSlice";
 import { CanvasAction } from "@/types/enum";
 import SidebarButton from "@/app/design/components/Sidebar/SidebarButton";

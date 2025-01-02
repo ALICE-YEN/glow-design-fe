@@ -10,7 +10,7 @@ import {
   IconDefinition,
 } from "@fortawesome/free-solid-svg-icons";
 import { faMoon, faUser } from "@fortawesome/free-regular-svg-icons";
-import { useAppSelector, useAppDispatch } from "@/hooks/redux";
+import { useAppSelector, useAppDispatch } from "@/services/redux/hooks";
 import { setAction } from "@/store/canvasSlice";
 import { CanvasAction } from "@/types/enum";
 import Button from "./Button";

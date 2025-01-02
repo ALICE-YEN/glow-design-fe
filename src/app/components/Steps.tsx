@@ -53,7 +53,6 @@ export default function Steps() {
 
       {/* Right: Steps Section */}
       <div className="w-1/3 pl-8">
-        <h2 className="text-3xl font-bold mb-8 text-red-600">HOW IT WORKS</h2>
         <div className="space-y-8">
           {steps.map((step) => (
             <div key={step.id}>

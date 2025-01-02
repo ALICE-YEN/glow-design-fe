@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, ReactNode } from "react";
-import { useAppSelector, useAppDispatch } from "@/hooks/redux";
+import { useAppSelector, useAppDispatch } from "@/services/redux/hooks";
 import { setAction, setSelectedImage } from "@/store/canvasSlice";
 import { CanvasAction } from "@/types/enum";
 
