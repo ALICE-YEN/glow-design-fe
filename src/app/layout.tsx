@@ -1,9 +1,11 @@
 import type { Metadata } from "next"; // Next.js 自動將這些數據注入到 HTML <head>
 // 從 next/font/local 引入自定義字體，支持直接從本地文件載入字體（例如 .woff, .woff2）。
 import localFont from "next/font/local"; // Next.js 的字體優化 API，字體加載是自動優化的，會根據頁面的訪問只加載所需字體，減少資源浪費。
+import { auth } from "@/services/auth/config";
 import { config } from "@fortawesome/fontawesome-svg-core";
+import { ReduxProviders } from "@/components/ReduxProviders";
+import { SessionProvider } from "next-auth/react"; // 在整個應用程式 client-side 提供身份驗證會話
 import "@fortawesome/fontawesome-svg-core/styles.css"; // 引入基礎樣式
-import { Providers } from "@/components/Providers";
 import "./globals.css";
 
 config.autoAddCss = false; // 禁止自動添加 CSS
@@ -25,20 +27,25 @@ export const metadata: Metadata = {
   keywords: "室內設計, 居然好設計, Glow Design",
 };
 
-export default function AppLayout({
+export default async function AppLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const session = await auth(); // for Server Component
+  console.log("auth() session", session);
+
   return (
-    <Providers>
-      <html lang="en">
-        <body
-          className={`${geistSans.variable} ${geistMono.variable} antialiased`}
-        >
-          {children}
-        </body>
-      </html>
-    </Providers>
+    <SessionProvider>
+      <ReduxProviders>
+        <html lang="en">
+          <body
+            className={`${geistSans.variable} ${geistMono.variable} antialiased`}
+          >
+            {children}
+          </body>
+        </html>
+      </ReduxProviders>
+    </SessionProvider>
   );
 }

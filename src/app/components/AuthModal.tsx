@@ -1,9 +1,9 @@
 // 開關應該要有過場動畫
 // form: Validation、Autocomplete、Error Messages、Visibility Toggle
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import Image from "next/image";
-// import { signIn } from "next-auth/react";
-import { signInUser } from "@/services/auth/actions";
+import { doGoogleSignIn, doCredentialsSignIn } from "@/services/auth/actions";
 import * as yup from "yup";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faTimes, faEyeSlash, faEye } from "@fortawesome/free-solid-svg-icons";
@@ -37,6 +37,8 @@ export default function AuthModal({ onClose }: AuthModalProps) {
   const [hasSubmitted, setHasSubmitted] = useState(false);
   const [passwordVisible, setPasswordVisible] = useState(false);
 
+  const router = useRouter();
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setHasSubmitted(true);
@@ -48,11 +50,16 @@ export default function AuthModal({ onClose }: AuthModalProps) {
       );
       // Clear errors if validation succeeds
       setErrors({});
-      alert(`Success! Email: ${email}, Password: ${password}`);
+      const response = await doCredentialsSignIn({ email, password });
+      if (!!response.error) {
+        setErrors((prev) => ({ ...prev, password: response.error.message }));
+      } else {
+        router.push("/design-list");
+      }
     } catch (validationError: any) {
       // Map Yup validation errors to state
       const newErrors: { [key: string]: string } = {};
-      validationError.inner.forEach((err: any) => {
+      validationError?.inner?.forEach((err: any) => {
         if (err.path) newErrors[err.path] = err.message;
       });
       setErrors(newErrors);
@@ -204,8 +211,8 @@ export default function AuthModal({ onClose }: AuthModalProps) {
           <button
             type="button"
             className="flex items-center justify-center rounded-lg py-2 bg-white hover:bg-gray-100"
-            // onClick={() => SignIn("google", { redirectTo: "/" })}
-            onClick={() => signInUser()}
+            onClick={() => doGoogleSignIn()}
+            // onClick={openSSOWindow} // 之後要做另外視窗的 Google SSO
           >
             <Image
               src={GoogleIcon}

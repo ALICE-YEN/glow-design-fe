@@ -1,7 +1,10 @@
 // header 退場動畫有點怪
 
+"use client";
+
 import { useEffect, useState, useRef } from "react";
 import Link from "next/link";
+import { useSession } from "next-auth/react";
 import { motion } from "motion/react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faUser } from "@fortawesome/free-solid-svg-icons";
@@ -23,6 +26,10 @@ export default function Header({ showInitTitle = true }: HeaderProps) {
   // 用 ref 可以更精準地處理事件冒泡邏輯，而不用依賴不可靠的 id 或 event.target。待研究！！
   const dropdownRef = useRef<HTMLDivElement>(null);
   const profileBtnRef = useRef<HTMLDivElement>(null);
+
+  const { data: session } = useSession(); // for Client Component。`useSession` must be wrapped in a <SessionProvider />
+
+  console.log("useSession", session);
 
   useEffect(() => {
     const handleScroll = () => {
