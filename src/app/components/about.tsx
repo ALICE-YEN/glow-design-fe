@@ -28,7 +28,7 @@ const QuoteCard = ({
   imgSrc: string;
 }) => (
   <motion.div
-    className="w-[400px] lg:w-[460px] rounded-2xl border-[1px] border-white p-8 text-xl text-white"
+    className="w-[400px] lg:w-[460px] rounded-card border-[1px] border-white p-8 text-xl text-white"
     initial={{ opacity: 0, filter: "blur(20px)" }}
     animate={{ opacity: 1, filter: "blur(0px)" }}
     exit={{ opacity: 0, filter: "blur(20px)" }}
@@ -138,7 +138,7 @@ const HowToBeginXS = () => {
       {cardData.map((card, idx) => (
         <motion.div
           key={idx}
-          className="rounded-2xl border-[1px] border-white p-8 text-xl text-white"
+          className="rounded-card border-[1px] border-white p-8 text-xl text-white"
           initial={{ opacity: 0, filter: "blur(10px)", translateY: "40px" }}
           whileInView={{ opacity: 1, filter: "blur(0px)", translateY: "0px" }}
           transition={{ duration: 1, ease: "easeIn" }}

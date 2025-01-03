@@ -8,18 +8,16 @@ import Header from "@/app/components/Header";
 import Hero from "@/app/components/Hero";
 import About from "@/app/components/About";
 import HowItWorks from "@/app/components/HowItWorks";
-import AnchorMenu from "@/app/components/anchor-menu";
+import AnchorMenu from "@/app/components/AnchorMenu";
 import TextReveal from "@/app/components/text-reveal";
 import Steps from "@/app/components/Steps";
-import TheEnd from "@/app/components/the-end"; // 裡面的按鈕可用，待刪除
+import TheEnd from "@/app/components/TheEnd";
 
 export default function Home() {
   const heroRef = useRef<HTMLDivElement>(null);
-  const buildFastRef = useRef<HTMLDivElement>(null);
-  const textRevealRef = useRef<HTMLDivElement>(null);
-  const heresNowTextRef = useRef<HTMLDivElement>(null);
-  const howToBeginRef = useRef<HTMLDivElement>(null);
-  const anymoreRef = useRef<HTMLDivElement>(null);
+  const howItWorksRef = useRef<HTMLDivElement>(null);
+  const stepsRef = useRef<HTMLDivElement>(null);
+  const aboutRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     // prevent history restore position
@@ -33,13 +31,13 @@ export default function Home() {
       <div ref={heroRef}>
         <Hero />
       </div>
-      <div ref={howToBeginRef}>
+      <div ref={aboutRef}>
         <About />
       </div>
-      <div ref={buildFastRef}>
+      <div ref={howItWorksRef}>
         <HowItWorks />
       </div>
-      <div ref={textRevealRef}>
+      <div ref={stepsRef}>
         {/* <TextReveal /> */}
         <Steps />
       </div>
@@ -48,11 +46,9 @@ export default function Home() {
       <div className="hidden md:block">
         <AnchorMenu
           heroRef={heroRef}
-          howToBeginRef={howToBeginRef}
-          buildFastRef={buildFastRef}
-          textRevealRef={textRevealRef}
-          heresNowTextRef={heresNowTextRef}
-          anymoreRef={anymoreRef}
+          aboutRef={aboutRef}
+          howItWorksRef={howItWorksRef}
+          stepsRef={stepsRef}
         />
       </div>
       {/* </ReactLenis> */}

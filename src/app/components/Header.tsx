@@ -17,8 +17,6 @@ interface HeaderProps {
 
 export default function Header({ showInitTitle = true }: HeaderProps) {
   const [showDetailedHeader, setShowDetailedHeader] = useState(false);
-  // const [isLogin, setIsLogin] = useState(true);
-  const [isLogin, setIsLogin] = useState(false);
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
   const [isUserProfileDropdownOpen, setIsUserProfileDropdownOpen] =
     useState(false);
@@ -27,9 +25,8 @@ export default function Header({ showInitTitle = true }: HeaderProps) {
   const dropdownRef = useRef<HTMLDivElement>(null);
   const profileBtnRef = useRef<HTMLDivElement>(null);
 
-  const { data: session } = useSession(); // for Client Component。`useSession` must be wrapped in a <SessionProvider />
-
-  console.log("useSession", session);
+  const { data: userSession } = useSession(); // for Client Component。`useSession` must be wrapped in a <SessionProvider />
+  console.log("useSession", userSession);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -108,7 +105,7 @@ export default function Header({ showInitTitle = true }: HeaderProps) {
           </Link>
 
           {/* Button */}
-          {isLogin ? (
+          {userSession ? (
             <button
               ref={profileBtnRef}
               className={`flex items-center justify-center w-10 h-10 text-white rounded-full bg-contrast ${
