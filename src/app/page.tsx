@@ -12,6 +12,7 @@ import AnchorMenu from "@/app/components/AnchorMenu";
 import TextReveal from "@/app/components/text-reveal";
 import Steps from "@/app/components/Steps";
 import TheEnd from "@/app/components/TheEnd";
+import Footer from "@/app/components/Footer";
 
 export default function Home() {
   const heroRef = useRef<HTMLDivElement>(null);
@@ -25,33 +26,37 @@ export default function Home() {
   }, []);
 
   return (
-    <main>
-      <Header showInitTitle={false} />
-      {/* <ReactLenis root> */}
-      <div ref={heroRef}>
-        <Hero />
-      </div>
-      <div ref={aboutRef}>
-        <About />
-      </div>
-      <div ref={howItWorksRef}>
-        <HowItWorks />
-      </div>
-      <div ref={stepsRef}>
-        {/* <TextReveal /> */}
-        <Steps />
-      </div>
-      <TheEnd />
+    <div>
+      <main>
+        <Header showInitTitle={false} />
+        {/* <ReactLenis root> */}
+        <div ref={heroRef}>
+          <Hero />
+        </div>
+        <div ref={aboutRef}>
+          <About />
+        </div>
+        <div ref={howItWorksRef}>
+          <HowItWorks />
+        </div>
+        <div ref={stepsRef}>
+          {/* <TextReveal /> */}
+          <Steps />
+        </div>
+        <TheEnd />
 
-      <div className="hidden md:block">
-        <AnchorMenu
-          heroRef={heroRef}
-          aboutRef={aboutRef}
-          howItWorksRef={howItWorksRef}
-          stepsRef={stepsRef}
-        />
-      </div>
-      {/* </ReactLenis> */}
-    </main>
+        <div className="hidden md:block">
+          <AnchorMenu
+            heroRef={heroRef}
+            aboutRef={aboutRef}
+            howItWorksRef={howItWorksRef}
+            stepsRef={stepsRef}
+          />
+        </div>
+        {/* </ReactLenis> */}
+      </main>
+
+      <Footer />
+    </div>
   );
 }

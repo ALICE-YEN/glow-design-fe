@@ -2,7 +2,7 @@
 
 import Header from "@/app/components/Header";
 import Card from "@/app/design-list/components/Card";
-import Footer from "@/app/design-list/components/Footer";
+import Footer from "@/app/components/Footer";
 
 export default function DesignList() {
   return (
