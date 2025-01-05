@@ -101,7 +101,7 @@ const AnchorMenu = ({
               className="relative overflow-hidden rounded-md px-4 py-2 text-gray-400 transition duration-300 hover:bg-gray-500"
               onClick={handleScrollIntoView(heroRef)}
             >
-              <span className="relative z-10">Explore</span>
+              <span className="relative z-10">Let&apos;s</span>
               {hero.isInView && <Active width={hero.width} />}
             </button>
 
@@ -109,7 +109,7 @@ const AnchorMenu = ({
               className="relative overflow-hidden rounded-md px-4 py-2 text-gray-400 transition duration-300 hover:bg-gray-500"
               onClick={handleScrollIntoView(aboutRef)}
             >
-              <span className="relative z-10">Learn</span>
+              <span className="relative z-10">Start</span>
               {!hero.isInView && about.isInView && (
                 <Active width={about.width} />
               )}
@@ -119,7 +119,7 @@ const AnchorMenu = ({
               className="relative overflow-hidden rounded-md px-4 py-2 text-gray-400 transition duration-300 hover:bg-gray-500"
               onClick={handleScrollIntoView(howItWorksRef)}
             >
-              <span className="relative z-10">Build</span>
+              <span className="relative z-10">Glow</span>
               {!about.isInView && howItWorks.isInView && (
                 <Active width={howItWorks.width} />
               )}
@@ -129,7 +129,7 @@ const AnchorMenu = ({
               className="relative overflow-hidden rounded-md px-4 py-2 text-gray-400 transition duration-300 hover:bg-gray-500"
               onClick={handleScrollIntoView(stepsRef)}
             >
-              <span className="relative z-10">Achieve</span>
+              <span className="relative z-10">Design</span>
               {!howItWorks.isInView && steps.isInView && (
                 <Active width={steps.width} />
               )}

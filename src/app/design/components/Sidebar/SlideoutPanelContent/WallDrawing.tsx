@@ -90,7 +90,7 @@ export default function WallDrawing() {
 
   const OPENING_ITEMS: ItemConfig[] = [
     {
-      id: "single-door",
+      id: "door",
       label: "單開門",
       icon: (
         <svg

@@ -14,7 +14,7 @@ export default function UserProfileDropdown() {
         <div className="flex items-center justify-center w-10 h-10 text-white rounded-full bg-contrast">
           <FontAwesomeIcon icon={faUser} size="xl" />
         </div>
-        <p className="text-sm">test@plana-design.com</p>
+        <p className="text-sm">test@glow-design.com</p>
       </div>
       <hr className="border-button-active my-4" />
       <div className="space-y-1">
