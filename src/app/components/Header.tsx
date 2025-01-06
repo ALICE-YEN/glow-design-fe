@@ -8,7 +8,8 @@ import { useSession } from "next-auth/react";
 import { motion } from "motion/react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faUser } from "@fortawesome/free-solid-svg-icons";
-import AuthModal from "@/app/components/AuthModal";
+import { useAppSelector, useAppDispatch } from "@/services/redux/hooks";
+import { openAuthModal } from "@/store/userSlice";
 import UserProfileDropdown from "@/app/components/UserProfileDropdown";
 
 interface HeaderProps {
@@ -17,7 +18,6 @@ interface HeaderProps {
 
 export default function Header({ showInitTitle = true }: HeaderProps) {
   const [showDetailedHeader, setShowDetailedHeader] = useState(false);
-  const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
   const [isUserProfileDropdownOpen, setIsUserProfileDropdownOpen] =
     useState(false);
 
@@ -27,6 +27,9 @@ export default function Header({ showInitTitle = true }: HeaderProps) {
 
   const { data: userSession } = useSession(); // for Client Component。`useSession` must be wrapped in a <SessionProvider />
   console.log("useSession", userSession);
+
+  const isAuthModalOpen = useAppSelector((state) => state.user.isAuthModalOpen);
+  const dispatch = useAppDispatch();
 
   useEffect(() => {
     const handleScroll = () => {
@@ -106,15 +109,24 @@ export default function Header({ showInitTitle = true }: HeaderProps) {
 
           {/* Button */}
           {userSession ? (
-            <button
-              ref={profileBtnRef}
-              className={`flex items-center justify-center w-10 h-10 text-white rounded-full bg-contrast ${
-                showDetailedHeader ? "translate-y-0" : "-translate-y-4"
-              }`}
-              onClick={() => setIsUserProfileDropdownOpen((prev) => !prev)}
-            >
-              <FontAwesomeIcon icon={faUser} size="xl" />
-            </button>
+            <div className="relative">
+              <button
+                ref={profileBtnRef}
+                className={`flex items-center justify-center w-10 h-10 text-white rounded-full bg-contrast ${
+                  showDetailedHeader ? "translate-y-0" : "-translate-y-4"
+                }`}
+                onClick={() => setIsUserProfileDropdownOpen((prev) => !prev)}
+              >
+                <FontAwesomeIcon icon={faUser} size="xl" />
+              </button>
+              {isUserProfileDropdownOpen && (
+                <div ref={dropdownRef}>
+                  <UserProfileDropdown
+                    showDetailedHeader={showDetailedHeader}
+                  />
+                </div>
+              )}
+            </div>
           ) : (
             // <button
             //   onClick={() => setIsAuthModalOpen(true)}
@@ -126,7 +138,7 @@ export default function Header({ showInitTitle = true }: HeaderProps) {
             // </button>
             <motion.button
               className="px-3 py-2 text-lg text-contrast font-bold rounded-full border border-contrast"
-              onClick={() => setIsAuthModalOpen(true)}
+              onClick={() => dispatch(openAuthModal())}
               whileHover={{ scale: 1.05 }}
               transition={{ type: "spring", stiffness: 400, damping: 10 }}
             >
@@ -135,14 +147,6 @@ export default function Header({ showInitTitle = true }: HeaderProps) {
           )}
         </div>
       </header>
-      {isUserProfileDropdownOpen && (
-        <div ref={dropdownRef}>
-          <UserProfileDropdown />
-        </div>
-      )}
-      {isAuthModalOpen && (
-        <AuthModal onClose={() => setIsAuthModalOpen(false)} />
-      )}
     </div>
   );
 }

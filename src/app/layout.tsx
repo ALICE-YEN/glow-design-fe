@@ -4,6 +4,7 @@ import localFont from "next/font/local"; // Next.js 的字體優化 API，字體
 import { auth } from "@/services/auth/config";
 import { config } from "@fortawesome/fontawesome-svg-core";
 import { ReduxProviders } from "@/components/ReduxProviders";
+import AuthModal from "@/app/components/AuthModal";
 import { SessionProvider } from "next-auth/react"; // 在整個應用程式 client-side 提供身份驗證會話
 import "@fortawesome/fontawesome-svg-core/styles.css"; // 引入基礎樣式
 import "./globals.css";
@@ -43,6 +44,7 @@ export default async function AppLayout({
             className={`${geistSans.variable} ${geistMono.variable} antialiased`}
           >
             {children}
+            <AuthModal />
           </body>
         </html>
       </ReduxProviders>

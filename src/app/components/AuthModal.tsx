@@ -1,17 +1,17 @@
 // 開關應該要有過場動畫
 // form: Validation、Autocomplete、Error Messages、Visibility Toggle
+"use client";
+
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
-import { doGoogleSignIn, doCredentialsSignIn } from "@/services/auth/actions";
 import * as yup from "yup";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faTimes, faEyeSlash, faEye } from "@fortawesome/free-solid-svg-icons";
+import { doGoogleSignIn, doCredentialsSignIn } from "@/services/auth/actions";
+import { useAppSelector, useAppDispatch } from "@/services/redux/hooks";
+import { closeAuthModal } from "@/store/userSlice";
 import GoogleIcon from "@/assets/icons/google.svg";
-
-type AuthModalProps = {
-  onClose: () => void;
-};
 
 const validationSchema = yup.object().shape({
   email: yup
@@ -27,7 +27,7 @@ const validationSchema = yup.object().shape({
     .matches(/[0-9]/, "密碼至少需要一個數字"),
 });
 
-export default function AuthModal({ onClose }: AuthModalProps) {
+export default function AuthModal() {
   const [activeTab, setActiveTab] = useState<"signin" | "signup">("signin");
   const [email, setEmail] = useState<string>("test@glow-design.com");
   const [password, setPassword] = useState<string>("GlowDesign1");
@@ -38,6 +38,11 @@ export default function AuthModal({ onClose }: AuthModalProps) {
   const [passwordVisible, setPasswordVisible] = useState(false);
 
   const router = useRouter();
+
+  const isAuthModalOpen = useAppSelector((state) => state.user.isAuthModalOpen);
+  const dispatch = useAppDispatch();
+
+  if (!isAuthModalOpen) return null;
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -50,6 +55,7 @@ export default function AuthModal({ onClose }: AuthModalProps) {
       );
       // Clear errors if validation succeeds
       setErrors({});
+
       const response = await doCredentialsSignIn({ email, password });
       if (!!response.error) {
         setErrors((prev) => ({ ...prev, password: response.error.message }));
@@ -97,9 +103,11 @@ export default function AuthModal({ onClose }: AuthModalProps) {
   };
 
   const handleClose = () => {
-    setActiveTab("signin");
     resetFormState();
-    onClose();
+    setActiveTab("signin");
+    setEmail("test@glow-design.com");
+    setPassword("GlowDesign1");
+    dispatch(closeAuthModal());
   };
 
   const handleTabChange = (tab: "signin" | "signup") => {
