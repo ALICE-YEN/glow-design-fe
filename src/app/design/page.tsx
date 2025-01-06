@@ -44,6 +44,7 @@ import {
   handleCanvasKeyDown,
 } from "@/app/design/utils/basicCanvasHelpers";
 import {
+  snapToGrid,
   getSnappedPointer,
   finalizeTempLine,
   updateTempLine,
@@ -130,11 +131,11 @@ export default function Design() {
   const saveToUndoStack = (canvasInstance = canvas) => {
     if (!canvasInstance) return;
 
-    // const currentCanvasState = canvasInstance.toObject();
-    const currentCanvasState = canvasInstance.toJSON();
+    const currentCanvasState = canvasInstance.toObject(["id"]); // 序列化時輸出自定義屬性
+    // const currentCanvasState = canvasInstance.toJSON();
     undoStackRef.current.push(currentCanvasState);
     console.log("save undoStackRef", undoStackRef.current);
-    redoStackRef.current = []; // 每次新操作後，清空 redoStack
+    redoStackRef.current = []; // 每次有新操作後，清空 redoStack
 
     // 更新用於觸發渲染的 canUndo、canRedo
     setCanUndo(undoStackRef.current.length > 1); // 不算儲存初始狀態
@@ -145,15 +146,14 @@ export default function Design() {
     if (!canvas) return;
 
     if (undoStackRef.current.length > 1) {
-      const currentCanvasState = undoStackRef.current.pop(); // 取出當前狀態
-      console.log("undoStackRef.current", undoStackRef.current);
-      redoStackRef.current.push(currentCanvasState); // 保存到 redoStack
-      console.log("redoStackRef.current", redoStackRef.current);
+      // 取出還未 undo 的當前狀態
+      const currentCanvasState = undoStackRef.current.pop();
+      // 保存到 redoStack
+      redoStackRef.current.push(currentCanvasState);
 
       // 從剩下的 undoStack 中取得最新的狀態
       const prevCanvasState =
         undoStackRef.current[undoStackRef.current.length - 1];
-      console.log("prevCanvasState", prevCanvasState);
 
       // 恢復畫布內容
       canvas.loadFromJSON(prevCanvasState).then(function () {
@@ -163,6 +163,14 @@ export default function Design() {
       // 更新用於觸發渲染的 canUndo、canRedo
       setCanUndo(undoStackRef.current.length > 0);
       setCanRedo(redoStackRef.current.length > 0);
+
+      // 判別前一步是 DRAW_WALL 的話，更新 pointsRef
+      if (
+        currentCanvasState.objects[currentCanvasState.objects.length - 1].id ===
+        "finalizedLine"
+      ) {
+        pointsRef.current = pointsRef.current.slice(0, -1);
+      }
     }
   };
 
@@ -170,9 +178,12 @@ export default function Design() {
     if (!canvas) return;
 
     if (redoStackRef.current.length > 0) {
+      // 取出還未 redo 的當前狀態
       const nextCanvasState = redoStackRef.current.pop();
-      undoStackRef.current.push(nextCanvasState); // 將 redo 的狀態保存回 undoStack
-      console.log("redoStackRef.current", redoStackRef.current);
+      // 保存到 undoStack
+      undoStackRef.current.push(nextCanvasState);
+
+      // 恢復畫布內容
       canvas.loadFromJSON(nextCanvasState).then(function () {
         canvas.renderAll();
       });
@@ -180,6 +191,8 @@ export default function Design() {
       // 更新用於觸發渲染的 canUndo、canRedo
       setCanUndo(undoStackRef.current.length > 0);
       setCanRedo(redoStackRef.current.length > 0);
+
+      // 判別前一步是 DRAW_WALL 的話，更新 pointsRef
     }
   };
 
@@ -474,7 +487,7 @@ export default function Design() {
           break;
         case CanvasAction.PLACE_FLOORING:
           updateFlooringImage(selectedImage);
-          // saveToUndoStack(); // 操作後儲存狀態，圖片 CORS 問題先擱置
+          saveToUndoStack(); // 操作後儲存狀態，圖片 CORS 問題先擱置
           break;
         case CanvasAction.PLACE_FURNITURE:
         case CanvasAction.PLACE_WINDOW:

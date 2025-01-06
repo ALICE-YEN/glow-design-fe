@@ -34,7 +34,7 @@ export default async function AppLayout({
   children: React.ReactNode;
 }>) {
   const session = await auth(); // for Server Component
-  console.log("auth() session", session);
+  // console.log("auth() session", session);
 
   return (
     <SessionProvider>

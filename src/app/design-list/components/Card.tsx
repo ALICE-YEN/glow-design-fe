@@ -1,6 +1,7 @@
 "use client";
 
-import Image from "next/image";
+// import Image from "next/image";
+import { useRouter } from "next/navigation";
 
 interface CardProps {
   src: string;
@@ -8,8 +9,13 @@ interface CardProps {
 }
 
 export default function Card({ src, title }: CardProps) {
+  const router = useRouter();
+
   return (
-    <div className="bg-white rounded-card shadow-md overflow-hidden cursor-pointer hover:shadow-xl">
+    <div
+      className="bg-white rounded-card shadow-md overflow-hidden cursor-pointer hover:shadow-xl"
+      onClick={() => router.push("/design")}
+    >
       <img src={src} alt={title} className="w-full h-56 object-cover" />
       {/* <Image
         src={src}
