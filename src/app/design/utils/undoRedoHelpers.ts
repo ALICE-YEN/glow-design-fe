@@ -20,11 +20,15 @@ export const saveCanvasStateToStack = (
 
 export const shouldDisableUndo = (
   undoStackRef: React.MutableRefObject<CanvasState[]>,
-  canvasState: CanvasState
+  canvasState: CanvasState,
+  pointsCount: number
 ): boolean => {
   // 不算儲存初始狀態 1
-  // 裝潢，利用點畫線，但 undo 剩一個點，肉眼看不到點，特別處理讓他不能 undo。用 isInitialCanvasState 判斷
-  return undoStackRef.current.length <= 1 || isInitialCanvasState(canvasState);
+  // 裝潢，利用點畫線，但 undo 剩一個點，肉眼看不到點，特別處理讓他不能 undo。用 pointsRef.current.length、isInitialCanvasState 判斷
+  return (
+    undoStackRef.current.length <= 1 ||
+    (pointsCount > 0 && isInitialCanvasState(canvasState))
+  );
 };
 
 export const updateUndoRedoStatus = (
@@ -32,9 +36,10 @@ export const updateUndoRedoStatus = (
   redoStackRef: React.MutableRefObject<CanvasState[]>,
   canvasState: CanvasState,
   setCanUndo: (value: boolean) => void,
-  setCanRedo: (value: boolean) => void
+  setCanRedo: (value: boolean) => void,
+  pointsCount: number
 ): void => {
-  setCanUndo(!shouldDisableUndo(undoStackRef, canvasState));
+  setCanUndo(!shouldDisableUndo(undoStackRef, canvasState, pointsCount));
   setCanRedo(redoStackRef.current.length > 0);
 };
 

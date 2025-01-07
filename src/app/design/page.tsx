@@ -12,11 +12,10 @@
 // 3. 縮放門、窗
 // 4. 刪除門、窗
 // 牆體
-// 1. 繪製牆體
-// 2. 置換地板材質
-// 3. 拖移牆體
-// 問題：上一步完，重新繪製，pointsRef 起點有問題。目前 canvasInstance.toObject 還沒辦法包括自定義屬性，無法篩選去處理
-// 畫布 ok
+// 1. 繪製牆體 ok
+// 2. 置換地板材質 ok
+// 3. 拖移牆體 ok
+// 畫布 ok -> bug -> ok
 // 1. 清空畫布
 
 "use client";
@@ -149,7 +148,8 @@ export default function Design() {
       redoStackRef,
       undoStackRef.current[undoStackRef.current.length - 1],
       setCanUndo,
-      setCanRedo
+      setCanRedo,
+      pointsRef.current.length
     );
   };
 
@@ -169,15 +169,17 @@ export default function Design() {
     // 恢復畫布內容，更新 pointsRef（pointsRef 只有 DRAW_WALL 會使用，無需另外區分是否前一步為 DRAW_WALL）
     restoreCanvasState(canvas, prevCanvasState, pointsRef);
 
-    // 更新用於觸發渲染的 canUndo、canRedo
+    // 更新用於觸發渲染的 canUndo、canRedo。before modifying pointsRef
     updateUndoRedoStatus(
       undoStackRef,
       redoStackRef,
       prevCanvasState,
       setCanUndo,
-      setCanRedo
+      setCanRedo,
+      pointsRef.current.length
     );
 
+    // after updating undo/redo status
     // 裝潢，利用點畫線，但 undo 剩一個點，肉眼看不到點，特別處理讓他不能 undo。還要重置點資料
     if (isInitialCanvasState(prevCanvasState)) {
       pointsRef.current = [];
@@ -202,7 +204,8 @@ export default function Design() {
       redoStackRef,
       nextCanvasState,
       setCanUndo,
-      setCanRedo
+      setCanRedo,
+      pointsRef.current.length
     );
   };
 
@@ -280,7 +283,7 @@ export default function Design() {
   };
 
   const handleDrawMouseDown = useCallback(
-    (event: TEvent): void => {
+    async (event: TEvent): Promise<void> => {
       if (!canvas) return;
 
       // 目前的座標
@@ -296,13 +299,13 @@ export default function Design() {
       // 檢查 points 組合成的線是否閉合
       if (checkClosure(pointsRef.current, { x, y }, GRID_SIZE)) {
         console.log("檢測到封閉空間，創建房間");
-        fillPolygonWithLinesIntoGroup(canvas, pointsRef.current);
+        await fillPolygonWithLinesIntoGroup(canvas, pointsRef.current);
 
         // 重置點資料
         pointsRef.current = [];
       }
 
-      saveToUndoStack(); // 操作後儲存狀態
+      saveToUndoStack();
     },
     [canvas, pointsRef, tempLineRef]
   );
@@ -351,7 +354,7 @@ export default function Design() {
 
     // Pattern 用來定義 Polygon 的填充模式
     const pattern = await createPatternFromImage(
-      "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSHTewZHbRfZqXytUaGYzb1YonM8-bBbGLjVA&s",
+      `http://localhost:3000/marble.jpg`,
       FLOORING_PATTERN_IMG_WIDTH
     );
 
@@ -367,12 +370,12 @@ export default function Design() {
       evented: true,
     });
     canvas.add(group);
+    canvas.requestRenderAll();
+
     dispatch(setAction(CanvasAction.EXIT_DRAW_WALL));
 
     // 移除 mouse:down 和 mouse:move 監聽器
     stopDrawingWall();
-
-    canvas.requestRenderAll();
   };
 
   const updateFlooringImage = async (newImageUrl: string) => {
@@ -429,7 +432,7 @@ export default function Design() {
         "事件object property is modified(resized or rotated)",
         e.target
       );
-      saveToUndoStack(); // 操作後儲存狀態
+      saveToUndoStack();
       // clearGuidelines(canvas);
     });
     canvas.on("object:scaling", (e) => {
@@ -465,7 +468,7 @@ export default function Design() {
           cleanupTempLine();
           stopDrawingWall(); // 移除 mouse:down 和 mouse:move 監聽器
 
-          saveToUndoStack(); // 操作後儲存狀態
+          saveToUndoStack();
 
           canvas.renderAll();
           break;
@@ -496,14 +499,14 @@ export default function Design() {
           }
           break;
         case CanvasAction.PLACE_FLOORING:
-          updateFlooringImage(selectedImage);
-          saveToUndoStack(); // 操作後儲存狀態，圖片 CORS 問題先擱置
+          await updateFlooringImage(selectedImage);
+          saveToUndoStack(); // 操作後儲存狀態，圖片 CORS 問題要注意
           break;
         case CanvasAction.PLACE_FURNITURE:
         case CanvasAction.PLACE_WINDOW:
         case CanvasAction.PLACE_DOOR:
           await loadFromUrl({ url: selectedImage, customWidth: 300 });
-          saveToUndoStack(); // 操作後儲存狀態
+          saveToUndoStack();
           break;
         default:
           break;
