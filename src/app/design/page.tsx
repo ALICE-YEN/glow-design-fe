@@ -42,18 +42,20 @@ import {
   setupZoom,
   handleResize,
   handleCanvasKeyDown,
+  isInitialCanvasState,
 } from "@/app/design/utils/basicCanvasHelpers";
 import {
-  snapToGrid,
   getSnappedPointer,
   finalizeTempLine,
   updateTempLine,
   checkClosure,
   createPatternFromImage,
+} from "@/app/design/utils/drawingHelpers";
+import {
   saveCanvasStateToStack,
   updateUndoRedoStatus,
   restoreCanvasState,
-} from "@/app/design/utils/drawingHelpers";
+} from "@/app/design/utils/undoRedoHelpers";
 import {
   FINALIZED_LINE_ID,
   CANVAS_WIDTH,
@@ -142,7 +144,13 @@ export default function Design() {
     redoStackRef.current = [];
 
     // 更新用於觸發渲染的 canUndo、canRedo
-    updateUndoRedoStatus(undoStackRef, redoStackRef, setCanUndo, setCanRedo);
+    updateUndoRedoStatus(
+      undoStackRef,
+      redoStackRef,
+      undoStackRef.current[undoStackRef.current.length - 1],
+      setCanUndo,
+      setCanRedo
+    );
   };
 
   const undo = () => {
@@ -162,7 +170,18 @@ export default function Design() {
     restoreCanvasState(canvas, prevCanvasState, pointsRef);
 
     // 更新用於觸發渲染的 canUndo、canRedo
-    updateUndoRedoStatus(undoStackRef, redoStackRef, setCanUndo, setCanRedo); // 之後可以再細部處理，裝潢返回剩一個點肉眼看不到
+    updateUndoRedoStatus(
+      undoStackRef,
+      redoStackRef,
+      prevCanvasState,
+      setCanUndo,
+      setCanRedo
+    );
+
+    // 裝潢，利用點畫線，但 undo 剩一個點，肉眼看不到點，特別處理讓他不能 undo。還要重置點資料
+    if (isInitialCanvasState(prevCanvasState)) {
+      pointsRef.current = [];
+    }
   };
 
   const redo = () => {
@@ -178,7 +197,13 @@ export default function Design() {
     restoreCanvasState(canvas, nextCanvasState, pointsRef);
 
     // 更新用於觸發渲染的 canUndo、canRedo
-    updateUndoRedoStatus(undoStackRef, redoStackRef, setCanUndo, setCanRedo);
+    updateUndoRedoStatus(
+      undoStackRef,
+      redoStackRef,
+      nextCanvasState,
+      setCanUndo,
+      setCanRedo
+    );
   };
 
   const togglePanMode = (enable: boolean) => {

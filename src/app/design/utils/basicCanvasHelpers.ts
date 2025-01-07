@@ -1,4 +1,6 @@
 import { Canvas, Line, Point } from "fabric";
+import { INITIAL_GRID_OBJECT_COUNT } from "@/app/design/utils/constants";
+import { CanvasState } from "@/app/design/types/interfaces";
 
 // 初始化 Canvas，繪製網格，回傳 Canvas 實例
 export const initializeCanvasWithGrid = (
@@ -134,3 +136,7 @@ export const handleCanvasKeyDown =
       }
     }
   };
+
+export const isInitialCanvasState = (canvasState: CanvasState): boolean => {
+  return canvasState.canvas.objects.length === INITIAL_GRID_OBJECT_COUNT;
+};
