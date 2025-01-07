@@ -50,7 +50,20 @@ import {
   updateTempLine,
   checkClosure,
   createPatternFromImage,
+  saveCanvasStateToStack,
+  updateUndoRedoStatus,
+  restoreCanvasState,
 } from "@/app/design/utils/drawingHelpers";
+import {
+  FINALIZED_LINE_ID,
+  CANVAS_WIDTH,
+  CANVAS_HEIGHT,
+  GRID_SIZE,
+  ZOOM_FACTOR,
+  MIN_ZOOM,
+  MAX_ZOOM,
+  FLOORING_PATTERN_IMG_WIDTH,
+} from "@/app/design/utils/constants";
 import {
   handleObjectMoving,
   clearGuidelines,
@@ -76,14 +89,6 @@ export default function Design() {
   const tempLineRef = useRef<Line | null>(null); // 表示模擬線，隨滑鼠移動動態更新，用於即時操作，避免 React 狀態更新的非同步問題。
 
   const selectedPolygonObjectRef = useRef<any>(null); // 選取到的物件，輔助值，便於處理 Polygon。canvas.getActiveObject() 還是作為所有選取到的物件來源。
-
-  const CANVAS_WIDTH = 3000; // 邏輯畫布寬度
-  const CANVAS_HEIGHT = 3000; // 邏輯畫布高度
-  const GRID_SIZE = 20; // 網格大小
-  const ZOOM_FACTOR = 0.001; // 縮放比例
-  const MIN_ZOOM = 0.5; // 限制最大縮放
-  const MAX_ZOOM = 2; // 限制最小縮放
-  const FLOORING_PATTERN_IMG_WIDTH = 75; // 地板圖案中使用的圖片寬度（用於生成模式填充）
 
   const currentAction = useAppSelector((state) => state.canvas.currentAction);
   const selectedImage = useAppSelector((state) => state.canvas.selectedImage);
@@ -131,69 +136,49 @@ export default function Design() {
   const saveToUndoStack = (canvasInstance = canvas) => {
     if (!canvasInstance) return;
 
-    const currentCanvasState = canvasInstance.toObject(["id"]); // 序列化時輸出自定義屬性
-    // const currentCanvasState = canvasInstance.toJSON();
-    undoStackRef.current.push(currentCanvasState);
-    console.log("save undoStackRef", undoStackRef.current);
-    redoStackRef.current = []; // 每次有新操作後，清空 redoStack
+    saveCanvasStateToStack(undoStackRef, canvasInstance, pointsRef.current);
+
+    // 每次有新操作後，清空 redoStack
+    redoStackRef.current = [];
 
     // 更新用於觸發渲染的 canUndo、canRedo
-    setCanUndo(undoStackRef.current.length > 1); // 不算儲存初始狀態
-    setCanRedo(false);
+    updateUndoRedoStatus(undoStackRef, redoStackRef, setCanUndo, setCanRedo);
   };
 
   const undo = () => {
-    if (!canvas) return;
+    if (!canvas || undoStackRef.current.length <= 1) return;
 
-    if (undoStackRef.current.length > 1) {
-      // 取出還未 undo 的當前狀態
-      const currentCanvasState = undoStackRef.current.pop();
-      // 保存到 redoStack
-      redoStackRef.current.push(currentCanvasState);
+    // 取出還未 undo 的當前狀態
+    const currentCanvasState = undoStackRef.current.pop()!;
 
-      // 從剩下的 undoStack 中取得最新的狀態
-      const prevCanvasState =
-        undoStackRef.current[undoStackRef.current.length - 1];
+    // 保存到 redoStack
+    redoStackRef.current.push(currentCanvasState);
 
-      // 恢復畫布內容
-      canvas.loadFromJSON(prevCanvasState).then(function () {
-        canvas.renderAll();
-      });
+    // 從剩下的 undoStack 中取得最新的狀態
+    const prevCanvasState =
+      undoStackRef.current[undoStackRef.current.length - 1];
 
-      // 更新用於觸發渲染的 canUndo、canRedo
-      setCanUndo(undoStackRef.current.length > 0);
-      setCanRedo(redoStackRef.current.length > 0);
+    // 恢復畫布內容，更新 pointsRef（pointsRef 只有 DRAW_WALL 會使用，無需另外區分是否前一步為 DRAW_WALL）
+    restoreCanvasState(canvas, prevCanvasState, pointsRef);
 
-      // 判別前一步是 DRAW_WALL 的話，更新 pointsRef
-      if (
-        currentCanvasState.objects[currentCanvasState.objects.length - 1].id ===
-        "finalizedLine"
-      ) {
-        pointsRef.current = pointsRef.current.slice(0, -1);
-      }
-    }
+    // 更新用於觸發渲染的 canUndo、canRedo
+    updateUndoRedoStatus(undoStackRef, redoStackRef, setCanUndo, setCanRedo); // 之後可以再細部處理，裝潢返回剩一個點肉眼看不到
   };
 
   const redo = () => {
-    if (!canvas) return;
+    if (!canvas || redoStackRef.current.length === 0) return;
 
-    if (redoStackRef.current.length > 0) {
-      // 取出還未 redo 的當前狀態
-      const nextCanvasState = redoStackRef.current.pop();
-      // 保存到 undoStack
-      undoStackRef.current.push(nextCanvasState);
+    // 取出 redo 後的狀態
+    const nextCanvasState = redoStackRef.current.pop()!;
 
-      // 恢復畫布內容
-      canvas.loadFromJSON(nextCanvasState).then(function () {
-        canvas.renderAll();
-      });
+    // 保存到 undoStack
+    undoStackRef.current.push(nextCanvasState);
 
-      // 更新用於觸發渲染的 canUndo、canRedo
-      setCanUndo(undoStackRef.current.length > 0);
-      setCanRedo(redoStackRef.current.length > 0);
+    // 恢復畫布內容，更新 pointsRef（pointsRef 只有 DRAW_WALL 會使用，無需另外區分是否前一步為 DRAW_WALL）
+    restoreCanvasState(canvas, nextCanvasState, pointsRef);
 
-      // 判別前一步是 DRAW_WALL 的話，更新 pointsRef
-    }
+    // 更新用於觸發渲染的 canUndo、canRedo
+    updateUndoRedoStatus(undoStackRef, redoStackRef, setCanUndo, setCanRedo);
   };
 
   const togglePanMode = (enable: boolean) => {
@@ -321,7 +306,7 @@ export default function Design() {
     // 清理舊的線
     const finalizedLines = canvas
       .getObjects("line")
-      .filter((obj) => obj?.id === "finalizedLine");
+      .filter((obj) => obj?.id === FINALIZED_LINE_ID);
     finalizedLines.forEach((obj) => canvas.remove(obj));
     // 為什麽 Group 的線不能用 finalizedLines，是因為沒照順序嗎???
 

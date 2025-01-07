@@ -1,6 +1,6 @@
 import type { StaticImageData } from "next/image";
 import { IconDefinition } from "@fortawesome/free-solid-svg-icons";
-
+import { Object } from "fabric";
 export interface SidebarButtonConfig {
   id: string;
   icon: IconDefinition;
@@ -26,4 +26,9 @@ export interface Material {
 export interface Point {
   x: number;
   y: number;
+}
+
+export interface CanvasState {
+  canvas: Object; // Adjust to match the fabric.js `toObject()` type
+  points: Point[];
 }

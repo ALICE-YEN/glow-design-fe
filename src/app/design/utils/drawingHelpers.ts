@@ -7,6 +7,8 @@ import {
   TEvent,
 } from "fabric";
 import { Point } from "@/app/design/types/interfaces";
+import { FINALIZED_LINE_ID } from "@/app/design/utils/constants";
+import { Point as IPoint, CanvasState } from "@/app/design/types/interfaces";
 
 export const snapToGrid = (value: number, gridSize: number): number => {
   return Math.round(value / gridSize) * gridSize;
@@ -37,7 +39,7 @@ export const finalizeTempLine = (
     strokeWidth: 5,
     strokeLineJoin: "round",
     strokeLineCap: "round",
-    id: "finalizedLine",
+    id: FINALIZED_LINE_ID,
   });
   canvasInstance.requestRenderAll();
 
@@ -109,4 +111,38 @@ export const createPatternFromImage = async (
     source: patternSourceCanvas.getElement(),
     repeat: "repeat",
   });
+};
+
+export const saveCanvasStateToStack = (
+  stackRef: React.MutableRefObject<CanvasState[]>,
+  canvasInstance: Canvas,
+  points: IPoint[]
+): void => {
+  const currentCanvasState: CanvasState = {
+    canvas: canvasInstance.toObject(["id"]), // 序列化時輸出自定義屬性
+    points: [...points], // 保存 pointsRef，便於 undo、redo
+  };
+  stackRef.current.push(currentCanvasState);
+};
+
+export const updateUndoRedoStatus = (
+  undoStackRef: React.MutableRefObject<CanvasState[]>,
+  redoStackRef: React.MutableRefObject<CanvasState[]>,
+  setCanUndo: (value: boolean) => void,
+  setCanRedo: (value: boolean) => void
+): void => {
+  setCanUndo(undoStackRef.current.length > 1); // 不算儲存初始狀態
+  setCanRedo(redoStackRef.current.length > 0);
+};
+
+export const restoreCanvasState = async (
+  canvasInstance: Canvas,
+  canvasState: CanvasState,
+  pointsRef: React.MutableRefObject<IPoint[]>
+): Promise<void> => {
+  canvasInstance.loadFromJSON(canvasState.canvas).then(function () {
+    canvasInstance.renderAll();
+  });
+
+  pointsRef.current = [...canvasState.points];
 };
