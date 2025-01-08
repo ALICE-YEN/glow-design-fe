@@ -9,10 +9,11 @@ import {
   faMousePointer,
   IconDefinition,
 } from "@fortawesome/free-solid-svg-icons";
-import { faMoon, faUser } from "@fortawesome/free-regular-svg-icons";
+import { faMoon } from "@fortawesome/free-regular-svg-icons";
 import { useAppSelector, useAppDispatch } from "@/services/redux/hooks";
 import { setAction } from "@/store/canvasSlice";
 import { CanvasAction } from "@/types/enum";
+import UserProfileButton from "@/app/components/UserProfileButton";
 import Button from "./Button";
 import Title from "./Title";
 
@@ -116,12 +117,6 @@ export default function Toolbar({
         label: "Toggle Theme",
         handleClick: () => console.log("Toggle Theme clicked"),
       },
-      {
-        id: "userProfile",
-        icon: faUser,
-        label: "User Profile",
-        handleClick: () => console.log("User Profile clicked"),
-      },
     ],
   };
 
@@ -148,7 +143,7 @@ export default function Toolbar({
       </div>
 
       {/* 右側按鈕 */}
-      <div className="flex space-x-4">
+      <div className="flex items-center space-x-4 pr-2">
         {TOOLBAR_BUTTONS.right.map((button) => (
           <Button
             key={button.id}
@@ -158,6 +153,7 @@ export default function Toolbar({
             handleClick={button.handleClick}
           />
         ))}
+        <UserProfileButton showDetailedHeader={true} isSmallButton={true} />
       </div>
     </header>
   );

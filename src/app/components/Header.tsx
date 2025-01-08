@@ -2,15 +2,13 @@
 
 "use client";
 
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useSession } from "next-auth/react";
 import { motion } from "motion/react";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faUser } from "@fortawesome/free-solid-svg-icons";
 import { useAppSelector, useAppDispatch } from "@/services/redux/hooks";
 import { openAuthModal } from "@/store/userSlice";
-import UserProfileDropdown from "@/app/components/UserProfileDropdown";
+import UserProfileButton from "@/app/components/UserProfileButton";
 
 interface HeaderProps {
   showInitTitle?: boolean;
@@ -18,12 +16,6 @@ interface HeaderProps {
 
 export default function Header({ showInitTitle = true }: HeaderProps) {
   const [showDetailedHeader, setShowDetailedHeader] = useState(false);
-  const [isUserProfileDropdownOpen, setIsUserProfileDropdownOpen] =
-    useState(false);
-
-  // 用 ref 可以更精準地處理事件冒泡邏輯，而不用依賴不可靠的 id 或 event.target。待研究！！
-  const dropdownRef = useRef<HTMLDivElement>(null);
-  const profileBtnRef = useRef<HTMLDivElement>(null);
 
   const { data: userSession } = useSession(); // for Client Component。`useSession` must be wrapped in a <SessionProvider />
   console.log("useSession", userSession);
@@ -52,39 +44,6 @@ export default function Header({ showInitTitle = true }: HeaderProps) {
     }
   }, [isAuthModalOpen]);
 
-  // 頁面滾動，關閉 UserProfileDropdown
-  const handleScroll = () => {
-    setIsUserProfileDropdownOpen(false);
-  };
-
-  useEffect(() => {
-    window.addEventListener("scroll", handleScroll);
-
-    return () => {
-      window.removeEventListener("scroll", handleScroll);
-    };
-  }, []);
-
-  // 點擊外部，關閉 UserProfileDropdown
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (
-        dropdownRef.current &&
-        !dropdownRef.current.contains(event.target as Node) &&
-        profileBtnRef.current &&
-        !profileBtnRef.current.contains(event.target as Node)
-      ) {
-        setIsUserProfileDropdownOpen(false);
-      }
-    };
-
-    document.addEventListener("click", handleClickOutside);
-
-    return () => {
-      document.removeEventListener("click", handleClickOutside);
-    };
-  }, []);
-
   return (
     <div>
       <header
@@ -109,24 +68,7 @@ export default function Header({ showInitTitle = true }: HeaderProps) {
 
           {/* Button */}
           {userSession ? (
-            <div className="relative">
-              <button
-                ref={profileBtnRef}
-                className={`flex items-center justify-center w-10 h-10 text-white rounded-full bg-contrast ${
-                  showDetailedHeader ? "translate-y-0" : "-translate-y-4"
-                }`}
-                onClick={() => setIsUserProfileDropdownOpen((prev) => !prev)}
-              >
-                <FontAwesomeIcon icon={faUser} size="xl" />
-              </button>
-              {isUserProfileDropdownOpen && (
-                <div ref={dropdownRef}>
-                  <UserProfileDropdown
-                    showDetailedHeader={showDetailedHeader}
-                  />
-                </div>
-              )}
-            </div>
+            <UserProfileButton showDetailedHeader={showDetailedHeader} />
           ) : (
             // <button
             //   onClick={() => setIsAuthModalOpen(true)}
