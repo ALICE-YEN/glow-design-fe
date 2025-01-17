@@ -5,6 +5,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
+import axios from "axios";
 import * as yup from "yup";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faTimes, faEyeSlash, faEye } from "@fortawesome/free-solid-svg-icons";
@@ -34,7 +35,7 @@ export default function AuthModal() {
   const [errors, setErrors] = useState<{ email?: string; password?: string }>(
     {}
   );
-  const [hasSubmitted, setHasSubmitted] = useState(false);
+  const [hasSubmitted, setHasSubmitted] = useState(false); // Only validate if the form has been submitted
   const [passwordVisible, setPasswordVisible] = useState(false);
 
   const router = useRouter();
@@ -56,11 +57,29 @@ export default function AuthModal() {
       // Clear errors if validation succeeds
       setErrors({});
 
-      const response = await doCredentialsSignIn({ email, password });
-      if (!!response.error) {
-        setErrors((prev) => ({ ...prev, password: response.error.message }));
+      if (activeTab === "signin") {
+        const response = await doCredentialsSignIn({ email, password });
+        console.log("AuthModal response", response);
+        if (!!response.error) {
+          setErrors((prev) => ({ ...prev, password: response.error.message }));
+        } else {
+          router.push("/design-list");
+        }
       } else {
-        router.push("/design-list");
+        try {
+          const response = await axios.post(
+            `${process.env.NEXT_PUBLIC_BACKEND_URL}/auth/register`,
+            {
+              username: email,
+              email,
+              password,
+            }
+          );
+
+          console.log("AuthModal register", response);
+        } catch (error) {
+          console.error("AuthModal register error", error);
+        }
       }
     } catch (validationError: any) {
       // Map Yup validation errors to state
@@ -123,12 +142,14 @@ export default function AuthModal() {
     <div
       role="dialog"
       className="fixed inset-0 z-20 flex items-center justify-center bg-black bg-opacity-20"
-      onClick={handleClose}
+      onMouseDown={(e) => {
+        // Check if the mousedown event is on the background, not inside the modal
+        if (e.target === e.currentTarget) {
+          handleClose();
+        }
+      }}
     >
-      <div
-        className="relative w-80 sm:w-96 bg-white bg-opacity-70 backdrop-blur rounded-card shadow-xl p-5 sm:p-10 text-secondary"
-        onClick={(e) => e.stopPropagation()} // Prevent closing when clicking inside the modal
-      >
+      <div className="relative w-80 sm:w-96 bg-white bg-opacity-70 backdrop-blur rounded-card shadow-xl p-5 sm:p-10 text-secondary">
         {/* Close Button */}
         <button
           className="absolute top-2.5 right-2.5 sm:top-4 sm:right-4 text-gray-500 hover:text-gray-700"
@@ -219,7 +240,7 @@ export default function AuthModal() {
           <button
             type="button"
             className="flex items-center justify-center rounded-lg py-2 bg-white hover:bg-gray-100"
-            onClick={() => doGoogleSignIn()}
+            onClick={doGoogleSignIn}
             // onClick={openSSOWindow} // 之後要做另外視窗的 Google SSO
           >
             <Image

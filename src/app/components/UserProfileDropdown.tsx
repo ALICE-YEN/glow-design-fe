@@ -5,6 +5,8 @@
 import { useRouter } from "next/navigation";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faUser } from "@fortawesome/free-solid-svg-icons";
+import { doSignOut } from "@/services/auth/actions";
+import { signIn, signOut, useSession } from "next-auth/react";
 
 const buttonStyle = "text-left w-full px-3 py-2 hover:bg-gray-100 rounded";
 
@@ -36,7 +38,9 @@ export default function UserProfileDropdown({
         >
           設計稿列表
         </button>
-        <button className={buttonStyle}>登出</button>
+        <button className={buttonStyle} onClick={doSignOut}>
+          登出
+        </button>
       </div>
     </div>
   );

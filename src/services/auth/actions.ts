@@ -17,18 +17,13 @@ export async function doCredentialsSignIn({
   email: string;
   password: string;
 }) {
-  try {
-    return await signIn("credentials", {
-      email,
-      password,
-      redirect: false,
-    });
-    // Check if the user exists in the database
-  } catch (err) {
-    throw new Error("doCredentialsSignIn", err);
-  }
+  return await signIn("credentials", {
+    email,
+    password,
+    redirect: false,
+  });
 }
 
-export async function doGoogleSignOut() {
+export async function doSignOut() {
   return await signOut({ redirectTo: "/" });
 }
