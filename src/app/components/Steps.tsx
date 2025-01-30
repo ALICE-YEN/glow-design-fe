@@ -75,7 +75,7 @@ export default function Steps() {
   };
 
   return (
-    <div className="flex justify-between items-stretch space-x-14 mx-auto max-w-7xl px-8 py-16">
+    <div className="flex flex-col sm:flex-row justify-between items-stretch space-y-8 sm:space-y-0 sm:space-x-14 mx-auto max-w-7xl px-8 lg:px-16 py-16">
       {/* Left: Video Section */}
       <motion.div
         key={currentStep}
@@ -83,7 +83,7 @@ export default function Steps() {
         animate={{ opacity: 1, x: 0 }}
         exit={{ opacity: 0, x: 50 }}
         transition={{ duration: 0.5 }}
-        className="relative w-2/3"
+        className="relative w-full sm:w-2/3"
       >
         <div className="relative">
           {/* Video Element */}
@@ -108,8 +108,8 @@ export default function Steps() {
       </motion.div>
 
       {/* Right: Steps Section */}
-      <div className="w-1/3 flex flex-col justify-between self-auto">
-        <div className="space-y-8">
+      <div className="w-full sm:w-1/3 flex flex-col justify-between self-auto">
+        <div className="space-y-6 lg:space-y-8">
           {steps.map((step) => (
             <div key={step.id}>
               {/* Step Indicator */}
@@ -119,7 +119,7 @@ export default function Steps() {
                 initial={{ opacity: 0.6 }}
                 animate={{
                   opacity: currentStep === step.id ? 1 : 0.6,
-                  scale: currentStep === step.id ? 1.1 : 1,
+                  // scale: currentStep === step.id ? 1.1 : 1,
                 }}
                 transition={{ duration: 0.3 }}
               >
@@ -131,20 +131,20 @@ export default function Steps() {
                   }`}
                 >
                   <span
-                    className={`text-sm font-bold ${
+                    className={`font-bold ${
                       currentStep === step.id
-                        ? "text-contrast"
-                        : "text-secondary"
+                        ? "text-contrast text-lg"
+                        : "text-secondary text-sm"
                     }`}
                   >
                     {step.id}
                   </span>
                 </div>
                 <span
-                  className={`ml-4 text-lg ${
+                  className={`ml-4 ${
                     currentStep === step.id
-                      ? "text-contrast font-bold"
-                      : "text-secondary"
+                      ? "text-contrast font-bold text-xl lg:text-2xl"
+                      : "text-secondary text-lg"
                   }`}
                 >
                   {step.title}
@@ -160,7 +160,9 @@ export default function Steps() {
                   exit={{ opacity: 0, y: -20 }}
                   transition={{ duration: 0.5 }}
                 >
-                  <p className="text-primary">{step.description}</p>
+                  <p className="text-primary text-base lg:text-lg">
+                    {step.description}
+                  </p>
                 </motion.div>
               )}
             </div>

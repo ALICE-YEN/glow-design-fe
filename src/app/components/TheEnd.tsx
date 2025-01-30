@@ -21,9 +21,9 @@ const TheEnd = () => {
   };
 
   return (
-    <div className="py-10">
+    <div className="sm:py-10">
       <motion.div
-        className="heading-md color mx-auto w-[80%] rounded-full bg-contrast p-8 cursor-pointer text-center text-white lg:p-20"
+        className="heading-sm mx-auto scale-50 sm:scale-100 text-center w-[75%] sm:w-[50%] rounded-full bg-contrast cursor-pointer text-white p-10"
         whileHover={{ scale: 1.05 }}
         transition={{ type: "spring", stiffness: 400, damping: 10 }}
         onClick={handleClick}

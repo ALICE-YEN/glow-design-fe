@@ -48,47 +48,47 @@ export default function Header({ showInitTitle = true }: HeaderProps) {
   return (
     <div>
       <header
-        className={`fixed top-0 left-0 w-full z-10 duration-300 ${
+        className={`fixed top-0 left-0 w-full z-10 duration-300 mx-auto flex justify-between items-center px-6 sm:px-10 lg:px-16 ${
           showDetailedHeader
             ? "bg-white shadow border-b border-panel-background py-2.5"
-            : "bg-transparent py-16"
+            : "bg-transparent py-10 sm:py-16"
         }`}
       >
-        <div className="container mx-auto flex justify-between items-center">
-          {/* Title */}
-          <Link
-            href="/"
-            className={`text-contrast font-bold transition-transform duration-300 ${
-              showDetailedHeader
-                ? "translate-y-0 text-2xl"
-                : `-translate-y-4 text-4xl ${!showInitTitle && "invisible"}`
-            }`}
-          >
-            居然好設計 Glow Design
-          </Link>
+        {/* Title */}
+        <Link
+          href="/"
+          className={`text-contrast font-bold transition-transform duration-300 ${
+            showDetailedHeader
+              ? "translate-y-0 text-lg sm:text-xl lg:text-2xl"
+              : `-translate-y-4 text-2xl sm:text-3xl lg:text-4xl ${
+                  !showInitTitle && "invisible text-xs"
+                }`
+          }`}
+        >
+          居然好設計 Glow Design
+        </Link>
 
-          {/* Button */}
-          {userSession ? (
-            <UserProfileButton showDetailedHeader={showDetailedHeader} />
-          ) : (
-            // <button
-            //   onClick={() => setIsAuthModalOpen(true)}
-            //   className={`px-3 py-2 text-lg text-contrast font-bold rounded-full border border-contrast transition-transform duration-300 hover:scale-105 ${
-            //     showDetailedHeader ? "translate-y-0" : "-translate-y-4"
-            //   }`}
-            // >
-            //   開始設計
-            // </button>
-            <motion.button
-              className="px-3 py-2 text-lg text-contrast font-bold rounded-full border border-contrast"
-              onClick={() => dispatch(openAuthModal())}
-              whileHover={{ scale: 1.05 }}
-              transition={{ type: "spring", stiffness: 400, damping: 10 }}
-            >
-              <div className="mx-auto max-w-[1000px]">開始設計 →</div>
-            </motion.button>
-          )}
-        </div>
+        {/* Button */}
+        {userSession ? (
+          <UserProfileButton showDetailedHeader={showDetailedHeader} />
+        ) : (
+          // <button
+          //   onClick={() => setIsAuthModalOpen(true)}
+          //   className={`px-3 py-2 text-lg text-contrast font-bold rounded-full border border-contrast transition-transform duration-300 hover:scale-105 ${
+          //     showDetailedHeader ? "translate-y-0" : "-translate-y-4"
+          //   }`}
+          // >
+          //   開始設計
+          // </button>
+          <motion.button
+            className="px-3 py-2 sm:text-lg text-contrast font-bold rounded-full border border-contrast"
+            onClick={() => dispatch(openAuthModal())}
+            whileHover={{ scale: 1.05 }}
+            transition={{ type: "spring", stiffness: 400, damping: 10 }}
+          >
+            <div className="mx-auto max-w-[1000px]">開始設計 →</div>
+          </motion.button>
+        )}
       </header>
     </div>
   );

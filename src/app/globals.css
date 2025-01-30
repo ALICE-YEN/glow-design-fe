@@ -68,6 +68,20 @@ input:focus {
   }
 }
 
+.heading-sm {
+  font-size: 2.5rem;
+  font-weight: 500;
+  line-height: 1;
+
+  @media screen(md) {
+    font-size: 3rem;
+  }
+
+  @media screen(xl) {
+    font-size: 4rem;
+  }
+}
+
 video::-webkit-media-controls {
   display: none !important;
 }
