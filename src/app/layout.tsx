@@ -37,7 +37,7 @@ export default async function AppLayout({
   // console.log("auth() session", session);
 
   return (
-    <SessionProvider>
+    <SessionProvider session={session}>
       <ReduxProviders>
         <html lang="en">
           <body

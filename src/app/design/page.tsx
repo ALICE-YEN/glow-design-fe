@@ -77,7 +77,7 @@ import Toolbar from "@/app/design/components/Toolbar";
 export default function Design() {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const [canvas, setCanvas] = useState<Canvas | null>(null);
-  const [guidelines, setGuidelines] = useState([]);
+  // const [guidelines, setGuidelines] = useState([]);
 
   const undoStackRef = useRef([]);
   const redoStackRef = useRef([]); // 最近被 Undo 的狀態。如果有新的操作（如新增家具或移動物件）之後，redoStack 中的舊狀態就已經過時，無法再用於「下一步」

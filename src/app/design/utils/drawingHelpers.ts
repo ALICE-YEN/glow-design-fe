@@ -7,7 +7,7 @@ import {
   TEvent,
 } from "fabric";
 import { FINALIZED_LINE_ID } from "@/app/design/utils/constants";
-import { Point as IPoint, CanvasState } from "@/app/design/types/interfaces";
+import { Point as IPoint } from "@/app/design/types/interfaces";
 
 export const snapToGrid = (value: number, gridSize: number): number => {
   return Math.round(value / gridSize) * gridSize;

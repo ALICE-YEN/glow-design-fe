@@ -9,7 +9,6 @@ import Hero from "@/app/components/Hero";
 import About from "@/app/components/About";
 import HowItWorks from "@/app/components/HowItWorks";
 import AnchorMenu from "@/app/components/AnchorMenu";
-import TextReveal from "@/app/components/text-reveal";
 import Steps from "@/app/components/Steps";
 import TheEnd from "@/app/components/TheEnd";
 import Footer from "@/app/components/Footer";
@@ -40,7 +39,6 @@ export default function Home() {
           <HowItWorks />
         </div>
         <div ref={stepsRef}>
-          {/* <TextReveal /> */}
           <Steps />
         </div>
         <TheEnd />

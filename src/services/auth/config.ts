@@ -1,9 +1,3 @@
-// 待辦事項
-// 1. 做登出
-// 2. 做註冊，連結到資料庫：打後端 api
-// 3. 做登入，連結到資料庫：打後端 api
-// 4. 阻擋未登入的使用者進入特定頁面
-
 // Google 回傳 token 這段跟 NextAuth 整合還有問題
 
 // Contains NextAuth configuration and exposes the auth, signIn, and signOut methods.
