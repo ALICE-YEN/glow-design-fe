@@ -6,7 +6,6 @@ import { useRouter } from "next/navigation";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faUser } from "@fortawesome/free-solid-svg-icons";
 import { doSignOut } from "@/services/auth/actions";
-import { signIn, signOut, useSession } from "next-auth/react";
 
 const buttonStyle = "text-left w-full px-3 py-2 hover:bg-gray-100 rounded";
 
@@ -17,7 +16,12 @@ interface UserProfileDropdownProps {
 export default function UserProfileDropdown({
   showDetailedHeader,
 }: UserProfileDropdownProps) {
-  const route = useRouter();
+  const router = useRouter();
+
+  const signOut = async () => {
+    await doSignOut();
+    window.location.href = "/"; //因為 useSession 沒有自動更新，所以改用 window.location.href
+  };
   return (
     <div
       className={`z-10 absolute right-4 lg:-right-14 ${
@@ -34,11 +38,11 @@ export default function UserProfileDropdown({
       <div className="space-y-1">
         <button
           className={buttonStyle}
-          onClick={() => route.push("/design-list")}
+          onClick={() => router.push("/design-list")}
         >
           設計稿列表
         </button>
-        <button className={buttonStyle} onClick={doSignOut}>
+        <button className={buttonStyle} onClick={signOut}>
           登出
         </button>
       </div>

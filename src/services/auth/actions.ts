@@ -7,7 +7,7 @@
 import { signIn, signOut } from "@/services/auth/config";
 
 export async function doGoogleSignIn() {
-  return await signIn("google", { redirectTo: "/" });
+  return await signIn("google", { redirectTo: "/design-list" });
 }
 
 export async function doCredentialsSignIn({
@@ -25,5 +25,5 @@ export async function doCredentialsSignIn({
 }
 
 export async function doSignOut() {
-  return await signOut({ redirectTo: "/" });
+  return await signOut({ redirect: false });
 }

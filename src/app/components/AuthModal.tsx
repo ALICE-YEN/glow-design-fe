@@ -5,6 +5,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
+import { useSession } from "next-auth/react";
 import axios from "axios";
 import * as yup from "yup";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
@@ -40,6 +41,8 @@ export default function AuthModal() {
 
   const router = useRouter();
 
+  const { update: userSessionUpdate } = useSession();
+
   const isAuthModalOpen = useAppSelector((state) => state.user.isAuthModalOpen);
   const dispatch = useAppDispatch();
 
@@ -58,16 +61,23 @@ export default function AuthModal() {
       setErrors({});
 
       if (activeTab === "signin") {
-        const response = await doCredentialsSignIn({ email, password });
-        console.log("AuthModal response", response);
-        if (!!response.error) {
-          setErrors((prev) => ({ ...prev, password: response.error.message }));
-        } else {
+        try {
+          await doCredentialsSignIn({ email, password });
+          await userSessionUpdate();
           router.push("/design-list");
+          setTimeout(() => {
+            handleClose();
+          }, 300);
+        } catch (error) {
+          setErrors((prev) => ({
+            ...prev,
+            password: "電子信箱或密碼錯誤", // 將錯誤提示位置放在密碼欄位
+          }));
+          console.error("AuthModal doCredentialsSignIn error", error);
         }
       } else {
         try {
-          const response = await axios.post(
+          await axios.post(
             `${process.env.NEXT_PUBLIC_BACKEND_URL}/auth/register`,
             {
               username: email,
@@ -75,9 +85,14 @@ export default function AuthModal() {
               password,
             }
           );
-
-          console.log("AuthModal register", response);
+          setTimeout(() => {
+            handleClose();
+          }, 300);
         } catch (error) {
+          setErrors((prev) => ({
+            ...prev,
+            password: error?.response?.data?.message ?? "註冊帳號錯誤", // 將錯誤提示位置放在密碼欄位
+          }));
           console.error("AuthModal register error", error);
         }
       }

@@ -17,8 +17,9 @@ interface HeaderProps {
 export default function Header({ showInitTitle = true }: HeaderProps) {
   const [showDetailedHeader, setShowDetailedHeader] = useState(false);
 
-  const { data: userSession } = useSession(); // for Client Component。`useSession` must be wrapped in a <SessionProvider />
-  console.log("useSession", userSession);
+  const { data: userSession, status } = useSession(); // for Client Component。`useSession` must be wrapped in a <SessionProvider />
+  console.log("Header render", status);
+  console.log("User session:", userSession);
 
   const isAuthModalOpen = useAppSelector((state) => state.user.isAuthModalOpen);
   const dispatch = useAppDispatch();
