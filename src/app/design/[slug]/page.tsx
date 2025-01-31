@@ -1,23 +1,5 @@
 // useCallback dependency 到底應不應該放 useRef
 
-// 上一步、下一步情境：
-// 家具 ok
-// 1. 放置家具
-// 2. 拖移家具
-// 3. 縮放家具
-// 4. 刪除家具
-// 門、窗 ok
-// 1. 放置門、窗
-// 2. 拖移門、窗
-// 3. 縮放門、窗
-// 4. 刪除門、窗
-// 牆體
-// 1. 繪製牆體 ok
-// 2. 置換地板材質 ok
-// 3. 拖移牆體 ok
-// 畫布 ok -> bug -> ok
-// 1. 清空畫布
-
 "use client";
 
 import { useEffect, useRef, useState, useCallback } from "react";
@@ -26,7 +8,6 @@ import {
   TEvent,
   Group,
   Line,
-  Rect,
   FabricImage,
   Polygon,
   Point,
@@ -532,19 +513,6 @@ export default function Design() {
     handleAction(); // 調用異步函數
   }, [currentAction, canvas, dispatch, selectedImage]);
 
-  const drawRectangle = (color: string) => {
-    if (canvas) {
-      const rect = new Rect({
-        top: 100,
-        left: 50,
-        width: 100,
-        height: 60,
-        fill: color,
-      });
-      canvas.add(rect);
-    }
-  };
-
   const loadFromUrl = async ({
     url = "https://www.google.com/images/srpr/logo3w.png",
     customWidth = null, // 自定義寬度（px），默認為 null
@@ -573,10 +541,6 @@ export default function Design() {
     canvas.add(imgData);
     // imgData.setCoords(); // 當對象的屬性（如位置、縮放、旋轉）通過程式碼修改時，需要調用 setCoords()，以同步內部的坐標數據
     canvas.renderAll();
-  };
-
-  const handleFramesUpdated = () => {
-    console.log("handleFramesUpdated");
   };
 
   const handleFileUpload = (event) => {
@@ -613,34 +577,14 @@ export default function Design() {
           zIndex: 1000,
         }}
       >
-        <button
-          onClick={() => drawRectangle("blue")}
-          style={{ marginRight: "10px" }}
-        >
-          Draw Rectangle1
-        </button>
-        <button
-          onClick={() => drawRectangle("red")}
-          style={{ marginRight: "10px" }}
-        >
-          Draw Rectangle2
-        </button>
-
-        <button
-          onClick={() => loadFromUrl({ customWidth: 300 })}
-          style={{ marginRight: "10px" }}
-        >
-          loadFromUrl
-        </button>
-
-        <input
+        {/* <input
           type="file"
           accept="image/*"
           onChange={handleFileUpload}
           style={{ position: "absolute", top: 10, left: 10, zIndex: 1000 }}
-        />
+        /> */}
 
-        <Cropping canvas={canvas} onFramesUpdate={handleFramesUpdated} />
+        <Cropping canvas={canvas} />
         {/* <LayerList canvas={canvas} /> */}
 
         <p>currentAction: {currentAction}</p>

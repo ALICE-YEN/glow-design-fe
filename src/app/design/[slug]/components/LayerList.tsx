@@ -112,7 +112,7 @@ export default function LayerList({ canvas }: { canvas: Canvas }) {
             !(
               obj.id.startsWith("vertical-") ||
               obj.id.startsWith("horizontal-") ||
-              obj?.data === "grid"
+              obj?.id === "grid"
             )
         )
         .map((obj: IObject) => ({

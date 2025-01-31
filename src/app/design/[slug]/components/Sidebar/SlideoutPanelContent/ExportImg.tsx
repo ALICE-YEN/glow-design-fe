@@ -3,7 +3,9 @@
 import { useState } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faFile } from "@fortawesome/free-solid-svg-icons";
-import { ImgSize } from "@/types/enum";
+import { useAppDispatch } from "@/services/redux/hooks";
+import { setAction } from "@/store/canvasSlice";
+import { CanvasAction, ImgSize } from "@/types/enum";
 
 const imgSizeOptions = [
   { size: ImgSize.A4, dimensions: "297 x 210 mm" },
@@ -79,14 +81,21 @@ interface ExportImgProps {
 export default function ExportImg({
   handleCloseSlideoutPanel,
 }: ExportImgProps) {
+  const dispatch = useAppDispatch();
+
   const [selectedSize, setSelectedSize] = useState<ImgSize>(ImgSize.A4);
 
   const handleSelect = (size: ImgSize) => {
     setSelectedSize(size);
+    switch (size) {
+      case ImgSize.CUSTOMIZED:
+        dispatch(setAction(CanvasAction.CHOOSE_IMG_BY_CUSTOMIZED));
+    }
   };
 
   const handleConfirm = () => {
     console.log("Selected size:", selectedSize);
+    dispatch(setAction(CanvasAction.EXPORT_PNG));
   };
 
   const handleCancel = () => {
