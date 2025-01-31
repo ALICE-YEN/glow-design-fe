@@ -11,9 +11,9 @@ import {
 import { useAppSelector, useAppDispatch } from "@/services/redux/hooks";
 import { setAction } from "@/store/canvasSlice";
 import { CanvasAction } from "@/types/enum";
-import SidebarButton from "@/app/design/components/Sidebar/SidebarButton";
-import SlideoutPanel from "@/app/design/components/Sidebar/SlideoutPanel";
-import type { SidebarButtonConfig } from "@/app/design/types/interfaces";
+import SidebarButton from "@/app/design/[slug]/components/Sidebar/SidebarButton";
+import SlideoutPanel from "@/app/design/[slug]/components/Sidebar/SlideoutPanel";
+import type { SidebarButtonConfig } from "@/app/design/[slug]/types/interfaces";
 
 const BUTTON_CONFIG: SidebarButtonConfig[] = [
   {

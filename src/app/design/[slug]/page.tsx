@@ -34,7 +34,7 @@ import {
 import { useAppSelector, useAppDispatch } from "@/services/redux/hooks";
 import { setAction, resetAction } from "@/store/canvasSlice";
 import { CanvasAction } from "@/types/enum";
-import { Point as IPoint } from "@/app/design/types/interfaces";
+import { Point as IPoint } from "@/app/design/[slug]/types/interfaces";
 import {
   initializeCanvasWithGrid,
   drawGrid,
@@ -42,19 +42,19 @@ import {
   handleResize,
   handleCanvasKeyDown,
   isInitialCanvasState,
-} from "@/app/design/utils/basicCanvasHelpers";
+} from "@/app/design/[slug]/utils/basicCanvasHelpers";
 import {
   getSnappedPointer,
   finalizeTempLine,
   updateTempLine,
   checkClosure,
   createPatternFromImage,
-} from "@/app/design/utils/drawingHelpers";
+} from "@/app/design/[slug]/utils/drawingHelpers";
 import {
   saveCanvasStateToStack,
   updateUndoRedoStatus,
   restoreCanvasState,
-} from "@/app/design/utils/undoRedoHelpers";
+} from "@/app/design/[slug]/utils/undoRedoHelpers";
 import {
   FINALIZED_LINE_ID,
   CANVAS_WIDTH,
@@ -64,15 +64,15 @@ import {
   MIN_ZOOM,
   MAX_ZOOM,
   FLOORING_PATTERN_IMG_WIDTH,
-} from "@/app/design/utils/constants";
+} from "@/app/design/[slug]/utils/constants";
 import {
   handleObjectMoving,
   clearGuidelines,
-} from "@/app/design/utils/snappingHelpers"; // 暫時修復因網格壞掉的指導線，但物件移動變很緩慢，畫布平移、縮放時還是異常!!!
-import Cropping from "@/app/design/components/Cropping";
-import LayerList from "@/app/design/components/LayerList";
-import Sidebar from "@/app/design/components/Sidebar";
-import Toolbar from "@/app/design/components/Toolbar";
+} from "@/app/design/[slug]/utils/snappingHelpers"; // 暫時修復因網格壞掉的指導線，但物件移動變很緩慢，畫布平移、縮放時還是異常!!!
+import Cropping from "@/app/design/[slug]/components/Cropping";
+import LayerList from "@/app/design/[slug]/components/LayerList";
+import Sidebar from "@/app/design/[slug]/components/Sidebar";
+import Toolbar from "@/app/design/[slug]/components/Toolbar";
 
 export default function Design() {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);

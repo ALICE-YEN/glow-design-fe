@@ -1,7 +1,7 @@
 "use client";
 
 import Image from "next/image";
-import type { Material } from "@/app/design/types/interfaces";
+import type { Material } from "@/app/design/[slug]/types/interfaces";
 
 interface MaterialCardProps {
   material: Material;

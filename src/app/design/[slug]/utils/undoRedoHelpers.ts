@@ -1,6 +1,9 @@
 import { Canvas } from "fabric";
-import { Point as IPoint, CanvasState } from "@/app/design/types/interfaces";
-import { isInitialCanvasState } from "@/app/design/utils/basicCanvasHelpers";
+import {
+  Point as IPoint,
+  CanvasState,
+} from "@/app/design/[slug]/types/interfaces";
+import { isInitialCanvasState } from "@/app/design/[slug]/utils/basicCanvasHelpers";
 
 export const snapToGrid = (value: number, gridSize: number): number => {
   return Math.round(value / gridSize) * gridSize;

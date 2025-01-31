@@ -111,12 +111,12 @@ export default function Toolbar({
       },
     ],
     right: [
-      {
-        id: "toggleTheme",
-        icon: faMoon,
-        label: "Toggle Theme",
-        handleClick: () => console.log("Toggle Theme clicked"),
-      },
+      // {
+      //   id: "toggleTheme",
+      //   icon: faMoon,
+      //   label: "Toggle Theme",
+      //   handleClick: () => console.log("Toggle Theme clicked"),
+      // },
     ],
   };
 

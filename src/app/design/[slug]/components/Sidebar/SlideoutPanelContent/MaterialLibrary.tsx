@@ -4,7 +4,7 @@ import { useState } from "react";
 import type {
   Material,
   CategoryWithMaterials,
-} from "@/app/design/types/interfaces";
+} from "@/app/design/[slug]/types/interfaces";
 import MaterialCard from "./MaterialCard";
 
 interface MaterialLibraryProps {
