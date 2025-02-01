@@ -108,7 +108,7 @@ export default function WallDrawing() {
       ),
       handleClick: () => {
         dispatch(setAction(CanvasAction.PLACE_DOOR));
-        dispatch(setSelectedImage("door.png"));
+        dispatch(setSelectedImage(`${process.env.NEXT_PUBLIC_URL}/door.png`));
       },
     },
     {
@@ -125,7 +125,7 @@ export default function WallDrawing() {
       ),
       handleClick: () => {
         dispatch(setAction(CanvasAction.PLACE_WINDOW));
-        dispatch(setSelectedImage("window.png"));
+        dispatch(setSelectedImage(`${process.env.NEXT_PUBLIC_URL}/window.png`));
       },
     },
   ];

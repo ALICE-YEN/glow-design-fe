@@ -1,11 +1,12 @@
 import type { Metadata } from "next"; // Next.js 自動將這些數據注入到 HTML <head>
 // 從 next/font/local 引入自定義字體，支持直接從本地文件載入字體（例如 .woff, .woff2）。
 import localFont from "next/font/local"; // Next.js 的字體優化 API，字體加載是自動優化的，會根據頁面的訪問只加載所需字體，減少資源浪費。
-import { auth } from "@/services/auth/config";
-import { config } from "@fortawesome/fontawesome-svg-core";
-import { ReduxProviders } from "@/components/ReduxProviders";
-import AuthModal from "@/app/components/AuthModal";
 import { SessionProvider } from "next-auth/react"; // 在整個應用程式 client-side 提供身份驗證會話
+import { config } from "@fortawesome/fontawesome-svg-core";
+import { auth } from "@/services/auth/config";
+import { ReduxProviders } from "@/components/ReduxProviders";
+import { ReactQueryProvider } from "@/components/ReactQueryProvider";
+import AuthModal from "@/app/components/AuthModal";
 import "@fortawesome/fontawesome-svg-core/styles.css"; // 引入基礎樣式
 import "./globals.css";
 
@@ -38,16 +39,18 @@ export default async function AppLayout({
 
   return (
     <SessionProvider session={session}>
-      <ReduxProviders>
-        <html lang="en">
-          <body
-            className={`${geistSans.variable} ${geistMono.variable} antialiased`}
-          >
-            {children}
-            <AuthModal />
-          </body>
-        </html>
-      </ReduxProviders>
+      <ReactQueryProvider>
+        <ReduxProviders>
+          <html lang="en">
+            <body
+              className={`${geistSans.variable} ${geistMono.variable} antialiased`}
+            >
+              {children}
+              <AuthModal />
+            </body>
+          </html>
+        </ReduxProviders>
+      </ReactQueryProvider>
     </SessionProvider>
   );
 }

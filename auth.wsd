@@ -1,0 +1,23 @@
+@startuml
+actor User
+participant "NextAuth (Next.js)" as NextAuth
+participant "Backend API (Express)" as BackendAPI
+database "Database (PostgreSQL)" as Database
+
+== 登入流程 ==
+User -> NextAuth: 1. signIn (Google / Credentials)
+NextAuth -> BackendAPI: 2. POST /auth/login or /auth/google-login
+BackendAPI -> Database: 3. Validate User (email/password or ssoId)
+Database --> BackendAPI: 4. Return User Info
+BackendAPI -> BackendAPI: 5. Generate JWT
+BackendAPI --> NextAuth: 6. Return JWT
+NextAuth --> User: 7. Store JWT in session
+
+== API 授權流程 ==
+User -> NextAuth: 8. Retrieve JWT from useSession()
+User -> BackendAPI: 9. API Request with Authorization: Bearer {JWT}
+BackendAPI -> BackendAPI: 10. Validate JWT
+BackendAPI -> Database: 11. Fetch Data
+Database --> BackendAPI: 12. Return Data
+BackendAPI --> User: 13. API Response
+@enduml

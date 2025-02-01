@@ -14,7 +14,7 @@ export default function Card({ src, title }: CardProps) {
   return (
     <div
       className="bg-white rounded-card shadow-md overflow-hidden cursor-pointer hover:shadow-xl"
-      onClick={() => router.push("/design")}
+      onClick={() => router.push("/design/1")}
     >
       <img src={src} alt={title} className="w-full h-56 object-cover" />
       {/* <Image
