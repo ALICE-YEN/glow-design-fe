@@ -19,7 +19,7 @@ export default function Header({ showInitTitle = true }: HeaderProps) {
 
   const { data: userSession, status } = useSession(); // for Client Component。`useSession` must be wrapped in a <SessionProvider />
   console.log("Header render", status);
-  console.log("User session:", userSession);
+  console.log("Header session:", userSession);
 
   const isAuthModalOpen = useAppSelector((state) => state.user.isAuthModalOpen);
   const dispatch = useAppDispatch();

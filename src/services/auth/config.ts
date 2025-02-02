@@ -1,7 +1,4 @@
-// Google 回傳 token 這段跟 NextAuth 整合還有問題
-
-// Contains NextAuth configuration and exposes the auth, signIn, and signOut methods.
-// Focuses on configuring authentication providers and session strategies
+// 後端生成 JWT，並將其返回給 NextAuth，而非用 NextAuth 產生的 token
 
 import NextAuth from "next-auth";
 import GoogleProvider from "next-auth/providers/google";
@@ -17,35 +14,33 @@ export const {
   secret: process.env.NEXTAUTH_SECRET,
   session: {
     strategy: "jwt", // JWT 會被存儲在安全的 HTTP-only Cookie
+    maxAge: 86400,
   },
   callbacks: {
     // The `jwt` callback is called whenever a JWT is created or updated
-    jwt({ token, user }) {
-      // Defines what data is stored in the token
+    jwt({ token, user, account }) {
       // token：the current state of the NextAuth-managed JWT
-      // user：user object returned during the sign-in process (from your backend or Google). the user object that was returned from the `authorize` callback.
-      // If user exists (e.g., during sign-in), add properties to the token
-      console.log("jwt token", token);
-      console.log("jwt user", user);
-      if (user) {
-        token = { ...token, ...user };
+
+      if (account && account.provider === "google") {
+        if (account.backendData) {
+          token = { ...token, ...account.backendData }; // 使用後端 API 回傳的，包括 token
+        }
+      } else {
+        if (user) {
+          token = { ...token, ...user }; // the user object that was returned from the `authorize` callback. 使用後端 API 回傳的，包括 token
+        }
       }
+
       return token;
     },
     // The `session` callback is called whenever a session is checked(ex: useSession)
     session({ session, token }) {
       // Maps token data to the session object for client-side usage
-      // token：NextAuth-managed JWT token created or updated in the jwt callback
-      // session：This is the session object returned to the frontend. It’s typically what you access with useSession in your Next.js app.
-      // Add properties from the token into the session
-      console.log("session session", session);
-      console.log("session token", token);
-      session.user = { ...session.user, ...token };
+      session.user = token; // 使用後端 API 回傳的，包括 token
+
       return session;
     },
     async signIn({ account, profile }) {
-      console.log("account", account);
-      console.log("profile", profile);
       if (account.provider === "google") {
         try {
           const response = await axios.post(
@@ -57,8 +52,15 @@ export const {
             }
           );
           console.log("Google login response:", response.data);
-          return response.data;
-          // NextAuth 自行處理了部分資料，並覆蓋了你在 signIn Callback 中返回的資料
+          if (!response.data || !response.data.token) {
+            console.error("Missing token in API response");
+            return false;
+          }
+
+          // 將後端回傳的資料(包括 token) 附加到 account 上
+          account.backendData = response.data;
+
+          return true;
         } catch (error) {
           console.error("Error in signIn:", error.message);
           return false;
@@ -75,11 +77,11 @@ export const {
         params: {
           prompt: "consent",
           access_type: "offline",
-          response_type: "code", // Authorization Code
+          response_type: "code", // Authorization Code flow
         },
       },
     }),
-    // NextAuth 提供的驗證方式之一，用於自定義驗證邏輯
+    // NextAuth 提供的驗證方式之一，用於自定義驗證邏輯（非 OAuth 2.0）
     CredentialsProvider({
       // 定義了用戶需要輸入的欄位
       credentials: {
@@ -88,7 +90,6 @@ export const {
       },
       // Credentials 驗證的核心，負責處理登入邏輯。它會在用戶提交表單後執行，用於驗證用戶的憑證。
       authorize: async (credentials) => {
-        console.log("credentials", credentials);
         if (!credentials?.email || !credentials?.password) {
           throw new Error("Missing email or password");
         }
@@ -110,7 +111,6 @@ export const {
           }
 
           const user = await response.data;
-          console.log("user", user);
 
           if (!user || !user.id || !user.email) {
             throw new Error("Invalid user data from API");
