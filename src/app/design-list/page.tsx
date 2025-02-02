@@ -1,10 +1,31 @@
 "use client";
 
+import { useQuery } from "@tanstack/react-query";
+import axios from "axios";
+import { useSession } from "next-auth/react";
 import Header from "@/app/components/Header";
 import Card from "@/app/design-list/components/Card";
 import Footer from "@/app/components/Footer";
+import type { Design } from "@/types/interfaces";
+
+const fetchData = async (userId: number) => {
+  const { data } = await axios.get(
+    `${process.env.NEXT_PUBLIC_BACKEND_URL}/designs/user/${userId}`
+  );
+  return data;
+};
 
 export default function DesignList() {
+  const { data: userSession } = useSession();
+
+  const { data, error, isLoading } = useQuery({
+    queryKey: ["design-list"],
+    queryFn: () => fetchData(Number(userSession?.user?.id)),
+  });
+
+  if (isLoading) return <div>Loading...</div>;
+  if (error) return <div>Error: {(error as Error).message}</div>;
+
   return (
     <div className="bg-panel-background min-h-screen">
       <Header />
@@ -17,10 +38,16 @@ export default function DesignList() {
             <p className="mt-2">開新設計</p>
           </div>
 
-          {[...Array(50)].map((_, index) => (
+          {data.map((design: Design, index: number) => (
             <Card
-              src="https://www.anstone.com.tw/upload/product/202411201445140.jpg"
-              title="設計稿"
+              id={design.id}
+              title={design.name}
+              src={
+                design.preview_url ||
+                `${process.env.NEXT_PUBLIC_URL}/background-color.png`
+              }
+              description={design.description}
+              updatedAt={design.updated_at}
               key={index}
             />
           ))}
