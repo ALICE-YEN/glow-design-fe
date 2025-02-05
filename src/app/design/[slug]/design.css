@@ -1,0 +1,60 @@
+/* design.module.css：局部作用域的 CSS 解決方案 */
+/* design.css：全部作用域的 CSS 解決方案 */
+
+.card {
+  width: 140px;
+  height: 140px;
+  border-radius: var(--card-radius);
+  overflow: hidden;
+  position: relative;
+  transition: transform 0.4s ease;
+}
+
+.card__img {
+  width: 100%;
+  height: 100%;
+  transition: transform 0.4s ease;
+}
+
+.card:hover .card__img {
+  transform: scale(1.05); /* 放大圖片 */
+}
+
+.card__content {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: 0;
+  background: linear-gradient(
+    to top,
+    rgba(0, 0, 0, 0.7),
+    rgba(0, 0, 0, 0)
+  ); /* 漸變遮罩 */
+  color: white;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-end;
+  padding: 8px;
+  opacity: 0;
+  transition: height 0.4s ease, opacity 0.4s ease;
+}
+
+.card:hover .card__content {
+  height: 40%; /* 顯示底部遮罩 */
+  opacity: 1;
+}
+
+.card__content__header {
+  font-size: 14px;
+  font-weight: bold;
+  text-align: center;
+  margin: 4px 0;
+}
+
+.card__content__text {
+  font-size: 12px;
+  text-align: center;
+  margin: 4px 0;
+}

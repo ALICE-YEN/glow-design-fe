@@ -3,14 +3,26 @@
 @tailwind utilities;
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  /* colors */
+  --background: #b2ac88;
+  --contrast: #a63a3a;
+  /* --contrast-hover: #933434; */
+  --contrast-hover: #b84a4a;
+  --panel-background: rgb(245 245 244); /* stone-100 */
+  --button-hover: rgb(229 231 235); /* gray-200 */
+  --button-active: rgb(229 231 235); /* gray-200 */
+  --button-disabled: rgb(209 213 219); /* gray-300 */
+  --primary-text: #5c573e;
+  --secondary-text: #555352;
+
+  /* borderRadius */
+  --default-radius: 6px;
+  --card-radius: 12px;
 }
 
 @media (prefers-color-scheme: dark) {
   :root {
     --background: #0a0a0a;
-    --foreground: #ededed;
   }
 }
 
@@ -18,4 +30,67 @@ body {
   color: var(--foreground);
   background: var(--background);
   font-family: Arial, Helvetica, sans-serif;
+}
+
+button:focus {
+  outline: none;
+}
+
+input:focus {
+  outline: none;
+}
+
+.heading-lg {
+  font-size: 3.5rem;
+  font-weight: 500;
+  line-height: 1;
+
+  @media screen(md) {
+    font-size: 6rem;
+  }
+
+  @media screen(lg) {
+    font-size: 8rem;
+  }
+}
+
+.heading-md {
+  font-size: 3rem;
+  font-weight: 500;
+  line-height: 1;
+
+  @media screen(md) {
+    font-size: 4.5rem;
+  }
+
+  @media screen(xl) {
+    font-size: 6rem;
+  }
+}
+
+.heading-sm {
+  font-size: 2.5rem;
+  font-weight: 500;
+  line-height: 1;
+
+  @media screen(md) {
+    font-size: 3rem;
+  }
+
+  @media screen(xl) {
+    font-size: 4rem;
+  }
+}
+
+video::-webkit-media-controls {
+  display: none !important;
+}
+video::-webkit-media-controls-enclosure {
+  display: none !important;
+}
+video::-webkit-media-controls-panel {
+  display: none !important;
+}
+video::-moz-media-controls {
+  display: none !important;
 }
