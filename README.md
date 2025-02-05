@@ -32,19 +32,20 @@ The project is currently under development, with **70% of frontend functionaliti
 ## Setup Instructions
 ### 🛠 **Run Locally**
 #### 1️⃣ Clone the Repository
-bash
+```bash
 git clone https://github.com/ALICE-YEN/glow-design-fe.git
-
+cd glow-design-fe
+```
 
 #### 2️⃣ Install Dependencies
-bash
+```bash
 pnpm install
-
+```
 
 #### 3️⃣ Start the Development Server
-bash
+```bash
 pnpm dev
-
+```
 
 
 ## Authentication Flow
