@@ -31,20 +31,23 @@ export default function DesignList() {
       <Header />
 
       {/* Design List */}
-      <main className="pt-40 container mx-auto px-4">
+      <main className="pt-40 mx-auto px-10 sm:px-14 lg:px-20">
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6">
           <div className="flex flex-col justify-center items-center bg-contrast text-white rounded-card cursor-pointer hover:bg-contrast-hover">
             <span className="text-4xl">+</span>
             <p className="mt-2">開新設計</p>
           </div>
 
+          {/* preview_url 預設應該要放在資料庫裡！！！！ */}
           {data.map((design: Design, index: number) => (
             <Card
               id={design.id}
               title={design.name}
               src={
                 design.preview_url ||
-                `${process.env.NEXT_PUBLIC_URL}/background-color.png`
+                `${process.env.NEXT_PUBLIC_URL}/design-default-${
+                  Math.floor(Math.random() * 3) + 1
+                }.jpg`
               }
               description={design.description}
               updatedAt={design.updated_at}

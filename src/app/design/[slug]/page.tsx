@@ -587,8 +587,8 @@ export default function Design() {
         <Cropping canvas={canvas} />
         {/* <LayerList canvas={canvas} /> */}
 
-        <p>currentAction: {currentAction}</p>
-        <p>selectedImage: {selectedImage}</p>
+        {/* <p>currentAction: {currentAction}</p>
+        <p>selectedImage: {selectedImage}</p> */}
       </div>
     </main>
   );

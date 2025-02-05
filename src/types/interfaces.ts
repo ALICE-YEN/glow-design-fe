@@ -2,7 +2,7 @@ export interface Design {
   id: number;
   name: string;
   description: string;
-  preview_url?: string | null;
+  preview_url: string;
   data: any;
   created_by: number;
   is_deleted: boolean;
