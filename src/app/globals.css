@@ -36,6 +36,10 @@ button:focus {
   outline: none;
 }
 
+input:focus {
+  outline: none;
+}
+
 .heading-lg {
   font-size: 3.5rem;
   font-weight: 500;
@@ -59,8 +63,22 @@ button:focus {
     font-size: 4.5rem;
   }
 
-  @media screen(lg) {
+  @media screen(xl) {
     font-size: 6rem;
+  }
+}
+
+.heading-sm {
+  font-size: 2.5rem;
+  font-weight: 500;
+  line-height: 1;
+
+  @media screen(md) {
+    font-size: 3rem;
+  }
+
+  @media screen(xl) {
+    font-size: 4rem;
   }
 }
 

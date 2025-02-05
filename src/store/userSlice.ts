@@ -3,11 +3,13 @@ import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 interface UserState {
   username: string;
   isLoggedIn: boolean;
+  isAuthModalOpen: boolean;
 }
 
 const initialState: UserState = {
   username: "",
   isLoggedIn: false,
+  isAuthModalOpen: false,
 };
 
 const userSlice = createSlice({
@@ -22,8 +24,15 @@ const userSlice = createSlice({
       state.username = "";
       state.isLoggedIn = false;
     },
+    openAuthModal: (state) => {
+      state.isAuthModalOpen = true;
+    },
+    closeAuthModal: (state) => {
+      state.isAuthModalOpen = false;
+    },
   },
 });
 
-export const { login, logout } = userSlice.actions;
+export const { login, logout, openAuthModal, closeAuthModal } =
+  userSlice.actions;
 export default userSlice.reducer;
