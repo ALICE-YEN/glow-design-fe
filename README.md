@@ -1,36 +1,64 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# 居然好設計 Glow Design (Frontend)
 
-## Getting Started
+## Overview
+This project is an **interactive interior design tool** that allows users to design interior spaces with intuitive drag-and-drop functionality. The frontend is built with **TypeScript, Next.js, Redux, and Fabric.js**, providing a smooth and dynamic design experience.
 
-First, run the development server:
+The project is currently under development, with **70% of frontend functionalities completed**. Authentication is enabled, but it can be temporarily disabled for local testing.
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
+## Features
+### 🎨 **Design Features**
+- **Wall Drawing:** Users can draw and adjust walls dynamically.
+- **Floor Material Application:** Users can select and switch between different flooring materials.
+- **Furniture Manipulation:** Drag, scale, and rotate furniture elements.
+- **Grid-Based Snapping:** Ensures precise placement and alignment.
+- **Canvas Navigation:** Supports panning and zooming for better visualization.
+- **Undo/Redo Functionality:** Allows users to undo or redo actions, reducing errors.
+
+### 📤 **Export & Sharing**
+- **Custom Export:** Users can define export range and dimensions.
+
+### 🚀 **Other Features**
+- **SSR/SSG for Speed:** Uses Next.js Server-Side Rendering (SSR) and Static Site Generation (SSG) to optimize performance.
+- **Authentication:** Supports JWT authentication and OAuth 2.0 (Google login and username/password login).
+
+## Tech Stack
+| Technology | Purpose |
+|------------|---------|
+| **TypeScript** | Ensures type safety & maintainability |
+| **Next.js** | Enhances performance with SSR/SSG |
+| **Redux** | Manages global state efficiently |
+| **Fabric.js** | Provides robust 2D canvas manipulation |
+
+## Setup Instructions
+### 🛠 **Run Locally**
+#### 1️⃣ Clone the Repository
+bash
+git clone https://github.com/ALICE-YEN/glow-design-fe.git
+
+
+#### 2️⃣ Install Dependencies
+bash
+pnpm install
+
+
+#### 3️⃣ Start the Development Server
+bash
 pnpm dev
-# or
-bun dev
-```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## Authentication Flow
+- **For a detailed overview of the frontend-backend authentication flow, refer to the Sequence Diagram (`auth.wsd`).**
 
-## Learn More
 
-To learn more about Next.js, take a look at the following resources:
+## Demo
+🎥 **[Glow Design](https://www.youtube.com/watch?v=Yu3DeyiUVV0)**
+[![IMAGE ALT TEXT](https://github.com/user-attachments/assets/ba0e6ced-9aeb-409e-9077-c240965cb375)](https://www.youtube.com/watch?v=Yu3DeyiUVV0 "YOUR_VIDEO_TITLE")
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## Ongoing Tasks
+- **Replace temporary images with finalized assets for a polished UI/UX.**
+- **Complete backend integration**
+- **Enhance "Zoom to Fit" functionality to ensure that exported images can adapt optimally to the selected predefined or custom dimensions while maintaining high resolution.**
+- **Finalize backend API endpoints for seamless project storage and retrieval.**
+- **Deploy on a production environment**
