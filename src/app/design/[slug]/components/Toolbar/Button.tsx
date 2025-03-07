@@ -18,6 +18,20 @@ export default function Button({
   isDisabled = false,
   handleClick,
 }: ButtonProps) {
+  // ZOOM_TO_FIT 的 icon 要客製化邊框
+  const borderProps =
+    icon.iconName === "arrows-left-right"
+      ? {
+          className: "fa-border",
+          style: {
+            border: "2px solid black",
+            borderRadius: 3,
+            padding: "0.5px",
+            transform: "scale(0.85)",
+          },
+        }
+      : {};
+
   return (
     <button
       onClick={isDisabled ? undefined : handleClick}
@@ -28,10 +42,10 @@ export default function Button({
           ? "bg-button-active"
           : "hover:bg-button-hover"
       }`}
-      title={label}
+      title={label} // 瀏覽器控制的 tooltip
       disabled={isDisabled}
     >
-      <FontAwesomeIcon icon={icon} size="lg" />
+      <FontAwesomeIcon icon={icon} size="lg" {...borderProps} />
     </button>
   );
 }

@@ -8,6 +8,7 @@ import {
   faHand,
   faMousePointer,
   IconDefinition,
+  faArrowsLeftRight,
 } from "@fortawesome/free-solid-svg-icons";
 import { faMoon } from "@fortawesome/free-regular-svg-icons";
 import { useAppSelector, useAppDispatch } from "@/services/redux/hooks";
@@ -55,6 +56,10 @@ export default function Toolbar({
     dispatch(setAction(CanvasAction.REDO));
   };
 
+  const handleZoomToFitClick = () => {
+    dispatch(setAction(CanvasAction.ZOOM_TO_FIT));
+  };
+
   const handleSaveClick = () => {
     dispatch(setAction(CanvasAction.SAVE));
   };
@@ -96,6 +101,12 @@ export default function Toolbar({
         label: "Redo",
         handleClick: handleRedoClick,
         isDisabled: isRedoDisabled,
+      },
+      {
+        id: CanvasAction.ZOOM_TO_FIT,
+        icon: faArrowsLeftRight,
+        label: "Zoom to Fit",
+        handleClick: handleZoomToFitClick,
       },
       {
         id: CanvasAction.SAVE,
