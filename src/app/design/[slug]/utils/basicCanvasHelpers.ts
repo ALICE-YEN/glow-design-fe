@@ -122,18 +122,33 @@ export const handleResize = (canvasInstance: Canvas) => {
 };
 
 export const handleCanvasKeyDown =
-  (canvasInstance: Canvas, saveToUndoStack: (canvasInstance: Canvas) => void) =>
+  (
+    canvasInstance: Canvas,
+    saveToUndoStack: (canvasInstance: Canvas) => void,
+    handleUndoClick: () => void
+  ) =>
   (e: KeyboardEvent): void => {
-    if (e.key === "Delete" || e.key === "Backspace") {
-      const activeObject = canvasInstance.getActiveObject();
-      if (activeObject) {
-        canvasInstance.remove(activeObject); // 從畫布中移除物件
-        canvasInstance.discardActiveObject(); // 清除選中狀態，觸發 selection:cleared
-        canvasInstance.requestRenderAll(); // 重新渲染畫布
+    switch (e.key) {
+      case "Delete":
+      case "Backspace":
+        const activeObject = canvasInstance.getActiveObject();
+        if (activeObject) {
+          canvasInstance.remove(activeObject); // 從畫布中移除物件
+          canvasInstance.discardActiveObject(); // 清除選中狀態，觸發 selection:cleared
+          canvasInstance.requestRenderAll(); // 重新渲染畫布
 
-        saveToUndoStack(canvasInstance); // 操作後儲存狀態
-        console.log("物件已刪除");
-      }
+          saveToUndoStack(canvasInstance); // 操作後儲存狀態
+          console.log("物件已刪除");
+        }
+        break;
+      case "z":
+      case "Z":
+        if (e.ctrlKey || e.metaKey) {
+          handleUndoClick();
+        }
+        break;
+      default:
+        break;
     }
   };
 

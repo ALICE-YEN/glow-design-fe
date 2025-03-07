@@ -102,7 +102,14 @@ export default function Design() {
       window.addEventListener("resize", resizeHandler);
 
       // 監聽鍵盤事件
-      const keyDownHandler = handleCanvasKeyDown(initCanvas, saveToUndoStack);
+      const handleUndoClick = () => {
+        dispatch(setAction(CanvasAction.UNDO));
+      };
+      const keyDownHandler = handleCanvasKeyDown(
+        initCanvas,
+        saveToUndoStack,
+        handleUndoClick
+      );
 
       // 綁定鍵盤事件
       window.addEventListener("keydown", keyDownHandler);
@@ -587,8 +594,8 @@ export default function Design() {
         <Cropping canvas={canvas} />
         {/* <LayerList canvas={canvas} /> */}
 
-        {/* <p>currentAction: {currentAction}</p>
-        <p>selectedImage: {selectedImage}</p> */}
+        <p>currentAction: {currentAction}</p>
+        <p>selectedImage: {selectedImage}</p>
       </div>
     </main>
   );
