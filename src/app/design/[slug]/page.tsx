@@ -23,6 +23,9 @@ import {
   handleResize,
   handleCanvasKeyDown,
   isInitialCanvasState,
+  computeBoundingRect,
+  computeScale,
+  computeOffset,
 } from "@/app/design/[slug]/utils/basicCanvasHelpers";
 import {
   getSnappedPointer,
@@ -38,6 +41,7 @@ import {
 } from "@/app/design/[slug]/utils/undoRedoHelpers";
 import {
   FINALIZED_LINE_ID,
+  GRID_LINE_ID,
   CANVAS_WIDTH,
   CANVAS_HEIGHT,
   GRID_SIZE,
@@ -45,6 +49,7 @@ import {
   MIN_ZOOM,
   MAX_ZOOM,
   FLOORING_PATTERN_IMG_WIDTH,
+  ZOOM_TO_FIT_PADDING,
 } from "@/app/design/[slug]/utils/constants";
 import {
   handleObjectMoving,
@@ -400,6 +405,46 @@ export default function Design() {
     }
   };
 
+  const zoomToFit = () => {
+    if (!canvas) return;
+
+    const objects = canvas
+      .getObjects()
+      .filter((obj) => obj.id !== GRID_LINE_ID);
+
+    if (objects.length === 0) {
+      return;
+    }
+
+    // 畫布上所有物件（過濾掉網格線）的包圍盒（bounding rect）
+    const boundingRect = computeBoundingRect(objects);
+
+    // 計算視口大小
+    const viewportWidth = canvas.getWidth();
+    const viewportHeight = canvas.getHeight();
+
+    // 計算 Zoom To Fit 的縮放比例 (scale)，以便所有物件都能在畫布中顯示，並留有 padding
+    const newScale = computeScale(
+      boundingRect,
+      viewportWidth,
+      viewportHeight,
+      ZOOM_TO_FIT_PADDING
+    );
+
+    // 計算偏移：物件中心經過縮放後需要移動多少，才能到達畫布中心。 (畫布中心) - (物件中心 * newScale)
+    const { offsetX, offsetY } = computeOffset(
+      boundingRect,
+      newScale,
+      viewportWidth,
+      viewportHeight
+    );
+
+    // 設定新的 viewport transform
+    canvas.setViewportTransform([newScale, 0, 0, newScale, offsetX, offsetY]); // [水平縮放（scaleX）, 水平傾斜（skewX）, 垂直傾斜（skewY）, 垂直縮放（scaleY）, 水平移動（translateX）, 垂直移動（translateY）]
+
+    canvas.requestRenderAll();
+  };
+
   useEffect(() => {
     if (!canvas) return;
 
@@ -468,6 +513,9 @@ export default function Design() {
         case CanvasAction.REDO:
           redo();
           break;
+        case CanvasAction.ZOOM_TO_FIT:
+          zoomToFit();
+          break;
         // case CanvasAction.SAVE:
         //   break;
         case CanvasAction.PAN_CANVAS:
@@ -521,7 +569,7 @@ export default function Design() {
   }, [currentAction, canvas, dispatch, selectedImage]);
 
   const loadFromUrl = async ({
-    url = "https://www.google.com/images/srpr/logo3w.png",
+    url = "https://www.google.com/images/srpr/logo3w.png", // 亂放預設圖片
     customWidth = null, // 自定義寬度（px），默認為 null
   }: {
     url?: string;
@@ -550,19 +598,19 @@ export default function Design() {
     canvas.renderAll();
   };
 
-  const handleFileUpload = (event) => {
-    const file = event.target.files[0];
-    if (!file) return;
+  // const handleFileUpload = (event) => {
+  //   const file = event.target.files[0];
+  //   if (!file) return;
 
-    const reader = new FileReader();
+  //   const reader = new FileReader();
 
-    reader.onload = (e) => {
-      const result = e.target.result; // DataURL(Base64 URL 超集)
-      loadFromUrl({ url: result, customWidth: 300 });
-    };
+  //   reader.onload = (e) => {
+  //     const result = e.target.result; // DataURL(Base64 URL 超集)
+  //     loadFromUrl({ url: result, customWidth: 300 });
+  //   };
 
-    reader.readAsDataURL(file); // 將文件讀取為 Base64 格式 URL
-  };
+  //   reader.readAsDataURL(file); // 將文件讀取為 Base64 格式 URL
+  // };
 
   return (
     <main className="flex h-screen relative">

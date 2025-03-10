@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { Canvas, Object, TEvent } from "fabric";
+import { GRID_LINE_ID } from "@/app/design/[slug]/utils/constants";
 
 export default function LayerList({ canvas }: { canvas: Canvas }) {
   const [layers, setLayers] = useState<
@@ -112,7 +113,7 @@ export default function LayerList({ canvas }: { canvas: Canvas }) {
             !(
               obj.id.startsWith("vertical-") ||
               obj.id.startsWith("horizontal-") ||
-              obj?.id === "grid"
+              obj?.id === GRID_LINE_ID
             )
         )
         .map((obj: IObject) => ({
