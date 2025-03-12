@@ -2,6 +2,9 @@
 
 import { useEffect, useState, useRef } from "react";
 import { useRouter } from "next/navigation";
+import { useSession } from "next-auth/react";
+import axios from "axios";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faEllipsisV } from "@fortawesome/free-solid-svg-icons";
 import dayjs from "dayjs";
@@ -36,19 +39,45 @@ export default function Card({
   const [timeAgo, setTimeAgo] = useState("");
   const [menuOpen, setMenuOpen] = useState(false);
 
+  const { data: userSession } = useSession();
+  const userId = Number(userSession?.user?.id);
+
   // TODO: 時間還是有問題!!!!!!
   useEffect(() => {
     setTimeAgo(dayjs.utc(updatedAt).local().fromNow());
   }, [updatedAt]);
 
+  const queryClient = useQueryClient();
+
+  const deleteDesignMutation = useMutation({
+    mutationFn: async () => {
+      const response = await axios.delete(
+        `${process.env.NEXT_PUBLIC_BACKEND_URL}/designs/${id}`
+      );
+      return response.data;
+    },
+    // 刪除成功後，可依據需求刷新設計列表
+    onSuccess: () => {
+      queryClient.invalidateQueries(["design-list", userId]);
+    },
+    onError: (error) => {
+      console.error("刪除失敗：", error);
+      alert("刪除失敗，請稍後重試");
+    },
+  });
+
   const handleRename = (e: React.MouseEvent) => {
     e.stopPropagation(); // 避免觸發卡片整體的 onClick
     alert(`重新命名設計：${title}`);
+    setMenuOpen(false);
   };
 
   const handleDelete = (e: React.MouseEvent) => {
     e.stopPropagation();
-    alert(`刪除設計：${title}`);
+    if (window.confirm(`確定刪除設計：${title}？`)) {
+      deleteDesignMutation.mutate();
+    }
+    setMenuOpen(false);
   };
 
   return (

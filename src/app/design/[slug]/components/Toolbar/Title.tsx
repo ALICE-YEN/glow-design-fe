@@ -27,10 +27,19 @@ export default function Title({ designTitle }: TitleProps) {
       );
       return response.data;
     },
-
-    // 更新成功後，重新驗證設計資料的快取
+    // 更新成功後，重新取得設計資料
     onSuccess: () => {
       queryClient.invalidateQueries(["design", designId]);
+    },
+    onError: (error) => {
+      console.error("更新失敗：", error);
+      alert("更新失敗，請稍後重試");
+      // 回退到原始標題
+      setTitle(designTitle);
+    },
+    // 可選：無論成功或失敗都關閉編輯狀態
+    onSettled: () => {
+      setIsEditing(false);
     },
   });
 
@@ -38,7 +47,7 @@ export default function Title({ designTitle }: TitleProps) {
     setTitle(event.target.value);
   };
 
-  const handleSaveTitle = async () => {
+  const handleSaveTitle = () => {
     if (title.trim() === "") {
       alert("標題不可為空");
       setTitle(designTitle); // 回退到舊值
@@ -52,15 +61,7 @@ export default function Title({ designTitle }: TitleProps) {
       return;
     }
 
-    try {
-      await updateTitleMutation.mutateAsync(title); // mutateAsync：會回傳一個 Promise
-    } catch (error) {
-      console.error("更新失敗：", error);
-      alert("更新失敗，請稍後重試");
-      setTitle(designTitle); // 回退到舊值
-    } finally {
-      setIsEditing(false);
-    }
+    updateTitleMutation.mutate(title);
   };
 
   const handleKeyDown = (event: React.KeyboardEvent<HTMLInputElement>) => {
