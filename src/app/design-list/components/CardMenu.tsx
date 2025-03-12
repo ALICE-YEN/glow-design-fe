@@ -2,10 +2,15 @@
 
 import { useRef, useEffect, MouseEvent } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faEdit, faTrashAlt } from "@fortawesome/free-solid-svg-icons";
+import {
+  faEdit,
+  faTrashAlt,
+  faPencilAlt,
+} from "@fortawesome/free-solid-svg-icons";
 
 interface CardMenuProps {
   onRename: (e: MouseEvent) => void;
+  onEditDescription: (e: MouseEvent) => void;
   onDelete: (e: MouseEvent) => void;
   onClose: () => void;
   excludeRef?: React.RefObject<HTMLElement>;
@@ -16,6 +21,7 @@ const itemStyle =
 
 export default function CardMenu({
   onRename,
+  onEditDescription,
   onDelete,
   onClose,
   excludeRef,
@@ -51,6 +57,10 @@ export default function CardMenu({
       <div className={itemStyle} onClick={onRename}>
         <FontAwesomeIcon icon={faEdit} />
         <span>重新命名</span>
+      </div>
+      <div className={itemStyle} onClick={onEditDescription}>
+        <FontAwesomeIcon icon={faPencilAlt} />
+        <span>修改描述</span>
       </div>
       <div className={itemStyle} onClick={onDelete}>
         <FontAwesomeIcon icon={faTrashAlt} />

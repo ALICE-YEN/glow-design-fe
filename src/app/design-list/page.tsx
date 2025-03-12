@@ -1,6 +1,6 @@
 "use client";
 
-import { useQuery } from "@tanstack/react-query";
+import { useMutation, useQueryClient, useQuery } from "@tanstack/react-query";
 import axios from "axios";
 import { useSession } from "next-auth/react";
 import Header from "@/app/components/Header";
@@ -24,6 +24,31 @@ export default function DesignList() {
     queryFn: () => getDesignsByUser(userId),
   });
 
+  const queryClient = useQueryClient();
+
+  const createDesignMutation = useMutation({
+    mutationFn: async () => {
+      const response = await axios.post(
+        `${process.env.NEXT_PUBLIC_BACKEND_URL}/designs`,
+        {
+          name: "Untitled Design",
+          description: "A new design plan",
+          data: {},
+          userId,
+        }
+      );
+      return response.data;
+    },
+    // 建立成功後，可依據需求刷新設計列表
+    onSuccess: () => {
+      queryClient.invalidateQueries(["design-list", userId]);
+    },
+    onError: (error) => {
+      console.error("建立失敗：", error);
+      alert("建立失敗，請稍後重試");
+    },
+  });
+
   if (isLoading) return <div>Loading...</div>;
   if (error) return <div>Error: {(error as Error).message}</div>;
 
@@ -32,9 +57,12 @@ export default function DesignList() {
       <Header />
 
       {/* Design List */}
-      <main className="pt-40 mx-auto px-10 sm:px-14 lg:px-20">
+      <main className="pt-28 sm:pt-40 mx-auto px-10 sm:px-14 lg:px-20">
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6">
-          <div className="flex flex-col justify-center items-center bg-contrast text-white rounded-card cursor-pointer hover:bg-contrast-hover">
+          <div
+            className="h-[150px] sm:h-[300px] flex flex-col justify-center items-center bg-contrast text-white rounded-card cursor-pointer hover:bg-contrast-hover"
+            onClick={() => createDesignMutation.mutate()}
+          >
             <span className="text-4xl">+</span>
             <p className="mt-2">開新設計</p>
           </div>

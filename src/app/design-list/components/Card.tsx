@@ -72,6 +72,12 @@ export default function Card({
     setMenuOpen(false);
   };
 
+  const handleEditDescription = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    alert(`修改設計描述：${description}`);
+    setMenuOpen(false);
+  };
+
   const handleDelete = (e: React.MouseEvent) => {
     e.stopPropagation();
     if (window.confirm(`確定刪除設計：${title}？`)) {
@@ -105,6 +111,7 @@ export default function Card({
         {menuOpen && (
           <CardMenu
             onRename={handleRename}
+            onEditDescription={handleEditDescription}
             onDelete={handleDelete}
             onClose={() => setMenuOpen(false)}
             excludeRef={menuButtonRef}
