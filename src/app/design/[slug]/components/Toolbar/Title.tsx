@@ -1,17 +1,38 @@
 "use client";
 
 import { useState } from "react";
+import { usePathname } from "next/navigation";
 import Link from "next/link";
+import axios from "axios";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 
 interface TitleProps {
   designTitle: string;
-  updateTitle: (newTitle: string) => Promise<void>;
 }
 
-export default function Title({ designTitle, updateTitle }: TitleProps) {
+export default function Title({ designTitle }: TitleProps) {
   const [title, setTitle] = useState(designTitle);
   const [isEditing, setIsEditing] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
+
+  const pathname = usePathname();
+  const designId = pathname.split("/").pop();
+
+  const queryClient = useQueryClient();
+
+  const updateTitleMutation = useMutation({
+    mutationFn: async (newTitle: string) => {
+      const response = await axios.put(
+        `${process.env.NEXT_PUBLIC_BACKEND_URL}/designs/${designId}`,
+        { name: newTitle }
+      );
+      return response.data;
+    },
+
+    // 更新成功後，重新驗證設計資料的快取
+    onSuccess: () => {
+      queryClient.invalidateQueries(["design", designId]);
+    },
+  });
 
   const handleTitleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     setTitle(event.target.value);
@@ -25,16 +46,19 @@ export default function Title({ designTitle, updateTitle }: TitleProps) {
       return;
     }
 
-    setIsLoading(true);
+    // 如果新標題和原本標題相同，就不更新
+    if (title.trim() === designTitle.trim()) {
+      setIsEditing(false);
+      return;
+    }
 
     try {
-      await updateTitle(title);
+      await updateTitleMutation.mutateAsync(title); // mutateAsync：會回傳一個 Promise
     } catch (error) {
       console.error("更新失敗：", error);
       alert("更新失敗，請稍後重試");
       setTitle(designTitle); // 回退到舊值
     } finally {
-      setIsLoading(false);
       setIsEditing(false);
     }
   };
@@ -48,10 +72,6 @@ export default function Title({ designTitle, updateTitle }: TitleProps) {
     }
   };
 
-  const handleBlur = () => {
-    handleSaveTitle();
-  };
-
   return (
     <div className="flex items-center space-x-6 font-bold">
       <Link href="/" className="text-contrast text-xl">
@@ -63,7 +83,7 @@ export default function Title({ designTitle, updateTitle }: TitleProps) {
           value={title}
           onChange={handleTitleChange}
           onKeyDown={handleKeyDown}
-          onBlur={handleBlur}
+          onBlur={handleSaveTitle}
           className="border-b-2 focus:outline-none focus:border-contrast text-lg text-primary"
           autoFocus
         />
@@ -72,7 +92,7 @@ export default function Title({ designTitle, updateTitle }: TitleProps) {
           className="text-primary text-lg cursor-pointer hover:underline"
           onClick={() => setIsEditing(true)}
         >
-          {title} {isLoading && " (更新中...)"}
+          {title}
         </span>
       )}
     </div>

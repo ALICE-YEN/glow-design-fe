@@ -8,7 +8,7 @@ import Card from "@/app/design-list/components/Card";
 import Footer from "@/app/components/Footer";
 import type { Design } from "@/types/interfaces";
 
-const fetchData = async (userId: number) => {
+const getDesignsByUser = async (userId: number) => {
   const { data } = await axios.get(
     `${process.env.NEXT_PUBLIC_BACKEND_URL}/designs/user/${userId}`
   );
@@ -17,10 +17,11 @@ const fetchData = async (userId: number) => {
 
 export default function DesignList() {
   const { data: userSession } = useSession();
+  const userId = Number(userSession?.user?.id);
 
   const { data, error, isLoading } = useQuery({
-    queryKey: ["design-list"],
-    queryFn: () => fetchData(Number(userSession?.user?.id)),
+    queryKey: ["design-list", userId],
+    queryFn: () => getDesignsByUser(userId),
   });
 
   if (isLoading) return <div>Loading...</div>;
@@ -39,8 +40,9 @@ export default function DesignList() {
           </div>
 
           {/* preview_url 預設應該要放在資料庫裡！！！！ */}
-          {data.map((design: Design, index: number) => (
+          {data.map((design: Design) => (
             <Card
+              key={design.id}
               id={design.id}
               title={design.name}
               src={
@@ -51,7 +53,6 @@ export default function DesignList() {
               }
               description={design.description}
               updatedAt={design.updated_at}
-              key={index}
             />
           ))}
         </div>
