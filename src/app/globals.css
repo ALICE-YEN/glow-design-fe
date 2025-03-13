@@ -18,6 +18,21 @@
   /* borderRadius */
   --default-radius: 6px;
   --card-radius: 12px;
+
+  /* react-toastify */
+  --toastify-color-success: #4caf50;
+  --toastify-color-error: var(--contrast-hover);
+  --toastify-toast-top: 120px;
+  --toastify-toast-right: 20px;
+  --toastify-toast-width: 300px;
+  --toastify-toast-min-height: 54px;
+}
+
+/* react-toastify */
+.Toastify__close-button {
+  top: 50%;
+  right: 14px;
+  transform: translateY(-50%);
 }
 
 @media (prefers-color-scheme: dark) {

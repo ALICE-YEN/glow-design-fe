@@ -5,6 +5,7 @@ import { usePathname } from "next/navigation";
 import Link from "next/link";
 import axios from "axios";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { toast } from "react-toastify";
 
 interface TitleProps {
   designTitle: string;
@@ -30,10 +31,11 @@ export default function Title({ designTitle }: TitleProps) {
     // 更新成功後，重新取得設計資料
     onSuccess: () => {
       queryClient.invalidateQueries(["design", designId]);
+      toast.success("設計重新命名成功");
     },
     onError: (error) => {
       console.error("更新失敗：", error);
-      alert("更新失敗，請稍後重試");
+      toast.error("重新命名失敗，請稍後重試");
       // 回退到原始標題
       setTitle(designTitle);
     },
