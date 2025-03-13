@@ -38,24 +38,25 @@ export default function Card({
 
   const menuButtonRef = useRef<HTMLButtonElement>(null);
 
+  const { data: userSession } = useSession();
+  const userId = Number(userSession?.user?.id);
+
   const [timeAgo, setTimeAgo] = useState("");
   const [menuOpen, setMenuOpen] = useState(false);
   const [modalConfig, setModalConfig] = useState<{
     isOpen: boolean;
+    actionType: "rename" | "edit" | "delete" | null;
     title: string;
     label: string;
     inputValue: string;
-    onConfirm: (updatedValue: string) => void;
   }>({
     isOpen: false,
+    actionType: null,
     title: "",
     label: "",
     inputValue: "",
-    onConfirm: () => {},
   });
-
-  const { data: userSession } = useSession();
-  const userId = Number(userSession?.user?.id);
+  const [isComposing, setIsComposing] = useState(false); // 正在中文輸入
 
   // TODO: 時間還是有問題!!!!!!
   useEffect(() => {
@@ -64,6 +65,25 @@ export default function Card({
 
   const queryClient = useQueryClient();
 
+  const updateDesignMutation = useMutation({
+    mutationFn: async (body: { name?: string; description?: string }) => {
+      const response = await axios.put(
+        `${process.env.NEXT_PUBLIC_BACKEND_URL}/designs/${id}`,
+        body
+      );
+      return response.data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries(["design-list", userId]);
+      console.log("modalConfig", modalConfig);
+      toast.success("設計修改成功");
+    },
+    onError: (error) => {
+      console.error("修改失敗：", error);
+      toast.error("修改失敗，請稍後重試");
+    },
+  });
+
   const deleteDesignMutation = useMutation({
     mutationFn: async () => {
       const response = await axios.delete(
@@ -71,7 +91,6 @@ export default function Card({
       );
       return response.data;
     },
-    // 刪除成功後，可依據需求刷新設計列表
     onSuccess: () => {
       queryClient.invalidateQueries(["design-list", userId]);
       toast.success("設計刪除成功");
@@ -90,31 +109,60 @@ export default function Card({
         title: "重新命名",
         label: "請輸入新的名稱",
         inputValue: title,
-        onConfirm: (updatedValue: string) =>
-          console.log(`重新命名設計：${updatedValue}`),
       },
       edit: {
         title: "修改描述",
         label: "請輸入新的設計描述",
         inputValue: description,
-        onConfirm: (updatedValue: string) =>
-          console.log(`修改設計描述：${updatedValue}`),
       },
       delete: {
         title: "刪除確認",
         label: "確定要刪除這個設計嗎？",
         inputValue: "",
-        onConfirm: () => deleteDesignMutation.mutate(),
       },
     };
 
     setModalConfig({
       isOpen: true,
+      actionType: action,
       title: actionConfig[action].title,
       label: actionConfig[action].label,
       inputValue: actionConfig[action].inputValue,
-      onConfirm: actionConfig[action].onConfirm,
     });
+  };
+
+  const handleConfirm = () => {
+    if (modalConfig.actionType === "rename") {
+      if (modalConfig.inputValue.trim() === title.trim()) {
+        return;
+      }
+      updateDesignMutation.mutate({ name: modalConfig.inputValue.trim() });
+    } else if (modalConfig.actionType === "edit") {
+      if (modalConfig.inputValue.trim() === description.trim()) {
+        return;
+      }
+      updateDesignMutation.mutate({
+        description: modalConfig.inputValue.trim(),
+      });
+    } else if (modalConfig.actionType === "delete") {
+      deleteDesignMutation.mutate();
+    }
+  };
+
+  const closeModal = () => {
+    setModalConfig((prev) => ({ ...prev, isOpen: false }));
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === "Enter") {
+      e.preventDefault();
+      if (!isComposing) {
+        handleConfirm();
+        closeModal();
+      }
+    } else if (e.key === "Escape") {
+      closeModal();
+    }
   };
 
   return (
@@ -164,10 +212,8 @@ export default function Card({
       </div>
       <Modal
         isOpen={modalConfig.isOpen}
-        onConfirm={() => {
-          modalConfig.onConfirm(modalConfig.inputValue);
-        }}
-        onClose={() => setModalConfig((prev) => ({ ...prev, isOpen: false }))}
+        onConfirm={handleConfirm}
+        onClose={closeModal}
         title={modalConfig.title}
       >
         <p>{modalConfig.label}</p>
@@ -181,6 +227,9 @@ export default function Card({
                 inputValue: e.target.value,
               }))
             }
+            onKeyDown={handleKeyDown}
+            onCompositionStart={() => setIsComposing(true)} // 中文輸入開始
+            onCompositionEnd={() => setIsComposing(false)} // 中文輸入結束
             className="w-full p-2 border border-gray-300 rounded-md mt-2"
           />
         )}

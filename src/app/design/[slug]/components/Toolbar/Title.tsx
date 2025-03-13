@@ -51,7 +51,7 @@ export default function Title({ designTitle }: TitleProps) {
 
   const handleSaveTitle = () => {
     if (title.trim() === "") {
-      alert("標題不可為空");
+      toast.error("標題不可為空");
       setTitle(designTitle); // 回退到舊值
       setIsEditing(false);
       return;
