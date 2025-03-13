@@ -5,12 +5,14 @@ import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
 import axios from "axios";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { toast } from "react-toastify";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faEllipsisV } from "@fortawesome/free-solid-svg-icons";
 import dayjs from "dayjs";
 import relativeTime from "dayjs/plugin/relativeTime";
 import utc from "dayjs/plugin/utc";
 import "dayjs/locale/zh-tw";
+import Modal from "@/app/components/Modal";
 import CardMenu from "./CardMenu";
 
 dayjs.extend(relativeTime);
@@ -38,6 +40,19 @@ export default function Card({
 
   const [timeAgo, setTimeAgo] = useState("");
   const [menuOpen, setMenuOpen] = useState(false);
+  const [modalConfig, setModalConfig] = useState<{
+    isOpen: boolean;
+    title: string;
+    label: string;
+    inputValue: string;
+    onConfirm: (updatedValue: string) => void;
+  }>({
+    isOpen: false,
+    title: "",
+    label: "",
+    inputValue: "",
+    onConfirm: () => {},
+  });
 
   const { data: userSession } = useSession();
   const userId = Number(userSession?.user?.id);
@@ -59,31 +74,47 @@ export default function Card({
     // 刪除成功後，可依據需求刷新設計列表
     onSuccess: () => {
       queryClient.invalidateQueries(["design-list", userId]);
+      toast.success("設計刪除成功");
     },
     onError: (error) => {
       console.error("刪除失敗：", error);
-      alert("刪除失敗，請稍後重試");
+      toast.error("刪除失敗，請稍後重試");
     },
   });
 
-  const handleRename = (e: React.MouseEvent) => {
-    e.stopPropagation(); // 避免觸發卡片整體的 onClick
-    alert(`重新命名設計：${title}`);
+  const handleModalAction = (action: "rename" | "edit" | "delete") => {
     setMenuOpen(false);
-  };
 
-  const handleEditDescription = (e: React.MouseEvent) => {
-    e.stopPropagation();
-    alert(`修改設計描述：${description}`);
-    setMenuOpen(false);
-  };
+    const actionConfig = {
+      rename: {
+        title: "重新命名",
+        label: "請輸入新的名稱",
+        inputValue: title,
+        onConfirm: (updatedValue: string) =>
+          console.log(`重新命名設計：${updatedValue}`),
+      },
+      edit: {
+        title: "修改描述",
+        label: "請輸入新的設計描述",
+        inputValue: description,
+        onConfirm: (updatedValue: string) =>
+          console.log(`修改設計描述：${updatedValue}`),
+      },
+      delete: {
+        title: "刪除確認",
+        label: "確定要刪除這個設計嗎？",
+        inputValue: "",
+        onConfirm: () => deleteDesignMutation.mutate(),
+      },
+    };
 
-  const handleDelete = (e: React.MouseEvent) => {
-    e.stopPropagation();
-    if (window.confirm(`確定刪除設計：${title}？`)) {
-      deleteDesignMutation.mutate();
-    }
-    setMenuOpen(false);
+    setModalConfig({
+      isOpen: true,
+      title: actionConfig[action].title,
+      label: actionConfig[action].label,
+      inputValue: actionConfig[action].inputValue,
+      onConfirm: actionConfig[action].onConfirm,
+    });
   };
 
   return (
@@ -110,9 +141,18 @@ export default function Card({
 
         {menuOpen && (
           <CardMenu
-            onRename={handleRename}
-            onEditDescription={handleEditDescription}
-            onDelete={handleDelete}
+            onRename={(e) => {
+              e.stopPropagation();
+              handleModalAction("rename");
+            }}
+            onEditDescription={(e) => {
+              e.stopPropagation();
+              handleModalAction("edit");
+            }}
+            onDelete={(e) => {
+              e.stopPropagation();
+              handleModalAction("delete");
+            }}
             onClose={() => setMenuOpen(false)}
             excludeRef={menuButtonRef}
           />
@@ -122,6 +162,29 @@ export default function Card({
         <p className="text-base font-bold">{title}</p>
         <p className="text-sm text-secondary">{timeAgo}</p>
       </div>
+      <Modal
+        isOpen={modalConfig.isOpen}
+        onConfirm={() => {
+          modalConfig.onConfirm(modalConfig.inputValue);
+        }}
+        onClose={() => setModalConfig((prev) => ({ ...prev, isOpen: false }))}
+        title={modalConfig.title}
+      >
+        <p>{modalConfig.label}</p>
+        {["重新命名", "修改描述"].includes(modalConfig.title) && (
+          <input
+            type="text"
+            value={modalConfig.inputValue}
+            onChange={(e) =>
+              setModalConfig((prev) => ({
+                ...prev,
+                inputValue: e.target.value,
+              }))
+            }
+            className="w-full p-2 border border-gray-300 rounded-md mt-2"
+          />
+        )}
+      </Modal>
     </div>
   );
 }
