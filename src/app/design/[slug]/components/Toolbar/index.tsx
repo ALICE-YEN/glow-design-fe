@@ -2,7 +2,6 @@
 
 import { usePathname } from "next/navigation";
 import { useQuery } from "@tanstack/react-query";
-import axios from "axios";
 import {
   faArrowLeft,
   faArrowRight,
@@ -14,6 +13,7 @@ import {
   faArrowsLeftRight,
 } from "@fortawesome/free-solid-svg-icons";
 // import { faMoon } from "@fortawesome/free-regular-svg-icons";
+import { getDesign } from "@/app/design/[slug]/utils/api";
 import { useAppSelector, useAppDispatch } from "@/services/redux/hooks";
 import { setAction } from "@/store/canvasSlice";
 import { CanvasAction } from "@/types/enum";
@@ -40,7 +40,7 @@ export default function Toolbar({
   isRedoDisabled,
 }: ToolbarProps) {
   const pathname = usePathname();
-  const designId = pathname.split("/").pop();
+  const designId = pathname.split("/").pop() as string;
 
   const currentAction = useAppSelector((state) => state.canvas.currentAction);
 
@@ -52,11 +52,9 @@ export default function Toolbar({
     isLoading,
   } = useQuery({
     queryKey: ["design", designId],
-    queryFn: () =>
-      axios
-        .get(`${process.env.NEXT_PUBLIC_BACKEND_URL}/designs/${designId}`)
-        .then((res) => res.data),
+    queryFn: () => getDesign(designId),
     enabled: !!designId, // 這個查詢不會自動執行，只有當 enabled 為 true 時，查詢才會被觸發
+    refetchOnWindowFocus: false, // 當瀏覽器窗口重新獲得焦點時，是否自動重新抓取（refetch）最新的數據
   });
 
   if (isLoading) return <div>Loading...</div>;

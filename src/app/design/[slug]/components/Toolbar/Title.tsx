@@ -3,9 +3,9 @@
 import { useState } from "react";
 import { usePathname } from "next/navigation";
 import Link from "next/link";
-import axios from "axios";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "react-toastify";
+import { updateDesign } from "@/app/design/[slug]/utils/api";
 
 interface TitleProps {
   designTitle: string;
@@ -16,18 +16,13 @@ export default function Title({ designTitle }: TitleProps) {
   const [isEditing, setIsEditing] = useState(false);
 
   const pathname = usePathname();
-  const designId = pathname.split("/").pop();
+  const designId = pathname.split("/").pop() as string;
 
   const queryClient = useQueryClient();
 
   const updateTitleMutation = useMutation({
-    mutationFn: async (newTitle: string) => {
-      const response = await axios.put(
-        `${process.env.NEXT_PUBLIC_BACKEND_URL}/designs/${designId}`,
-        { name: newTitle }
-      );
-      return response.data;
-    },
+    mutationFn: (newTitle: string) =>
+      updateDesign(designId, { name: newTitle }),
     // 更新成功後，重新取得設計資料
     onSuccess: () => {
       queryClient.invalidateQueries(["design", designId]);

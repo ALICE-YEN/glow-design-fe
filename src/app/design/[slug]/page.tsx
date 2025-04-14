@@ -1,8 +1,8 @@
-// useCallback dependency 到底應不應該放 useRef
-
 "use client";
 
+import { usePathname } from "next/navigation";
 import { useEffect, useRef, useState, useCallback } from "react";
+import { useMutation, useQueryClient, useQuery } from "@tanstack/react-query";
 import {
   Canvas,
   TEvent,
@@ -13,6 +13,7 @@ import {
   Point,
   FabricObject,
 } from "fabric";
+import { toast } from "react-toastify";
 import { useAppSelector, useAppDispatch } from "@/services/redux/hooks";
 import { setAction, resetAction } from "@/store/canvasSlice";
 import { CanvasAction } from "@/types/enum";
@@ -52,6 +53,7 @@ import {
   FLOORING_PATTERN_IMG_WIDTH,
   ZOOM_TO_FIT_PADDING,
 } from "@/app/design/[slug]/utils/constants";
+import { getDesign, updateDesign } from "@/app/design/[slug]/utils/api";
 // import {
 //   handleObjectMoving,
 //   clearGuidelines,
@@ -81,6 +83,39 @@ export default function Design() {
   const currentAction = useAppSelector((state) => state.canvas.currentAction);
   const selectedImage = useAppSelector((state) => state.canvas.selectedImage);
   const dispatch = useAppDispatch();
+
+  const queryClient = useQueryClient();
+
+  const pathname = usePathname();
+  const designId = pathname.split("/").pop() as string;
+
+  const {
+    data: design,
+    error,
+    isLoading,
+  } = useQuery({
+    queryKey: ["design", designId], // 和 Toolbar 使用同 api，同 queryKey 會共享快取
+    queryFn: () => getDesign(designId),
+    enabled: !!designId, // 這個查詢不會自動執行，只有當 enabled 為 true 時，查詢才會被觸發
+    refetchOnWindowFocus: false, // 當瀏覽器窗口重新獲得焦點時，是否自動重新抓取（refetch）最新的數據
+  });
+  console.log("design", design);
+  console.log("isLoading", isLoading);
+
+  const updateDesignMutation = useMutation({
+    mutationFn: (newData: any) =>
+      updateDesign(designId as string, { data: newData }),
+
+    // 更新成功後，重新取得設計資料
+    onSuccess: () => {
+      queryClient.invalidateQueries(["design", designId]);
+      toast.success("設計儲存成功");
+    },
+    onError: (error) => {
+      console.error("更新失敗：", error);
+      toast.error("設計儲存失敗，請稍後重試");
+    },
+  });
 
   useEffect(() => {
     if (canvasRef.current) {
@@ -518,8 +553,10 @@ export default function Design() {
         case CanvasAction.ZOOM_TO_FIT:
           zoomToFit();
           break;
-        // case CanvasAction.SAVE:
-        //   break;
+        case CanvasAction.SAVE:
+          console.log("儲存畫布狀態");
+          updateDesignMutation.mutate({ layout: "newData測試" });
+          break;
         case CanvasAction.PAN_CANVAS:
           startPanMode();
           break;
