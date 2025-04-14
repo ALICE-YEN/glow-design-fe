@@ -3,6 +3,7 @@
 import { useMutation, useQueryClient, useQuery } from "@tanstack/react-query";
 import axios from "axios";
 import { useSession } from "next-auth/react";
+import { toast } from "react-toastify";
 import Header from "@/app/components/Header";
 import Card from "@/app/design-list/components/Card";
 import Footer from "@/app/components/Footer";
@@ -42,10 +43,11 @@ export default function DesignList() {
     // 建立成功後，可依據需求刷新設計列表
     onSuccess: () => {
       queryClient.invalidateQueries(["design-list", userId]);
+      toast.success("新設計建立成功");
     },
     onError: (error) => {
       console.error("建立失敗：", error);
-      alert("建立失敗，請稍後重試");
+      toast.error("建立失敗，請稍後重試");
     },
   });
 

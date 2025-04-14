@@ -96,12 +96,14 @@ export default function AuthModal() {
           console.error("AuthModal register error", error);
         }
       }
-    } catch (validationError: any) {
+    } catch (validationError) {
       // Map Yup validation errors to state
       const newErrors: { [key: string]: string } = {};
-      validationError?.inner?.forEach((err: any) => {
-        if (err.path) newErrors[err.path] = err.message;
-      });
+      (validationError as yup.ValidationError)?.inner?.forEach(
+        (err: yup.ValidationError) => {
+          if (err.path) newErrors[err.path] = err.message;
+        }
+      );
       setErrors(newErrors);
     }
   };
@@ -120,9 +122,12 @@ export default function AuthModal() {
           // Validate the specific field on change
           await validationSchema.validateAt(field, { [field]: value });
           setErrors((prev) => ({ ...prev, [field]: "" }));
-        } catch (validationError: any) {
+        } catch (validationError) {
           // Update error for the specific field if invalid
-          setErrors((prev) => ({ ...prev, [field]: validationError.message }));
+          setErrors((prev) => ({
+            ...prev,
+            [field]: (validationError as yup.ValidationError).message,
+          }));
         }
       }
     };

@@ -231,6 +231,7 @@ export default function Card({
             onCompositionStart={() => setIsComposing(true)} // 中文輸入開始
             onCompositionEnd={() => setIsComposing(false)} // 中文輸入結束
             className="w-full p-2 border border-gray-300 rounded-md mt-2"
+            autoFocus
           />
         )}
       </Modal>

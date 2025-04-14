@@ -11,6 +11,7 @@ import {
   FabricImage,
   Polygon,
   Point,
+  FabricObject,
 } from "fabric";
 import { useAppSelector, useAppDispatch } from "@/services/redux/hooks";
 import { setAction, resetAction } from "@/store/canvasSlice";
@@ -51,12 +52,12 @@ import {
   FLOORING_PATTERN_IMG_WIDTH,
   ZOOM_TO_FIT_PADDING,
 } from "@/app/design/[slug]/utils/constants";
-import {
-  handleObjectMoving,
-  clearGuidelines,
-} from "@/app/design/[slug]/utils/snappingHelpers"; // 暫時修復因網格壞掉的指導線，但物件移動變很緩慢，畫布平移、縮放時還是異常!!!
+// import {
+//   handleObjectMoving,
+//   clearGuidelines,
+// } from "@/app/design/[slug]/utils/snappingHelpers"; // 暫時修復因網格壞掉的指導線，但物件移動變很緩慢，畫布平移、縮放時還是異常!!!
 import Cropping from "@/app/design/[slug]/components/Cropping";
-import LayerList from "@/app/design/[slug]/components/LayerList";
+// import LayerList from "@/app/design/[slug]/components/LayerList";
 import Sidebar from "@/app/design/[slug]/components/Sidebar";
 import Toolbar from "@/app/design/[slug]/components/Toolbar";
 
@@ -75,7 +76,7 @@ export default function Design() {
   const pointsRef = useRef<IPoint[]>([]); // 保存最新的點資料，用於即時操作，避免 React 狀態更新的非同步問題。
   const tempLineRef = useRef<Line | null>(null); // 表示模擬線，隨滑鼠移動動態更新，用於即時操作，避免 React 狀態更新的非同步問題。
 
-  const selectedPolygonObjectRef = useRef<any>(null); // 選取到的物件，輔助值，便於處理 Polygon。canvas.getActiveObject() 還是作為所有選取到的物件來源。
+  const selectedPolygonObjectRef = useRef<Polygon | null>(null); // 選取到的物件，輔助值，便於處理 Polygon。canvas.getActiveObject() 還是作為所有選取到的物件來源。
 
   const currentAction = useAppSelector((state) => state.canvas.currentAction);
   const selectedImage = useAppSelector((state) => state.canvas.selectedImage);
@@ -231,10 +232,10 @@ export default function Design() {
   }, [isPanningRef]);
 
   const handlePanMouseMove = useCallback(
-    (opt: any) => {
+    (opt: TEvent) => {
       if (!canvas) return;
 
-      if (isPanningRef.current && opt.e) {
+      if (isPanningRef.current && opt.e && opt.e instanceof MouseEvent) {
         // opt.e.movementX：滑鼠自上一次事件到目前事件在 X 軸 上的移動距離（以像素為單位）。
         // opt.e.movementY：滑鼠自上一次事件到目前事件在 Y 軸 上的移動距離。
         const delta = new Point(opt.e.movementX, opt.e.movementY);
@@ -390,15 +391,16 @@ export default function Design() {
   };
 
   const handlePolygonSelection = (
-    currentSelection: any, // 功能同 canvas.getActiveObject()
-    selectedPolygonObjectRef: React.MutableRefObject<any>
+    currentSelection: FabricObject, // 功能同 canvas.getActiveObject()
+    selectedPolygonObjectRef: React.MutableRefObject<Polygon | null>
   ) => {
     // 本專案只有在繪製牆面組成的 group 裡有 polygon
     if (currentSelection.type === "group") {
       // 如果是 Group，提取其中的 Polygon
-      const polygon = currentSelection._objects.find(
-        (obj) => obj.type === "polygon"
-      );
+      const group = currentSelection as Group;
+      const polygon = group._objects.find((obj) => obj.type === "polygon") as
+        | Polygon
+        | undefined;
       selectedPolygonObjectRef.current = polygon || null;
     } else {
       selectedPolygonObjectRef.current = null;
@@ -468,14 +470,14 @@ export default function Design() {
       saveToUndoStack();
       // clearGuidelines(canvas);
     });
-    canvas.on("object:scaling", (e) => {
-      // console.log("事件object property is scaling", e.target);
-    });
+    // canvas.on("object:scaling", (e) => {
+    // console.log("事件object property is scaling", e.target);
+    // });
 
-    canvas.on("object:moving", (e) => {
-      // console.log("事件object property is moving", e.target);
-      // handleObjectMoving(canvas, e.target, guidelines, setGuidelines);
-    });
+    // canvas.on("object:moving", (e) => {
+    // console.log("事件object property is moving", e.target);
+    // handleObjectMoving(canvas, e.target, guidelines, setGuidelines);
+    // });
   }, [canvas]);
 
   useEffect(() => {
