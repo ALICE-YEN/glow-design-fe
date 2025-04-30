@@ -68,7 +68,7 @@ export default function Toolbar({
       {
         id: CanvasAction.SELECT_OBJECT,
         icon: faMousePointer,
-        label: "Select Object",
+        label: "選取物件",
         handleClick: () => dispatch(setAction(CanvasAction.SELECT_OBJECT)),
         isActive: (currentAction: CanvasAction) =>
           currentAction === CanvasAction.SELECT_OBJECT,
@@ -76,7 +76,7 @@ export default function Toolbar({
       {
         id: CanvasAction.PAN_CANVAS,
         icon: faHand,
-        label: "Pan Canvas",
+        label: "平移畫布",
         handleClick: () => dispatch(setAction(CanvasAction.PAN_CANVAS)),
         isActive: (currentAction: CanvasAction) =>
           currentAction === CanvasAction.PAN_CANVAS,
@@ -84,33 +84,33 @@ export default function Toolbar({
       {
         id: CanvasAction.UNDO,
         icon: faArrowLeft,
-        label: "Undo",
+        label: "復原 ⌘Z",
         handleClick: () => dispatch(setAction(CanvasAction.UNDO)),
         isDisabled: isUndoDisabled,
       },
       {
         id: CanvasAction.REDO,
         icon: faArrowRight,
-        label: "Redo",
+        label: "取消復原 ⌘Y",
         handleClick: () => dispatch(setAction(CanvasAction.REDO)),
         isDisabled: isRedoDisabled,
       },
       {
         id: CanvasAction.ZOOM_TO_FIT,
         icon: faArrowsLeftRight,
-        label: "Zoom to Fit",
+        label: "自動適應畫面",
         handleClick: () => dispatch(setAction(CanvasAction.ZOOM_TO_FIT)),
       },
       {
         id: CanvasAction.SAVE,
         icon: faSave,
-        label: "Save",
+        label: "存檔 ⌘S",
         handleClick: () => dispatch(setAction(CanvasAction.SAVE)),
       },
       {
         id: CanvasAction.CLEAR,
         icon: faEraser,
-        label: "Clear",
+        label: "清空畫布",
         handleClick: () => dispatch(setAction(CanvasAction.CLEAR)),
       },
     ],
@@ -118,7 +118,7 @@ export default function Toolbar({
       // {
       //   id: "toggleTheme",
       //   icon: faMoon,
-      //   label: "Toggle Theme",
+      //   label: "切換深淺色主題",
       //   handleClick: () => console.log("Toggle Theme clicked"),
       // },
     ],

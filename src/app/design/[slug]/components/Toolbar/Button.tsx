@@ -2,6 +2,7 @@
 
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import type { IconDefinition } from "@fortawesome/fontawesome-svg-core";
+import Tooltip from "./Tooltip";
 
 interface ButtonProps {
   icon: IconDefinition;
@@ -33,19 +34,20 @@ export default function Button({
       : {};
 
   return (
-    <button
-      onClick={isDisabled ? undefined : handleClick}
-      className={`w-10 h-10 rounded-default transition ${
-        isDisabled
-          ? "cursor-auto text-button-disabled"
-          : isActive
-          ? "bg-button-active"
-          : "hover:bg-button-hover"
-      }`}
-      title={label} // 瀏覽器控制的 tooltip
-      disabled={isDisabled}
-    >
-      <FontAwesomeIcon icon={icon} size="lg" {...borderProps} />
-    </button>
+    <Tooltip tooltip={label}>
+      <button
+        onClick={isDisabled ? undefined : handleClick}
+        className={`w-10 h-10 rounded-default transition ${
+          isDisabled
+            ? "cursor-auto text-button-disabled"
+            : isActive
+            ? "bg-button-active"
+            : "hover:bg-button-hover"
+        }`}
+        disabled={isDisabled}
+      >
+        <FontAwesomeIcon icon={icon} size="lg" {...borderProps} />
+      </button>
+    </Tooltip>
   );
 }

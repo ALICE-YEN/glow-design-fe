@@ -1,9 +1,9 @@
 "use client";
 
 import { motion } from "motion/react";
+import { useRouter } from "next/navigation";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faCircleExclamation } from "@fortawesome/free-solid-svg-icons";
-import { useRouter } from "next/navigation";
 
 export default function ViewportWarning() {
   const router = useRouter();
@@ -18,6 +18,7 @@ export default function ViewportWarning() {
       >
         <FontAwesomeIcon icon={faCircleExclamation} size="6x" />
       </motion.div>
+
       <h1 className="text-xl font-semibold mb-2">
         請使用桌面版瀏覽器以獲得最佳設計體驗
       </h1>
