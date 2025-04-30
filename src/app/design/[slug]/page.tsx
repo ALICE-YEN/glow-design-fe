@@ -163,6 +163,25 @@ export default function Design() {
     }
   }, []);
 
+  useEffect(() => {
+    if (!canvas) return;
+
+    // 從 API 載入物件
+    const apiObjects = design?.data?.objects;
+    if (apiObjects?.length > 0) {
+      const existingGridObjects = canvas.toObject(["id"]).objects;
+      canvas.loadFromJSON(
+        {
+          ...design.data,
+          objects: [...existingGridObjects, ...apiObjects], // 將當前畫布的物件（網格）與從 API 獲取的物件合併
+        },
+        () => {
+          canvas.requestRenderAll();
+        }
+      );
+    }
+  }, [canvas, design]);
+
   const saveToUndoStack = (canvasInstance = canvas) => {
     if (!canvasInstance) return;
 
@@ -554,8 +573,15 @@ export default function Design() {
           zoomToFit();
           break;
         case CanvasAction.SAVE:
-          console.log("儲存畫布狀態");
-          updateDesignMutation.mutate({ layout: "newData測試" });
+          const UNSAVED_OBJECT_IDS = [GRID_LINE_ID, FINALIZED_LINE_ID];
+          const exportableCanvasObjects = canvas
+            .getObjects()
+            .filter((obj) => !UNSAVED_OBJECT_IDS.includes(obj.id));
+          const canvasPayloadForSave = {
+            ...canvas.toObject(["id"]),
+            objects: exportableCanvasObjects.map((obj) => obj.toObject(["id"])),
+          };
+          updateDesignMutation.mutate(canvasPayloadForSave); // 儲存畫布狀態
           break;
         case CanvasAction.PAN_CANVAS:
           startPanMode();
