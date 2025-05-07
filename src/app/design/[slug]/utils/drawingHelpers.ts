@@ -6,7 +6,7 @@ import {
   Pattern,
   TEvent,
 } from "fabric";
-import { FINALIZED_LINE_ID } from "@/app/design/[slug]/utils/constants";
+import { FINALIZED_LINE_ID } from "@/utils/constants";
 import { Point as IPoint } from "@/app/design/[slug]/types/interfaces";
 
 export const snapToGrid = (value: number, gridSize: number): number => {

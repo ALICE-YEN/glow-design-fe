@@ -18,6 +18,18 @@ import { useAppSelector, useAppDispatch } from "@/services/redux/hooks";
 import { getDesign, updateDesign } from "@/services/apis";
 import { setAction, resetAction } from "@/store/canvasSlice";
 import { CanvasAction } from "@/types/enum";
+import {
+  FINALIZED_LINE_ID,
+  GRID_LINE_ID,
+  CANVAS_WIDTH,
+  CANVAS_HEIGHT,
+  GRID_SIZE,
+  ZOOM_FACTOR,
+  MIN_ZOOM,
+  MAX_ZOOM,
+  FLOORING_PATTERN_IMG_WIDTH,
+  ZOOM_TO_FIT_PADDING,
+} from "@/utils/constants";
 import { Point as IPoint } from "@/app/design/[slug]/types/interfaces";
 import {
   initializeCanvasWithGrid,
@@ -42,18 +54,6 @@ import {
   updateUndoRedoStatus,
   restoreCanvasState,
 } from "@/app/design/[slug]/utils/undoRedoHelpers";
-import {
-  FINALIZED_LINE_ID,
-  GRID_LINE_ID,
-  CANVAS_WIDTH,
-  CANVAS_HEIGHT,
-  GRID_SIZE,
-  ZOOM_FACTOR,
-  MIN_ZOOM,
-  MAX_ZOOM,
-  FLOORING_PATTERN_IMG_WIDTH,
-  ZOOM_TO_FIT_PADDING,
-} from "@/app/design/[slug]/utils/constants";
 // import {
 //   handleObjectMoving,
 //   clearGuidelines,

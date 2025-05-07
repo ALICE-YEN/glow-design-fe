@@ -4,13 +4,13 @@ import { useEffect } from "react";
 import { Canvas, Rect, Object } from "fabric";
 import { useAppSelector, useAppDispatch } from "@/services/redux/hooks";
 import { resetAction } from "@/store/canvasSlice";
-import { computeBoundingRect } from "@/app/design/[slug]/utils/basicCanvasHelpers";
 import {
   GRID_LINE_ID,
   CHOOSE_CUSTOMIZED_IMG_PADDING,
   CHOOSE_CUSTOMIZED_IMG_DEFAULT_WIDTH_HEIGHT,
-} from "@/app/design/[slug]/utils/constants";
+} from "@/utils/constants";
 import { CanvasAction } from "@/types/enum";
+import { computeBoundingRect } from "@/app/design/[slug]/utils/basicCanvasHelpers";
 
 interface CroppingProps {
   canvas: Canvas;

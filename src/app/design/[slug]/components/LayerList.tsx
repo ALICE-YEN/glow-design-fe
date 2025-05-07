@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { Canvas, Object, TEvent } from "fabric";
-import { GRID_LINE_ID } from "@/app/design/[slug]/utils/constants";
+import { GRID_LINE_ID } from "@/utils/constants";
 
 export default function LayerList({ canvas }: { canvas: Canvas }) {
   const [layers, setLayers] = useState<

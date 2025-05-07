@@ -1,8 +1,5 @@
 import { Canvas, Line, Point, Object } from "fabric";
-import {
-  INITIAL_GRID_OBJECT_COUNT,
-  GRID_LINE_ID,
-} from "@/app/design/[slug]/utils/constants";
+import { INITIAL_GRID_OBJECT_COUNT, GRID_LINE_ID } from "@/utils/constants";
 import { CanvasState } from "@/app/design/[slug]/types/interfaces";
 
 // 初始化 Canvas，繪製網格，回傳 Canvas 實例
