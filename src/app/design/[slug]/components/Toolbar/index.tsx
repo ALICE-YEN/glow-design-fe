@@ -13,7 +13,7 @@ import {
   faArrowsLeftRight,
 } from "@fortawesome/free-solid-svg-icons";
 // import { faMoon } from "@fortawesome/free-regular-svg-icons";
-import { getDesign } from "@/app/design/[slug]/utils/api";
+import { getDesign } from "@/services/apis";
 import { useAppSelector, useAppDispatch } from "@/services/redux/hooks";
 import { setAction } from "@/store/canvasSlice";
 import { CanvasAction } from "@/types/enum";

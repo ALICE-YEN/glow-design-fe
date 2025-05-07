@@ -12,6 +12,7 @@ import dayjs from "dayjs";
 import relativeTime from "dayjs/plugin/relativeTime";
 import utc from "dayjs/plugin/utc";
 import "dayjs/locale/zh-tw";
+import { updateDesign, deleteDesign } from "@/services/apis";
 import Modal from "@/app/components/Modal";
 import CardMenu from "./CardMenu";
 
@@ -66,13 +67,8 @@ export default function Card({
   const queryClient = useQueryClient();
 
   const updateDesignMutation = useMutation({
-    mutationFn: async (body: { name?: string; description?: string }) => {
-      const response = await axios.put(
-        `${process.env.NEXT_PUBLIC_BACKEND_URL}/designs/${id}`,
-        body
-      );
-      return response.data;
-    },
+    mutationFn: (body: { name?: string; description?: string }) =>
+      updateDesign(id, body),
     onSuccess: () => {
       queryClient.invalidateQueries(["design-list", userId]);
       console.log("modalConfig", modalConfig);
@@ -85,12 +81,7 @@ export default function Card({
   });
 
   const deleteDesignMutation = useMutation({
-    mutationFn: async () => {
-      const response = await axios.delete(
-        `${process.env.NEXT_PUBLIC_BACKEND_URL}/designs/${id}`
-      );
-      return response.data;
-    },
+    mutationFn: () => deleteDesign(id),
     onSuccess: () => {
       queryClient.invalidateQueries(["design-list", userId]);
       toast.success("設計刪除成功");

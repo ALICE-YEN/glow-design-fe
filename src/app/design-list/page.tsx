@@ -4,17 +4,11 @@ import { useMutation, useQueryClient, useQuery } from "@tanstack/react-query";
 import axios from "axios";
 import { useSession } from "next-auth/react";
 import { toast } from "react-toastify";
+import { createDesign, getDesignsByUser } from "@/services/apis";
 import Header from "@/app/components/Header";
 import Card from "@/app/design-list/components/Card";
 import Footer from "@/app/components/Footer";
 import type { Design } from "@/types/interfaces";
-
-const getDesignsByUser = async (userId: number) => {
-  const { data } = await axios.get(
-    `${process.env.NEXT_PUBLIC_BACKEND_URL}/designs/user/${userId}`
-  );
-  return data;
-};
 
 export default function DesignList() {
   const { data: userSession } = useSession();
@@ -28,18 +22,7 @@ export default function DesignList() {
   const queryClient = useQueryClient();
 
   const createDesignMutation = useMutation({
-    mutationFn: async () => {
-      const response = await axios.post(
-        `${process.env.NEXT_PUBLIC_BACKEND_URL}/designs`,
-        {
-          name: "Untitled Design",
-          description: "A new design plan",
-          data: {},
-          userId,
-        }
-      );
-      return response.data;
-    },
+    mutationFn: () => createDesign(userId),
     // 建立成功後，可依據需求刷新設計列表
     onSuccess: () => {
       queryClient.invalidateQueries(["design-list", userId]);

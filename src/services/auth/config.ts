@@ -33,9 +33,8 @@ export const {
 
       return token;
     },
-    // The `session` callback is called whenever a session is checked(ex: useSession)
+    // 自定義要傳到前端的 Session 資料(ex: useSession)
     session({ session, token }) {
-      // Maps token data to the session object for client-side usage
       session.user = token; // 使用後端 API 回傳的，包括 token
 
       return session;

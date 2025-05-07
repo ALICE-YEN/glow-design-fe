@@ -5,7 +5,7 @@ import { usePathname } from "next/navigation";
 import Link from "next/link";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "react-toastify";
-import { updateDesign } from "@/app/design/[slug]/utils/api";
+import { updateDesign } from "@/services/apis";
 
 interface TitleProps {
   designTitle: string;

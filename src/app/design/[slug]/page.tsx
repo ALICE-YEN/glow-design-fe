@@ -15,6 +15,7 @@ import {
 } from "fabric";
 import { toast } from "react-toastify";
 import { useAppSelector, useAppDispatch } from "@/services/redux/hooks";
+import { getDesign, updateDesign } from "@/services/apis";
 import { setAction, resetAction } from "@/store/canvasSlice";
 import { CanvasAction } from "@/types/enum";
 import { Point as IPoint } from "@/app/design/[slug]/types/interfaces";
@@ -53,7 +54,6 @@ import {
   FLOORING_PATTERN_IMG_WIDTH,
   ZOOM_TO_FIT_PADDING,
 } from "@/app/design/[slug]/utils/constants";
-import { getDesign, updateDesign } from "@/app/design/[slug]/utils/api";
 // import {
 //   handleObjectMoving,
 //   clearGuidelines,
@@ -97,7 +97,7 @@ export default function Design() {
     queryKey: ["design", designId], // 和 Toolbar 使用同 api，同 queryKey 會共享快取
     queryFn: () => getDesign(designId),
     enabled: !!designId, // 這個查詢不會自動執行，只有當 enabled 為 true 時，查詢才會被觸發
-    refetchOnWindowFocus: false, // 當瀏覽器窗口重新獲得焦點時，是否自動重新抓取（refetch）最新的數據
+    refetchOnWindowFocus: true, // 當瀏覽器窗口重新獲得焦點時，是否自動重新抓取（refetch）最新的數據
   });
   console.log("design", design);
   console.log("isLoading", isLoading);
