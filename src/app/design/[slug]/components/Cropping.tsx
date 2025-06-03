@@ -263,14 +263,24 @@ export default function Cropping({ canvas }: CroppingProps) {
   };
 
   const exportFrameAsPNG = () => {
-    const croppingFrames = getCroppingFrames();
+    let croppingFrames = getCroppingFrames();
+    let croppingFrame: Rect;
 
     if (!croppingFrames.length) {
-      toast.error("No frames found!");
-      return;
-    }
+      // 預設建立 A4 框
+      addFrameToCanvas(CanvasAction.CHOOSE_IMG_BY_A4);
 
-    const croppingFrame = croppingFrames[0];
+      // 重新取得框
+      croppingFrames = getCroppingFrames();
+      if (!croppingFrames.length) {
+        toast.error("Failed to create default A4 frame.");
+        return;
+      }
+
+      croppingFrame = croppingFrames[0];
+    } else {
+      croppingFrame = croppingFrames[0];
+    }
 
     const gridLines = getGridLines(canvas);
 
