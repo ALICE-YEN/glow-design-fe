@@ -90,6 +90,15 @@ export default function ExportImg({
     switch (size) {
       case ImgSize.CUSTOMIZED:
         dispatch(setAction(CanvasAction.CHOOSE_IMG_BY_CUSTOMIZED));
+        break;
+      case ImgSize.A4:
+        dispatch(setAction(CanvasAction.CHOOSE_IMG_BY_A4));
+        break;
+      case ImgSize.A3:
+        dispatch(setAction(CanvasAction.CHOOSE_IMG_BY_A3));
+        break;
+      default:
+        break;
     }
   };
 

@@ -33,6 +33,7 @@ import {
 import { Point as IPoint } from "@/app/design/[slug]/types/interfaces";
 import {
   initializeCanvasWithGrid,
+  getContentObjects,
   drawGrid,
   setupZoom,
   handleResize,
@@ -464,9 +465,7 @@ export default function Design() {
   const zoomToFit = () => {
     if (!canvas) return;
 
-    const objects = canvas
-      .getObjects()
-      .filter((obj) => obj.id !== GRID_LINE_ID);
+    const objects = getContentObjects(canvas);
 
     if (objects.length === 0) {
       return;

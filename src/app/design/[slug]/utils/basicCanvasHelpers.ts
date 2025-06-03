@@ -32,6 +32,13 @@ export const initializeCanvasWithGrid = (
   return canvas;
 };
 
+export const getGridLines = (canvasInstance: Canvas): Object[] =>
+  canvasInstance.getObjects("line").filter((obj) => obj?.id === GRID_LINE_ID);
+
+export function getContentObjects(canvasInstance: Canvas): Object[] {
+  return canvasInstance.getObjects().filter((obj) => obj.id !== GRID_LINE_ID);
+}
+
 const STROKE_WIDTHS = {
   THIN: 0.5, // 細網格線
   MEDIUM: 1.5, // 粗網格線
@@ -46,9 +53,7 @@ export const drawGrid = (
   canvasHeight: number
 ): void => {
   // 清理舊的網格
-  const gridObjects = canvasInstance
-    .getObjects("line")
-    .filter((obj) => obj?.id === GRID_LINE_ID);
+  const gridObjects = getGridLines(canvasInstance);
   gridObjects.forEach((obj) => canvasInstance.remove(obj));
 
   // 計算畫布中心

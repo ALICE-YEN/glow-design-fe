@@ -11,3 +11,8 @@ export const FLOORING_PATTERN_IMG_WIDTH = 75; // 地板圖案中使用的圖片�
 export const ZOOM_TO_FIT_PADDING = 80; // Zoom To Fit 時，留給物件的額外邊距，所有物件不會貼著畫布邊緣，而是有一定的空白區域
 export const CHOOSE_CUSTOMIZED_IMG_PADDING = 30; // 自定義匯出範圍，Zoom To Fit 時，留給物件的額外邊距
 export const CHOOSE_CUSTOMIZED_IMG_DEFAULT_WIDTH_HEIGHT = 300; // 自定義匯出範圍，若畫布上沒有物件，則用預設尺寸
+export const PAPER_SIZES = {
+  A3: { width: 420, height: 297 },
+  A4: { width: 297, height: 210 },
+} as const;
+export const DEFAULT_FRAME_VIEWPORT_RATIO = 0.8;
