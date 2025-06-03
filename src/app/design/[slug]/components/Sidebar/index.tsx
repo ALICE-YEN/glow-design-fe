@@ -78,6 +78,7 @@ export default function Sidebar() {
       setActiveIndex(null);
     }
   }, [currentAction]);
+
   return (
     <div className="flex">
       <nav

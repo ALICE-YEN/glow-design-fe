@@ -16,3 +16,4 @@ export const PAPER_SIZES = {
   A4: { width: 297, height: 210 },
 } as const;
 export const DEFAULT_FRAME_VIEWPORT_RATIO = 0.8;
+export const CROPPING_FRAME_NAME_PREFIX = "GlowDesign";

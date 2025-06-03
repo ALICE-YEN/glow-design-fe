@@ -4,12 +4,12 @@ import { useEffect } from "react";
 import { Canvas, Rect, Object } from "fabric";
 import { toast } from "react-toastify";
 import { useAppSelector, useAppDispatch } from "@/services/redux/hooks";
-import { resetAction } from "@/store/canvasSlice";
 import {
   CHOOSE_CUSTOMIZED_IMG_PADDING,
   CHOOSE_CUSTOMIZED_IMG_DEFAULT_WIDTH_HEIGHT,
   PAPER_SIZES,
   DEFAULT_FRAME_VIEWPORT_RATIO,
+  CROPPING_FRAME_NAME_PREFIX,
 } from "@/utils/constants";
 import { CanvasAction, ImgSize } from "@/types/enum";
 import {
@@ -33,17 +33,17 @@ export default function Cropping({ canvas }: CroppingProps) {
       currentAction === CanvasAction.CHOOSE_IMG_BY_A3
     ) {
       addFrameToCanvas(currentAction);
-      dispatch(resetAction()); // Reset action after adding a frame
     } else if (currentAction === CanvasAction.EXPORT_PNG) {
       exportFrameAsPNG();
-      dispatch(resetAction()); // Reset action after exporting
     }
   }, [currentAction, dispatch]);
 
   const getCroppingFrames = (): Rect[] =>
     canvas
       .getObjects("rect")
-      .filter((obj) => (obj as Rect).name?.startsWith("GlowDesign")) as Rect[];
+      .filter((obj) =>
+        (obj as Rect).name?.startsWith(CROPPING_FRAME_NAME_PREFIX)
+      ) as Rect[];
 
   const generateFrameName = (imgSize: ImgSize): string => {
     const formatted = new Date()
@@ -69,9 +69,9 @@ export default function Cropping({ canvas }: CroppingProps) {
       | CanvasAction.CHOOSE_IMG_BY_A4
       | CanvasAction.CHOOSE_IMG_BY_A3
   ) => {
-    // 檢查，移除畫布上所有舊 GlowDesign 框
+    // 檢查，移除畫布上舊的預覽匯出圖片框
     canvas.getObjects("rect").forEach((obj) => {
-      if (obj.name?.startsWith("GlowDesign")) {
+      if (obj.name?.startsWith(CROPPING_FRAME_NAME_PREFIX)) {
         canvas.remove(obj);
       }
     });

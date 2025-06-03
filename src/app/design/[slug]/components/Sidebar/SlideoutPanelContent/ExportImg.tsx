@@ -110,6 +110,7 @@ export default function ExportImg({
   const handleCancel = () => {
     console.log("Selection canceled");
     handleCloseSlideoutPanel();
+    dispatch(setAction(CanvasAction.NONE));
   };
 
   return (

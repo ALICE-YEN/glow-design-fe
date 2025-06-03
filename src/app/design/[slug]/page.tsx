@@ -29,6 +29,7 @@ import {
   MAX_ZOOM,
   FLOORING_PATTERN_IMG_WIDTH,
   ZOOM_TO_FIT_PADDING,
+  CROPPING_FRAME_NAME_PREFIX,
 } from "@/utils/constants";
 import { Point as IPoint } from "@/app/design/[slug]/types/interfaces";
 import {
@@ -608,6 +609,14 @@ export default function Design() {
           await loadFromUrl({ url: selectedImage, customWidth: 300 });
           saveToUndoStack();
           break;
+        case CanvasAction.NONE:
+          // 檢查，移除畫布上的預覽匯出圖片框
+          canvas.getObjects("rect").forEach((obj) => {
+            if (obj.name?.startsWith(CROPPING_FRAME_NAME_PREFIX)) {
+              canvas.remove(obj);
+            }
+          });
+          break;
         default:
           break;
       }
@@ -623,6 +632,9 @@ export default function Design() {
           CanvasAction.DRAW_WALL,
           CanvasAction.SELECT_OBJECT,
           CanvasAction.PAN_CANVAS,
+          CanvasAction.CHOOSE_IMG_BY_CUSTOMIZED,
+          CanvasAction.CHOOSE_IMG_BY_A4,
+          CanvasAction.CHOOSE_IMG_BY_A3,
         ].includes(currentAction)
       ) {
         dispatch(resetAction());
