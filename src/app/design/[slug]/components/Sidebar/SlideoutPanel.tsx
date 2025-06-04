@@ -3,13 +3,6 @@
 import { useAppDispatch } from "@/services/redux/hooks";
 import { setAction, setSelectedImage } from "@/store/canvasSlice";
 import { CanvasAction } from "@/types/enum";
-// 假資料
-import RockImg from "@/assets/imgs/rock.jpeg";
-import WoodImg from "@/assets/imgs/wood.jpeg";
-import SofaImg from "@/assets/imgs/sofa.jpg";
-import TableImg from "@/assets/imgs/table.jpg";
-import BedImg from "@/assets/imgs/bed.jpg";
-import ChairImg from "@/assets/imgs/chair.jpg";
 import type {
   SidebarButtonConfig,
   CategoryWithMaterials,
@@ -33,24 +26,27 @@ const flooring: CategoryWithMaterials[] = [
     materials: [
       {
         id: "rock1",
-        name: "岩石 1",
-        src: RockImg,
-        description: "經典黑白石材",
-        url: `${process.env.NEXT_PUBLIC_URL}/rock.jpeg`,
+        name: "深色板岩地板",
+        description: "深色板岩表，低調穩重，適合現代與工業風",
+        url: `${process.env.NEXT_PUBLIC_IMAGE_BASE_URL}/flooring/stone-slate.jpg`,
       },
       {
         id: "rock2",
-        name: "岩石 2",
-        src: RockImg,
-        description: "經典黑白石材",
-        url: `${process.env.NEXT_PUBLIC_URL}/rock.jpeg`,
+        name: "米色石灰岩地板",
+        description: "米色調與細緻紋理，營造溫暖自然的空間",
+        url: `${process.env.NEXT_PUBLIC_IMAGE_BASE_URL}/flooring/stone-limestone.jpg`,
       },
       {
         id: "rock3",
-        name: "岩石 3",
-        src: RockImg,
-        description: "經典黑白石材",
-        url: `${process.env.NEXT_PUBLIC_URL}/rock.jpeg`,
+        name: "磨光花崗岩地板",
+        description: "黑白花崗岩，適合商業與高質感住宅空間",
+        url: `${process.env.NEXT_PUBLIC_IMAGE_BASE_URL}/flooring/stone-granite.jpg`,
+      },
+      {
+        id: "rock4",
+        name: "白色大理石地板",
+        description: "紋理優雅高貴，適合現代高級空間",
+        url: `${process.env.NEXT_PUBLIC_IMAGE_BASE_URL}/flooring/stone-marble.jpg`,
       },
     ],
   },
@@ -60,17 +56,21 @@ const flooring: CategoryWithMaterials[] = [
     materials: [
       {
         id: "wood1",
-        name: "木材 1",
-        src: WoodImg,
-        description: "橡木木地板",
-        url: `${process.env.NEXT_PUBLIC_URL}/wood.jpeg`,
+        name: "自然橡木地板",
+        description: "自然的淺色橡木地板，適合明亮清新的空間",
+        url: `${process.env.NEXT_PUBLIC_IMAGE_BASE_URL}/flooring/wood-natural.jpg`,
       },
       {
         id: "wood2",
-        name: "木材 2",
-        src: WoodImg,
-        description: "胡桃木地板",
-        url: `${process.env.NEXT_PUBLIC_URL}/wood.jpeg`,
+        name: "深色胡桃木地板",
+        description: "深棕色胡桃木紋理，沈穩高質感氛圍",
+        url: `${process.env.NEXT_PUBLIC_IMAGE_BASE_URL}/flooring/wood-dark.jpg`,
+      },
+      {
+        id: "wood3",
+        name: "灰色仿木地板",
+        description: "冷色調木紋，適合現代極簡空間",
+        url: `${process.env.NEXT_PUBLIC_IMAGE_BASE_URL}/flooring/wood-modern.jpg`,
       },
     ],
   },
@@ -80,10 +80,9 @@ const flooring: CategoryWithMaterials[] = [
     materials: [
       {
         id: "tile1",
-        name: "磁磚 1",
-        src: WoodImg,
-        description: "白色方形磁磚",
-        url: `${process.env.NEXT_PUBLIC_URL}/wood.jpeg`,
+        name: "石英拋光磁磚",
+        description: "表面平整光滑，適用於現代室內空間",
+        url: `${process.env.NEXT_PUBLIC_IMAGE_BASE_URL}/flooring/tile-quartz.jpg`,
       },
     ],
   },
@@ -93,10 +92,15 @@ const flooring: CategoryWithMaterials[] = [
     materials: [
       {
         id: "outdoor1",
-        name: "戶外材料 1",
-        src: RockImg,
-        description: "戶外石材",
-        url: `${process.env.NEXT_PUBLIC_URL}/rock.jpeg`,
+        name: "深色戶外塑木地板",
+        description: "耐候防滑，適合陽台與露台使用",
+        url: `${process.env.NEXT_PUBLIC_IMAGE_BASE_URL}/flooring/outdoor-dark.jpg`,
+      },
+      {
+        id: "outdoor2",
+        name: "淺色戶外塑木地板",
+        description: "清新自然，適合花園或戶外走道鋪設",
+        url: `${process.env.NEXT_PUBLIC_IMAGE_BASE_URL}/flooring/outdoor-light.jpg`,
       },
     ],
   },
@@ -110,16 +114,20 @@ const furniture: CategoryWithMaterials[] = [
       {
         id: "sofa1",
         name: "現代沙發",
-        src: SofaImg,
-        description: "舒適的現代風格沙發，適合客廳",
-        url: `${process.env.NEXT_PUBLIC_URL}/sofa.jpg`,
+        description: "鮮明黃色的現代風格沙發，適合客廳",
+        url: `${process.env.NEXT_PUBLIC_IMAGE_BASE_URL}/furniture/sofa-modern-yellow.png`,
       },
       {
         id: "sofa2",
+        name: "現代沙發",
+        description: "舒適的現代風格沙發，適合客廳",
+        url: `${process.env.NEXT_PUBLIC_IMAGE_BASE_URL}/furniture/sofa-modern-gray.png`,
+      },
+      {
+        id: "sofa3",
         name: "復古沙發",
-        src: SofaImg,
         description: "具有復古風格的沙發，帶來懷舊氣息",
-        url: `${process.env.NEXT_PUBLIC_URL}/sofa.jpg`,
+        url: `${process.env.NEXT_PUBLIC_IMAGE_BASE_URL}/furniture/sofa-retro-brown.png`,
       },
     ],
   },
@@ -129,17 +137,21 @@ const furniture: CategoryWithMaterials[] = [
     materials: [
       {
         id: "table1",
-        name: "木製餐桌",
-        src: TableImg,
-        description: "堅固的橡木餐桌，適合家庭用餐",
-        url: `${process.env.NEXT_PUBLIC_URL}/table.jpg`,
+        name: "復古茶几",
+        description: "復古風格茶几，下層可收納書籍或裝飾品",
+        url: `${process.env.NEXT_PUBLIC_IMAGE_BASE_URL}/furniture/table-vintage-coffee.png`,
       },
       {
         id: "table2",
-        name: "玻璃茶几",
-        src: TableImg,
-        description: "透明玻璃材質茶几，簡約大方",
-        url: `${process.env.NEXT_PUBLIC_URL}/table.jpg`,
+        name: "現代方桌",
+        description: "深色木製方桌，適合客廳或書房",
+        url: `${process.env.NEXT_PUBLIC_IMAGE_BASE_URL}/furniture/table-modern-square.png`,
+      },
+      {
+        id: "table3",
+        name: "現代圓桌",
+        description: "木頭桌面搭配金屬底座，適合用於客廳",
+        url: `${process.env.NEXT_PUBLIC_IMAGE_BASE_URL}/furniture/table-modern-round.png`,
       },
     ],
   },
@@ -150,16 +162,27 @@ const furniture: CategoryWithMaterials[] = [
       {
         id: "bed1",
         name: "單人床",
-        src: BedImg,
-        description: "適合小空間的單人床，帶儲物功能",
-        url: `${process.env.NEXT_PUBLIC_URL}/bed.jpg`,
+        description: "木頭床架與棕紅色棉被，溫暖氛圍",
+        url: `${process.env.NEXT_PUBLIC_IMAGE_BASE_URL}/furniture/bed-single-cream.png`,
       },
+
       {
         id: "bed2",
         name: "雙人床",
-        src: BedImg,
-        description: "寬敞舒適的雙人床，帶靠背設計",
-        url: `${process.env.NEXT_PUBLIC_URL}/bed.jpg`,
+        description: "米白色床包與柔和床頭設計，典雅舒適",
+        url: `${process.env.NEXT_PUBLIC_IMAGE_BASE_URL}/furniture/bed-double-cream.png`,
+      },
+      {
+        id: "bed3",
+        name: "單人床",
+        description: "藍色簡約床架與粉嫩格紋棉被",
+        url: `${process.env.NEXT_PUBLIC_IMAGE_BASE_URL}/furniture/bed-single-blue.png`,
+      },
+      {
+        id: "bed4",
+        name: "雙人床",
+        description: "藍色簡約床架與粉色格紋被套",
+        url: `${process.env.NEXT_PUBLIC_IMAGE_BASE_URL}/furniture/bed-double-blue.png`,
       },
     ],
   },
@@ -169,17 +192,21 @@ const furniture: CategoryWithMaterials[] = [
     materials: [
       {
         id: "chair1",
-        name: "辦公椅",
-        src: ChairImg,
-        description: "符合人體工學的辦公椅，提供長時間舒適支持",
-        url: `${process.env.NEXT_PUBLIC_URL}/chair.jpg`,
+        name: "古典風椅子",
+        description: "圓形靠背與雕花細節的復古風格椅",
+        url: `${process.env.NEXT_PUBLIC_IMAGE_BASE_URL}/furniture/chair-vintage-gray.png`,
       },
       {
         id: "chair2",
-        name: "休閒椅",
-        src: ChairImg,
-        description: "適合陽台或戶外的休閒椅，輕便易移動",
-        url: `${process.env.NEXT_PUBLIC_URL}/chair.jpg`,
+        name: "人體工學辦公椅",
+        description: "符合人體工學的加墊扶手辦公椅",
+        url: `${process.env.NEXT_PUBLIC_IMAGE_BASE_URL}/furniture/chair-office-orange.png`,
+      },
+      {
+        id: "chair3",
+        name: "現代椅子",
+        description: "木質椅腳與鐵件結構，簡約現代感",
+        url: `${process.env.NEXT_PUBLIC_IMAGE_BASE_URL}/furniture/chair-modern-blue.png`,
       },
     ],
   },

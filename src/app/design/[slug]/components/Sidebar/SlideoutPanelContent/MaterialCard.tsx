@@ -16,7 +16,7 @@ export default function MaterialCard({
     // 樣式放在 design.css
     <div className="card cursor-pointer" onClick={() => handleClick(material)}>
       <Image
-        src={material.src}
+        src={material.url}
         alt={material.name}
         width={140}
         height={140}
