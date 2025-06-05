@@ -404,7 +404,7 @@ export default function Design() {
 
     // Pattern 用來定義 Polygon 的填充模式
     const pattern = await createPatternFromImage(
-      `http://localhost:3000/marble.jpg`,
+      `${process.env.NEXT_PUBLIC_IMAGE_BASE_URL}/flooring/wood-modern.jpg`,
       FLOORING_PATTERN_IMG_WIDTH
     );
 
@@ -431,7 +431,7 @@ export default function Design() {
   const updateFlooringImage = async (newImageUrl: string) => {
     // Flooring 一定是 polygon，polygon 一定是 Flooring
     if (!selectedPolygonObjectRef.current) {
-      window.alert("請選擇房間");
+      toast.error("請選擇房間");
       return;
     }
 
@@ -645,7 +645,7 @@ export default function Design() {
   }, [currentAction, canvas, dispatch, selectedImage]);
 
   const loadFromUrl = async ({
-    url = "https://www.google.com/images/srpr/logo3w.png", // 亂放預設圖片
+    url,
     customWidth = null, // 自定義寬度（px），默認為 null
   }: {
     url?: string;
@@ -653,7 +653,9 @@ export default function Design() {
   }) => {
     if (!canvas) return;
 
-    const imgData = await FabricImage.fromURL(url);
+    const imgData = await FabricImage.fromURL(url, {
+      crossOrigin: "anonymous",
+    }); // 從 URL 載入圖片，並設置 CORS 以允許跨域請求
 
     // 如果提供了自定義寬度，計算等比例縮放比例
     if (customWidth && imgData.width) {

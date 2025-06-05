@@ -12,6 +12,8 @@ export default function MaterialCard({
   material,
   handleClick,
 }: MaterialCardProps) {
+  const isFurniture = material.url.includes("/furniture/");
+
   return (
     // 樣式放在 design.css
     <div className="card cursor-pointer" onClick={() => handleClick(material)}>
@@ -20,7 +22,9 @@ export default function MaterialCard({
         alt={material.name}
         width={140}
         height={140}
-        className="card__img object-cover"
+        className={`card__img ${
+          isFurniture ? "object-contain" : "object-cover"
+        }`}
       />
       <div className="card__content">
         <div className="card__content__header">{material.name}</div>
