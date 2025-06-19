@@ -1,7 +1,6 @@
 "use client";
 
 import { usePathname } from "next/navigation";
-import { useSession } from "next-auth/react";
 import { useQuery } from "@tanstack/react-query";
 import {
   faArrowLeft,
@@ -43,20 +42,14 @@ export default function Toolbar({
   const pathname = usePathname();
   const designId = Number(pathname.split("/").pop());
 
-  // const { data: userSession } = useSession();
-  // const token = userSession?.user?.token ?? "";
-
   const currentAction = useAppSelector((state) => state.canvas.currentAction);
-  // const hasInjectedTokenToAxios = useAppSelector(
-  //   (state) => state.user.hasInjectedTokenToAxios
-  // );
 
   const dispatch = useAppDispatch();
 
   const {
     data: design,
-    error,
-    isLoading,
+    // error,
+    // isLoading,
   } = useQuery({
     queryKey: ["design", designId],
     queryFn: () => getDesign(designId),

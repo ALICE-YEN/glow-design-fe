@@ -1,13 +1,11 @@
-import { createSlice, PayloadAction } from "@reduxjs/toolkit";
+import { createSlice } from "@reduxjs/toolkit";
 
 interface UserState {
   isAuthModalOpen: boolean;
-  hasInjectedTokenToAxios: boolean;
 }
 
 const initialState: UserState = {
   isAuthModalOpen: false,
-  hasInjectedTokenToAxios: false,
 };
 
 const userSlice = createSlice({
@@ -20,12 +18,8 @@ const userSlice = createSlice({
     closeAuthModal: (state) => {
       state.isAuthModalOpen = false;
     },
-    setHasInjectedTokenToAxios(state, action: PayloadAction<boolean>) {
-      state.hasInjectedTokenToAxios = action.payload;
-    },
   },
 });
 
-export const { openAuthModal, closeAuthModal, setHasInjectedTokenToAxios } =
-  userSlice.actions;
+export const { openAuthModal, closeAuthModal } = userSlice.actions;
 export default userSlice.reducer;

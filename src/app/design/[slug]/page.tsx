@@ -2,7 +2,6 @@
 
 import { useEffect, useRef, useState, useCallback } from "react";
 import { usePathname } from "next/navigation";
-import { useSession } from "next-auth/react";
 import { useMutation, useQueryClient, useQuery } from "@tanstack/react-query";
 import {
   Canvas,
@@ -83,14 +82,9 @@ export default function Design() {
 
   const selectedPolygonObjectRef = useRef<Polygon | null>(null); // 選取到的物件，輔助值，便於處理 Polygon。canvas.getActiveObject() 還是作為所有選取到的物件來源。
 
-  // const { data: userSession } = useSession();
-  // const token = userSession?.user?.token ?? "";
-
   const currentAction = useAppSelector((state) => state.canvas.currentAction);
   const selectedImage = useAppSelector((state) => state.canvas.selectedImage);
-  // const hasInjectedTokenToAxios = useAppSelector(
-  //   (state) => state.user.hasInjectedTokenToAxios
-  // );
+
   const dispatch = useAppDispatch();
 
   const queryClient = useQueryClient();

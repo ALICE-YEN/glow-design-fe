@@ -4,14 +4,10 @@
 import { useSession } from "next-auth/react";
 import { useEffect } from "react";
 import { setTokenGetter } from "@/services/apis/axios";
-import { useAppDispatch } from "@/services/redux/hooks";
-import { setHasInjectedTokenToAxios } from "@/store/userSlice";
 
 const useInjectTokenToAxios = () => {
   const { data: userSession, status } = useSession();
   // status 僅代表「有 session」，不等於 token 有效
-
-  const dispatch = useAppDispatch();
 
   const token = userSession?.user?.token ?? "";
 
@@ -19,11 +15,7 @@ const useInjectTokenToAxios = () => {
   useEffect(() => {
     if (status === "authenticated" && token) {
       setTokenGetter(() => token);
-      dispatch(setHasInjectedTokenToAxios(true));
-    } else {
-      dispatch(setHasInjectedTokenToAxios(false));
     }
-    console.log("useInjectTokenToAxios", status, userSession);
   }, [token, status]);
 };
 

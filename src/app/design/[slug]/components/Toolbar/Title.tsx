@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { usePathname } from "next/navigation";
 import Link from "next/link";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
@@ -14,6 +14,10 @@ interface TitleProps {
 export default function Title({ designTitle }: TitleProps) {
   const [title, setTitle] = useState(designTitle);
   const [isEditing, setIsEditing] = useState(false);
+
+  useEffect(() => {
+    setTitle(designTitle); // 沒有這行的話就不會隨著 designTitle 的變化而更新
+  }, [designTitle]);
 
   const pathname = usePathname();
   const designId = Number(pathname.split("/").pop());

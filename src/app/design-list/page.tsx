@@ -14,10 +14,6 @@ export default function DesignList() {
   const { data: userSession } = useSession();
   const userId = Number(userSession?.user?.id);
 
-  // const hasInjectedTokenToAxios = useAppSelector(
-  //   (state) => state.user.hasInjectedTokenToAxios
-  // );
-
   const { data, error, isLoading } = useQuery({
     queryKey: ["design-list", userId],
     enabled: !!userId,
