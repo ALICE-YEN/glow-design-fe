@@ -1,7 +1,8 @@
 "use client";
 
-import { usePathname } from "next/navigation";
 import { useEffect, useRef, useState, useCallback } from "react";
+import { usePathname } from "next/navigation";
+import { useSession } from "next-auth/react";
 import { useMutation, useQueryClient, useQuery } from "@tanstack/react-query";
 import {
   Canvas,
@@ -82,31 +83,34 @@ export default function Design() {
 
   const selectedPolygonObjectRef = useRef<Polygon | null>(null); // 選取到的物件，輔助值，便於處理 Polygon。canvas.getActiveObject() 還是作為所有選取到的物件來源。
 
+  // const { data: userSession } = useSession();
+  // const token = userSession?.user?.token ?? "";
+
   const currentAction = useAppSelector((state) => state.canvas.currentAction);
   const selectedImage = useAppSelector((state) => state.canvas.selectedImage);
+  // const hasInjectedTokenToAxios = useAppSelector(
+  //   (state) => state.user.hasInjectedTokenToAxios
+  // );
   const dispatch = useAppDispatch();
 
   const queryClient = useQueryClient();
 
   const pathname = usePathname();
-  const designId = pathname.split("/").pop() as string;
+  const designId = Number(pathname.split("/").pop());
 
   const {
     data: design,
-    error,
-    isLoading,
+    // error,
+    // isLoading,
   } = useQuery({
     queryKey: ["design", designId], // 和 Toolbar 使用同 api，同 queryKey 會共享快取
     queryFn: () => getDesign(designId),
     enabled: !!designId, // 這個查詢不會自動執行，只有當 enabled 為 true 時，查詢才會被觸發
     refetchOnWindowFocus: true, // 當瀏覽器窗口重新獲得焦點時，是否自動重新抓取（refetch）最新的數據
   });
-  console.log("design", design);
-  console.log("isLoading", isLoading);
 
   const updateDesignMutation = useMutation({
-    mutationFn: (newData: any) =>
-      updateDesign(designId as string, { data: newData }),
+    mutationFn: (newData: any) => updateDesign(designId, { data: newData }),
 
     // 更新成功後，重新取得設計資料
     onSuccess: () => {

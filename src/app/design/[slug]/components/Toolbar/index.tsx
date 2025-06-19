@@ -1,6 +1,7 @@
 "use client";
 
 import { usePathname } from "next/navigation";
+import { useSession } from "next-auth/react";
 import { useQuery } from "@tanstack/react-query";
 import {
   faArrowLeft,
@@ -40,9 +41,15 @@ export default function Toolbar({
   isRedoDisabled,
 }: ToolbarProps) {
   const pathname = usePathname();
-  const designId = pathname.split("/").pop() as string;
+  const designId = Number(pathname.split("/").pop());
+
+  // const { data: userSession } = useSession();
+  // const token = userSession?.user?.token ?? "";
 
   const currentAction = useAppSelector((state) => state.canvas.currentAction);
+  // const hasInjectedTokenToAxios = useAppSelector(
+  //   (state) => state.user.hasInjectedTokenToAxios
+  // );
 
   const dispatch = useAppDispatch();
 
@@ -53,12 +60,9 @@ export default function Toolbar({
   } = useQuery({
     queryKey: ["design", designId],
     queryFn: () => getDesign(designId),
-    enabled: !!designId, // 這個查詢不會自動執行，只有當 enabled 為 true 時，查詢才會被觸發
-    refetchOnWindowFocus: false, // 當瀏覽器窗口重新獲得焦點時，是否自動重新抓取（refetch）最新的數據
+    enabled: !!designId,
+    refetchOnWindowFocus: true, // 當瀏覽器窗口重新獲得焦點時，是否自動重新抓取（refetch）最新的數據
   });
-
-  if (isLoading) return <div>Loading...</div>;
-  if (error) return <div>Error: {(error as Error).message}</div>;
 
   const TOOLBAR_BUTTONS: {
     middle: ToolbarButton[];
@@ -127,7 +131,7 @@ export default function Toolbar({
   return (
     <header className="fixed top-0 left-1/2 translate-x-[-50%] h-16 min-w-[800px] flex items-center justify-between bg-panel-background shadow-xl px-6 py-2 rounded-lg">
       {/* 左側標誌 */}
-      <Title designTitle={design.name} />
+      <Title designTitle={design?.name} />
 
       {/* 中間工具按鈕 */}
       <div className="flex space-x-4">

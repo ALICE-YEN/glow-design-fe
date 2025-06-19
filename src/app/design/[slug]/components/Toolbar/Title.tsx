@@ -16,7 +16,7 @@ export default function Title({ designTitle }: TitleProps) {
   const [isEditing, setIsEditing] = useState(false);
 
   const pathname = usePathname();
-  const designId = pathname.split("/").pop() as string;
+  const designId = Number(pathname.split("/").pop());
 
   const queryClient = useQueryClient();
 

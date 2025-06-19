@@ -1,10 +1,10 @@
 "use client";
 
 import { useMutation, useQueryClient, useQuery } from "@tanstack/react-query";
-import axios from "axios";
 import { useSession } from "next-auth/react";
 import { toast } from "react-toastify";
 import { createDesign, getDesignsByUser } from "@/services/apis";
+// import { useAppSelector, useAppDispatch } from "@/services/redux/hooks";
 import Header from "@/app/components/Header";
 import Card from "@/app/design-list/components/Card";
 import Footer from "@/app/components/Footer";
@@ -14,8 +14,13 @@ export default function DesignList() {
   const { data: userSession } = useSession();
   const userId = Number(userSession?.user?.id);
 
+  // const hasInjectedTokenToAxios = useAppSelector(
+  //   (state) => state.user.hasInjectedTokenToAxios
+  // );
+
   const { data, error, isLoading } = useQuery({
     queryKey: ["design-list", userId],
+    enabled: !!userId,
     queryFn: () => getDesignsByUser(userId),
   });
 
@@ -53,7 +58,7 @@ export default function DesignList() {
           </div>
 
           {/* preview_url 預設應該要放在資料庫裡！！！！ */}
-          {data.map((design: Design) => (
+          {(data ?? []).map((design: Design) => (
             <Card
               key={design.id}
               id={design.id}

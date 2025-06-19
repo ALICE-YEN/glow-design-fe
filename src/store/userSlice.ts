@@ -1,38 +1,31 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 
 interface UserState {
-  username: string;
-  isLoggedIn: boolean;
   isAuthModalOpen: boolean;
+  hasInjectedTokenToAxios: boolean;
 }
 
 const initialState: UserState = {
-  username: "",
-  isLoggedIn: false,
   isAuthModalOpen: false,
+  hasInjectedTokenToAxios: false,
 };
 
 const userSlice = createSlice({
   name: "user",
   initialState,
   reducers: {
-    login(state, action: PayloadAction<string>) {
-      state.username = action.payload;
-      state.isLoggedIn = true;
-    },
-    logout(state) {
-      state.username = "";
-      state.isLoggedIn = false;
-    },
     openAuthModal: (state) => {
       state.isAuthModalOpen = true;
     },
     closeAuthModal: (state) => {
       state.isAuthModalOpen = false;
     },
+    setHasInjectedTokenToAxios(state, action: PayloadAction<boolean>) {
+      state.hasInjectedTokenToAxios = action.payload;
+    },
   },
 });
 
-export const { login, logout, openAuthModal, closeAuthModal } =
+export const { openAuthModal, closeAuthModal, setHasInjectedTokenToAxios } =
   userSlice.actions;
 export default userSlice.reducer;
