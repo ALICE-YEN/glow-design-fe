@@ -1,42 +1,68 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { usePathname } from "next/navigation";
 import Link from "next/link";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { toast } from "react-toastify";
+import { updateDesign } from "@/services/apis";
 
 interface TitleProps {
   designTitle: string;
-  updateTitle: (newTitle: string) => Promise<void>;
 }
 
-export default function Title({ designTitle, updateTitle }: TitleProps) {
+export default function Title({ designTitle }: TitleProps) {
   const [title, setTitle] = useState(designTitle);
   const [isEditing, setIsEditing] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
+
+  useEffect(() => {
+    setTitle(designTitle); // 沒有這行的話就不會隨著 designTitle 的變化而更新
+  }, [designTitle]);
+
+  const pathname = usePathname();
+  const designId = Number(pathname.split("/").pop());
+
+  const queryClient = useQueryClient();
+
+  const updateTitleMutation = useMutation({
+    mutationFn: (newTitle: string) =>
+      updateDesign(designId, { name: newTitle }),
+    // 更新成功後，重新取得設計資料
+    onSuccess: () => {
+      queryClient.invalidateQueries(["design", designId]);
+      toast.success("設計重新命名成功");
+    },
+    onError: (error) => {
+      console.error("更新失敗：", error);
+      toast.error("重新命名失敗，請稍後重試");
+      // 回退到原始標題
+      setTitle(designTitle);
+    },
+    // 可選：無論成功或失敗都關閉編輯狀態
+    onSettled: () => {
+      setIsEditing(false);
+    },
+  });
 
   const handleTitleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     setTitle(event.target.value);
   };
 
-  const handleSaveTitle = async () => {
+  const handleSaveTitle = () => {
     if (title.trim() === "") {
-      alert("標題不可為空");
+      toast.error("標題不可為空");
       setTitle(designTitle); // 回退到舊值
       setIsEditing(false);
       return;
     }
 
-    setIsLoading(true);
-
-    try {
-      await updateTitle(title);
-    } catch (error) {
-      console.error("更新失敗：", error);
-      alert("更新失敗，請稍後重試");
-      setTitle(designTitle); // 回退到舊值
-    } finally {
-      setIsLoading(false);
+    // 如果新標題和原本標題相同，就不更新
+    if (title.trim() === designTitle.trim()) {
       setIsEditing(false);
+      return;
     }
+
+    updateTitleMutation.mutate(title);
   };
 
   const handleKeyDown = (event: React.KeyboardEvent<HTMLInputElement>) => {
@@ -46,10 +72,6 @@ export default function Title({ designTitle, updateTitle }: TitleProps) {
       setTitle(designTitle);
       setIsEditing(false);
     }
-  };
-
-  const handleBlur = () => {
-    handleSaveTitle();
   };
 
   return (
@@ -63,7 +85,7 @@ export default function Title({ designTitle, updateTitle }: TitleProps) {
           value={title}
           onChange={handleTitleChange}
           onKeyDown={handleKeyDown}
-          onBlur={handleBlur}
+          onBlur={handleSaveTitle}
           className="border-b-2 focus:outline-none focus:border-contrast text-lg text-primary"
           autoFocus
         />
@@ -72,7 +94,7 @@ export default function Title({ designTitle, updateTitle }: TitleProps) {
           className="text-primary text-lg cursor-pointer hover:underline"
           onClick={() => setIsEditing(true)}
         >
-          {title} {isLoading && " (更新中...)"}
+          {title}
         </span>
       )}
     </div>

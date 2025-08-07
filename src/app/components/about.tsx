@@ -5,9 +5,22 @@ import {
   useScroll,
   useTransform,
 } from "motion/react";
+import { MotionValue } from "motion";
 import { useRef, useState } from "react";
 
-const Slide = ({ opacity, filter, translate, children }: any) => (
+interface SlideProps {
+  opacity: MotionValue<number>;
+  filter: MotionValue<string>;
+  translate: MotionValue<string>;
+  children: React.ReactNode;
+}
+
+const Slide: React.FC<SlideProps> = ({
+  opacity,
+  filter,
+  translate,
+  children,
+}) => (
   <motion.h1
     className="heading-md text-white"
     style={{

@@ -4,6 +4,19 @@ import NextAuth from "next-auth";
 import GoogleProvider from "next-auth/providers/google";
 import CredentialsProvider from "next-auth/providers/credentials";
 import axios from "axios";
+import { jwtDecode } from "jwt-decode"; // 只能「解碼」JWT，把 payload 解析出來，不會也無法驗證簽章或有效期。需要 secret 或 public key。
+
+function isTokenExpired(token: string): boolean {
+  if (!token) return true;
+  try {
+    const decoded = jwtDecode(token);
+    // exp 單位是秒，Date.now() 單位是毫秒
+    console.log("Decoded token:", decoded);
+    return Date.now() >= decoded.exp * 1000;
+  } catch (e) {
+    return true;
+  }
+}
 
 export const {
   handlers: { GET, POST },
@@ -16,26 +29,47 @@ export const {
     strategy: "jwt", // JWT 會被存儲在安全的 HTTP-only Cookie
     maxAge: 86400,
   },
+  // NextAuth 官方文件與討論建議，refreshToken 可以存在 server-side 的 JWT（token 物件），但不應該傳到 session 讓前端取得，這樣就不會有 refreshToken 泄露到 JS 的問題。
   callbacks: {
     // The `jwt` callback is called whenever a JWT is created or updated
-    jwt({ token, user, account }) {
+    async jwt({ token, user, account }) {
+      console.log("JWT callback called", { token, user, account });
       // token：the current state of the NextAuth-managed JWT
+      console.log("Current token:", token.token);
 
       if (account && account.provider === "google") {
         if (account.backendData) {
+          console.log("goole初次登入", account.backendData);
           token = { ...token, ...account.backendData }; // 使用後端 API 回傳的，包括 token
         }
       } else {
         if (user) {
+          console.log("帳號密碼初次登入", user);
           token = { ...token, ...user }; // the user object that was returned from the `authorize` callback. 使用後端 API 回傳的，包括 token
+        }
+      }
+
+      if (token?.token && !isTokenExpired(token?.token)) {
+        console.log("🥰Token is still valid, skipping refresh");
+        // return token;
+      } else {
+        console.log("😎Token is expired or missing, refreshing token");
+        const response = await axios.post(
+          `${process.env.NEXT_PUBLIC_BACKEND_URL}/auth/refresh-token`,
+          {
+            refreshToken: token.refreshToken,
+          }
+        );
+        if (response.data && response.data.token) {
+          token = { ...token, ...response.data };
+          console.log("😎😎New token received:", token.token);
         }
       }
 
       return token;
     },
-    // The `session` callback is called whenever a session is checked(ex: useSession)
+    // 自定義要傳到前端的 Session 資料(ex: useSession)
     session({ session, token }) {
-      // Maps token data to the session object for client-side usage
       session.user = token; // 使用後端 API 回傳的，包括 token
 
       return session;

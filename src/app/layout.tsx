@@ -3,6 +3,7 @@ import type { Metadata } from "next"; // Next.js 自動將這些數據注入到 
 import localFont from "next/font/local"; // Next.js 的字體優化 API，字體加載是自動優化的，會根據頁面的訪問只加載所需字體，減少資源浪費。
 import { SessionProvider } from "next-auth/react"; // 在整個應用程式 client-side 提供身份驗證會話
 import { config } from "@fortawesome/fontawesome-svg-core";
+import { ToastContainer } from "react-toastify";
 import { auth } from "@/services/auth/config";
 import { ReduxProviders } from "@/components/ReduxProviders";
 import { ReactQueryProvider } from "@/components/ReactQueryProvider";
@@ -47,6 +48,7 @@ export default async function AppLayout({
             >
               {children}
               <AuthModal />
+              <ToastContainer autoClose={2500} />
             </body>
           </html>
         </ReduxProviders>

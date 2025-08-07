@@ -18,7 +18,6 @@ export interface CategoryWithMaterials {
 export interface Material {
   id: string;
   name: string;
-  src: string | StaticImageData;
   description: string;
   url: string; // 之後就不會有分開
 }

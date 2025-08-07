@@ -2,6 +2,7 @@
 
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import type { IconDefinition } from "@fortawesome/fontawesome-svg-core";
+import Tooltip from "./Tooltip";
 
 interface ButtonProps {
   icon: IconDefinition;
@@ -18,20 +19,35 @@ export default function Button({
   isDisabled = false,
   handleClick,
 }: ButtonProps) {
+  // ZOOM_TO_FIT 的 icon 要客製化邊框
+  const borderProps =
+    icon.iconName === "arrows-left-right"
+      ? {
+          className: "fa-border",
+          style: {
+            border: "2px solid black",
+            borderRadius: 3,
+            padding: "0.5px",
+            transform: "scale(0.85)",
+          },
+        }
+      : {};
+
   return (
-    <button
-      onClick={isDisabled ? undefined : handleClick}
-      className={`w-10 h-10 rounded-default transition ${
-        isDisabled
-          ? "cursor-auto text-button-disabled"
-          : isActive
-          ? "bg-button-active"
-          : "hover:bg-button-hover"
-      }`}
-      title={label}
-      disabled={isDisabled}
-    >
-      <FontAwesomeIcon icon={icon} size="lg" />
-    </button>
+    <Tooltip tooltip={label}>
+      <button
+        onClick={isDisabled ? undefined : handleClick}
+        className={`w-10 h-10 rounded-default transition ${
+          isDisabled
+            ? "cursor-auto text-button-disabled"
+            : isActive
+            ? "bg-button-active"
+            : "hover:bg-button-hover"
+        }`}
+        disabled={isDisabled}
+      >
+        <FontAwesomeIcon icon={icon} size="lg" {...borderProps} />
+      </button>
+    </Tooltip>
   );
 }

@@ -1,8 +1,8 @@
-// useCallback dependency 到底應不應該放 useRef
-
 "use client";
 
 import { useEffect, useRef, useState, useCallback } from "react";
+import { usePathname } from "next/navigation";
+import { useMutation, useQueryClient, useQuery } from "@tanstack/react-query";
 import {
   Canvas,
   TEvent,
@@ -11,18 +11,38 @@ import {
   FabricImage,
   Polygon,
   Point,
+  FabricObject,
 } from "fabric";
+import { toast } from "react-toastify";
 import { useAppSelector, useAppDispatch } from "@/services/redux/hooks";
+import { getDesign, updateDesign } from "@/services/apis";
 import { setAction, resetAction } from "@/store/canvasSlice";
 import { CanvasAction } from "@/types/enum";
+import {
+  FINALIZED_LINE_ID,
+  GRID_LINE_ID,
+  CANVAS_WIDTH,
+  CANVAS_HEIGHT,
+  GRID_SIZE,
+  ZOOM_FACTOR,
+  MIN_ZOOM,
+  MAX_ZOOM,
+  FLOORING_PATTERN_IMG_WIDTH,
+  ZOOM_TO_FIT_PADDING,
+  CROPPING_FRAME_NAME_PREFIX,
+} from "@/utils/constants";
 import { Point as IPoint } from "@/app/design/[slug]/types/interfaces";
 import {
   initializeCanvasWithGrid,
+  getContentObjects,
   drawGrid,
   setupZoom,
   handleResize,
   handleCanvasKeyDown,
   isInitialCanvasState,
+  computeBoundingRect,
+  computeScale,
+  computeOffset,
 } from "@/app/design/[slug]/utils/basicCanvasHelpers";
 import {
   getSnappedPointer,
@@ -36,22 +56,12 @@ import {
   updateUndoRedoStatus,
   restoreCanvasState,
 } from "@/app/design/[slug]/utils/undoRedoHelpers";
-import {
-  FINALIZED_LINE_ID,
-  CANVAS_WIDTH,
-  CANVAS_HEIGHT,
-  GRID_SIZE,
-  ZOOM_FACTOR,
-  MIN_ZOOM,
-  MAX_ZOOM,
-  FLOORING_PATTERN_IMG_WIDTH,
-} from "@/app/design/[slug]/utils/constants";
-import {
-  handleObjectMoving,
-  clearGuidelines,
-} from "@/app/design/[slug]/utils/snappingHelpers"; // 暫時修復因網格壞掉的指導線，但物件移動變很緩慢，畫布平移、縮放時還是異常!!!
+// import {
+//   handleObjectMoving,
+//   clearGuidelines,
+// } from "@/app/design/[slug]/utils/snappingHelpers"; // 暫時修復因網格壞掉的指導線，但物件移動變很緩慢，畫布平移、縮放時還是異常!!!
 import Cropping from "@/app/design/[slug]/components/Cropping";
-import LayerList from "@/app/design/[slug]/components/LayerList";
+// import LayerList from "@/app/design/[slug]/components/LayerList";
 import Sidebar from "@/app/design/[slug]/components/Sidebar";
 import Toolbar from "@/app/design/[slug]/components/Toolbar";
 
@@ -70,11 +80,42 @@ export default function Design() {
   const pointsRef = useRef<IPoint[]>([]); // 保存最新的點資料，用於即時操作，避免 React 狀態更新的非同步問題。
   const tempLineRef = useRef<Line | null>(null); // 表示模擬線，隨滑鼠移動動態更新，用於即時操作，避免 React 狀態更新的非同步問題。
 
-  const selectedPolygonObjectRef = useRef<any>(null); // 選取到的物件，輔助值，便於處理 Polygon。canvas.getActiveObject() 還是作為所有選取到的物件來源。
+  const selectedPolygonObjectRef = useRef<Polygon | null>(null); // 選取到的物件，輔助值，便於處理 Polygon。canvas.getActiveObject() 還是作為所有選取到的物件來源。
 
   const currentAction = useAppSelector((state) => state.canvas.currentAction);
   const selectedImage = useAppSelector((state) => state.canvas.selectedImage);
+
   const dispatch = useAppDispatch();
+
+  const queryClient = useQueryClient();
+
+  const pathname = usePathname();
+  const designId = Number(pathname.split("/").pop());
+
+  const {
+    data: design,
+    // error,
+    // isLoading,
+  } = useQuery({
+    queryKey: ["design", designId], // 和 Toolbar 使用同 api，同 queryKey 會共享快取
+    queryFn: () => getDesign(designId),
+    enabled: !!designId, // 這個查詢不會自動執行，只有當 enabled 為 true 時，查詢才會被觸發
+    refetchOnWindowFocus: true, // 當瀏覽器窗口重新獲得焦點時，是否自動重新抓取（refetch）最新的數據
+  });
+
+  const updateDesignMutation = useMutation({
+    mutationFn: (newData: any) => updateDesign(designId, { data: newData }),
+
+    // 更新成功後，重新取得設計資料
+    onSuccess: () => {
+      queryClient.invalidateQueries(["design", designId]);
+      toast.success("設計儲存成功");
+    },
+    onError: (error) => {
+      console.error("更新失敗：", error);
+      toast.error("設計儲存失敗，請稍後重試");
+    },
+  });
 
   useEffect(() => {
     if (canvasRef.current) {
@@ -102,7 +143,14 @@ export default function Design() {
       window.addEventListener("resize", resizeHandler);
 
       // 監聽鍵盤事件
-      const keyDownHandler = handleCanvasKeyDown(initCanvas, saveToUndoStack);
+      const handleUndoClick = () => {
+        dispatch(setAction(CanvasAction.UNDO));
+      };
+      const keyDownHandler = handleCanvasKeyDown(
+        initCanvas,
+        saveToUndoStack,
+        handleUndoClick
+      );
 
       // 綁定鍵盤事件
       window.addEventListener("keydown", keyDownHandler);
@@ -114,6 +162,25 @@ export default function Design() {
       };
     }
   }, []);
+
+  useEffect(() => {
+    if (!canvas) return;
+
+    // 從 API 載入物件
+    const apiObjects = design?.data?.objects;
+    if (apiObjects?.length > 0) {
+      const existingGridObjects = canvas.toObject(["id"]).objects;
+      canvas.loadFromJSON(
+        {
+          ...design.data,
+          objects: [...existingGridObjects, ...apiObjects], // 將當前畫布的物件（網格）與從 API 獲取的物件合併
+        },
+        () => {
+          canvas.requestRenderAll();
+        }
+      );
+    }
+  }, [canvas, design]);
 
   const saveToUndoStack = (canvasInstance = canvas) => {
     if (!canvasInstance) return;
@@ -219,10 +286,10 @@ export default function Design() {
   }, [isPanningRef]);
 
   const handlePanMouseMove = useCallback(
-    (opt: any) => {
+    (opt: TEvent) => {
       if (!canvas) return;
 
-      if (isPanningRef.current && opt.e) {
+      if (isPanningRef.current && opt.e && opt.e instanceof MouseEvent) {
         // opt.e.movementX：滑鼠自上一次事件到目前事件在 X 軸 上的移動距離（以像素為單位）。
         // opt.e.movementY：滑鼠自上一次事件到目前事件在 Y 軸 上的移動距離。
         const delta = new Point(opt.e.movementX, opt.e.movementY);
@@ -335,7 +402,7 @@ export default function Design() {
 
     // Pattern 用來定義 Polygon 的填充模式
     const pattern = await createPatternFromImage(
-      `http://localhost:3000/marble.jpg`,
+      `${process.env.NEXT_PUBLIC_IMAGE_BASE_URL}/flooring/wood-modern.jpg`,
       FLOORING_PATTERN_IMG_WIDTH
     );
 
@@ -362,7 +429,7 @@ export default function Design() {
   const updateFlooringImage = async (newImageUrl: string) => {
     // Flooring 一定是 polygon，polygon 一定是 Flooring
     if (!selectedPolygonObjectRef.current) {
-      window.alert("請選擇房間");
+      toast.error("請選擇房間");
       return;
     }
 
@@ -378,19 +445,58 @@ export default function Design() {
   };
 
   const handlePolygonSelection = (
-    currentSelection: any, // 功能同 canvas.getActiveObject()
-    selectedPolygonObjectRef: React.MutableRefObject<any>
+    currentSelection: FabricObject, // 功能同 canvas.getActiveObject()
+    selectedPolygonObjectRef: React.MutableRefObject<Polygon | null>
   ) => {
     // 本專案只有在繪製牆面組成的 group 裡有 polygon
     if (currentSelection.type === "group") {
       // 如果是 Group，提取其中的 Polygon
-      const polygon = currentSelection._objects.find(
-        (obj) => obj.type === "polygon"
-      );
+      const group = currentSelection as Group;
+      const polygon = group._objects.find((obj) => obj.type === "polygon") as
+        | Polygon
+        | undefined;
       selectedPolygonObjectRef.current = polygon || null;
     } else {
       selectedPolygonObjectRef.current = null;
     }
+  };
+
+  const zoomToFit = () => {
+    if (!canvas) return;
+
+    const objects = getContentObjects(canvas);
+
+    if (objects.length === 0) {
+      return;
+    }
+
+    // 畫布上所有物件（過濾掉網格線）的包圍盒（bounding rect）
+    const boundingRect = computeBoundingRect(objects);
+
+    // 計算視口大小
+    const viewportWidth = canvas.getWidth();
+    const viewportHeight = canvas.getHeight();
+
+    // 計算 Zoom To Fit 的縮放比例 (scale)，以便所有物件都能在畫布中顯示，並留有 padding
+    const newScale = computeScale(
+      boundingRect,
+      viewportWidth,
+      viewportHeight,
+      ZOOM_TO_FIT_PADDING
+    );
+
+    // 計算偏移：物件中心經過縮放後需要移動多少，才能到達畫布中心。 (畫布中心) - (物件中心 * newScale)
+    const { offsetX, offsetY } = computeOffset(
+      boundingRect,
+      newScale,
+      viewportWidth,
+      viewportHeight
+    );
+
+    // 設定新的 viewport transform
+    canvas.setViewportTransform([newScale, 0, 0, newScale, offsetX, offsetY]); // [水平縮放（scaleX）, 水平傾斜（skewX）, 垂直傾斜（skewY）, 垂直縮放（scaleY）, 水平移動（translateX）, 垂直移動（translateY）]
+
+    canvas.requestRenderAll();
   };
 
   useEffect(() => {
@@ -416,14 +522,14 @@ export default function Design() {
       saveToUndoStack();
       // clearGuidelines(canvas);
     });
-    canvas.on("object:scaling", (e) => {
-      // console.log("事件object property is scaling", e.target);
-    });
+    // canvas.on("object:scaling", (e) => {
+    // console.log("事件object property is scaling", e.target);
+    // });
 
-    canvas.on("object:moving", (e) => {
-      // console.log("事件object property is moving", e.target);
-      // handleObjectMoving(canvas, e.target, guidelines, setGuidelines);
-    });
+    // canvas.on("object:moving", (e) => {
+    // console.log("事件object property is moving", e.target);
+    // handleObjectMoving(canvas, e.target, guidelines, setGuidelines);
+    // });
   }, [canvas]);
 
   useEffect(() => {
@@ -461,8 +567,20 @@ export default function Design() {
         case CanvasAction.REDO:
           redo();
           break;
-        // case CanvasAction.SAVE:
-        //   break;
+        case CanvasAction.ZOOM_TO_FIT:
+          zoomToFit();
+          break;
+        case CanvasAction.SAVE:
+          const UNSAVED_OBJECT_IDS = [GRID_LINE_ID, FINALIZED_LINE_ID];
+          const exportableCanvasObjects = canvas
+            .getObjects()
+            .filter((obj) => !UNSAVED_OBJECT_IDS.includes(obj.id));
+          const canvasPayloadForSave = {
+            ...canvas.toObject(["id"]),
+            objects: exportableCanvasObjects.map((obj) => obj.toObject(["id"])),
+          };
+          updateDesignMutation.mutate(canvasPayloadForSave); // 儲存畫布狀態
+          break;
         case CanvasAction.PAN_CANVAS:
           startPanMode();
           break;
@@ -489,6 +607,14 @@ export default function Design() {
           await loadFromUrl({ url: selectedImage, customWidth: 300 });
           saveToUndoStack();
           break;
+        case CanvasAction.NONE:
+          // 檢查，移除畫布上的預覽匯出圖片框
+          canvas.getObjects("rect").forEach((obj) => {
+            if (obj.name?.startsWith(CROPPING_FRAME_NAME_PREFIX)) {
+              canvas.remove(obj);
+            }
+          });
+          break;
         default:
           break;
       }
@@ -504,6 +630,9 @@ export default function Design() {
           CanvasAction.DRAW_WALL,
           CanvasAction.SELECT_OBJECT,
           CanvasAction.PAN_CANVAS,
+          CanvasAction.CHOOSE_IMG_BY_CUSTOMIZED,
+          CanvasAction.CHOOSE_IMG_BY_A4,
+          CanvasAction.CHOOSE_IMG_BY_A3,
         ].includes(currentAction)
       ) {
         dispatch(resetAction());
@@ -514,7 +643,7 @@ export default function Design() {
   }, [currentAction, canvas, dispatch, selectedImage]);
 
   const loadFromUrl = async ({
-    url = "https://www.google.com/images/srpr/logo3w.png",
+    url,
     customWidth = null, // 自定義寬度（px），默認為 null
   }: {
     url?: string;
@@ -522,7 +651,9 @@ export default function Design() {
   }) => {
     if (!canvas) return;
 
-    const imgData = await FabricImage.fromURL(url);
+    const imgData = await FabricImage.fromURL(url, {
+      crossOrigin: "anonymous",
+    }); // 從 URL 載入圖片，並設置 CORS 以允許跨域請求
 
     // 如果提供了自定義寬度，計算等比例縮放比例
     if (customWidth && imgData.width) {
@@ -543,19 +674,19 @@ export default function Design() {
     canvas.renderAll();
   };
 
-  const handleFileUpload = (event) => {
-    const file = event.target.files[0];
-    if (!file) return;
+  // const handleFileUpload = (event) => {
+  //   const file = event.target.files[0];
+  //   if (!file) return;
 
-    const reader = new FileReader();
+  //   const reader = new FileReader();
 
-    reader.onload = (e) => {
-      const result = e.target.result; // DataURL(Base64 URL 超集)
-      loadFromUrl({ url: result, customWidth: 300 });
-    };
+  //   reader.onload = (e) => {
+  //     const result = e.target.result; // DataURL(Base64 URL 超集)
+  //     loadFromUrl({ url: result, customWidth: 300 });
+  //   };
 
-    reader.readAsDataURL(file); // 將文件讀取為 Base64 格式 URL
-  };
+  //   reader.readAsDataURL(file); // 將文件讀取為 Base64 格式 URL
+  // };
 
   return (
     <main className="flex h-screen relative">
