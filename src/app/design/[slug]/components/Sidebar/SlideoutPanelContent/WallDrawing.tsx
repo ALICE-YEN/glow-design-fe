@@ -108,7 +108,11 @@ export default function WallDrawing() {
       ),
       handleClick: () => {
         dispatch(setAction(CanvasAction.PLACE_DOOR));
-        dispatch(setSelectedImage(`${process.env.NEXT_PUBLIC_URL}/door.png`));
+        dispatch(
+          setSelectedImage(
+            `${process.env.NEXT_PUBLIC_IMAGE_BASE_URL}/furniture/door.png`
+          )
+        );
       },
     },
     {
@@ -125,7 +129,11 @@ export default function WallDrawing() {
       ),
       handleClick: () => {
         dispatch(setAction(CanvasAction.PLACE_WINDOW));
-        dispatch(setSelectedImage(`${process.env.NEXT_PUBLIC_URL}/window.png`));
+        dispatch(
+          setSelectedImage(
+            `${process.env.NEXT_PUBLIC_IMAGE_BASE_URL}/furniture/window.png`
+          )
+        );
       },
     },
   ];

@@ -1,5 +1,5 @@
-import { Canvas, Line, Point } from "fabric";
-import { INITIAL_GRID_OBJECT_COUNT } from "@/app/design/[slug]/utils/constants";
+import { Canvas, Line, Point, Object } from "fabric";
+import { INITIAL_GRID_OBJECT_COUNT, GRID_LINE_ID } from "@/utils/constants";
 import { CanvasState } from "@/app/design/[slug]/types/interfaces";
 
 // 初始化 Canvas，繪製網格，回傳 Canvas 實例
@@ -32,6 +32,13 @@ export const initializeCanvasWithGrid = (
   return canvas;
 };
 
+export const getGridLines = (canvasInstance: Canvas): Object[] =>
+  canvasInstance.getObjects("line").filter((obj) => obj?.id === GRID_LINE_ID);
+
+export function getContentObjects(canvasInstance: Canvas): Object[] {
+  return canvasInstance.getObjects().filter((obj) => obj.id !== GRID_LINE_ID);
+}
+
 const STROKE_WIDTHS = {
   THIN: 0.5, // 細網格線
   MEDIUM: 1.5, // 粗網格線
@@ -46,9 +53,7 @@ export const drawGrid = (
   canvasHeight: number
 ): void => {
   // 清理舊的網格
-  const gridObjects = canvasInstance
-    .getObjects("line")
-    .filter((obj) => obj?.id === "grid");
+  const gridObjects = getGridLines(canvasInstance);
   gridObjects.forEach((obj) => canvasInstance.remove(obj));
 
   // 計算畫布中心
@@ -69,7 +74,7 @@ export const drawGrid = (
         strokeWidth,
         selectable: false,
         evented: false,
-        id: "grid", // 自定義標記為網格物件
+        id: GRID_LINE_ID, // 自定義標記為網格物件
       })
     );
   }
@@ -86,7 +91,7 @@ export const drawGrid = (
         strokeWidth,
         selectable: false,
         evented: false,
-        id: "grid", // 自定義標記為網格物件
+        id: GRID_LINE_ID, // 自定義標記為網格物件
       })
     );
   }
@@ -122,21 +127,96 @@ export const handleResize = (canvasInstance: Canvas) => {
 };
 
 export const handleCanvasKeyDown =
-  (canvasInstance: Canvas, saveToUndoStack: (canvasInstance: Canvas) => void) =>
+  (
+    canvasInstance: Canvas,
+    saveToUndoStack: (canvasInstance: Canvas) => void,
+    handleUndoClick: () => void
+  ) =>
   (e: KeyboardEvent): void => {
-    if (e.key === "Delete" || e.key === "Backspace") {
-      const activeObject = canvasInstance.getActiveObject();
-      if (activeObject) {
-        canvasInstance.remove(activeObject); // 從畫布中移除物件
-        canvasInstance.discardActiveObject(); // 清除選中狀態，觸發 selection:cleared
-        canvasInstance.requestRenderAll(); // 重新渲染畫布
+    switch (e.key) {
+      case "Delete":
+      case "Backspace":
+        const activeObject = canvasInstance.getActiveObject();
+        if (activeObject) {
+          canvasInstance.remove(activeObject); // 從畫布中移除物件
+          canvasInstance.discardActiveObject(); // 清除選中狀態，觸發 selection:cleared
+          canvasInstance.requestRenderAll(); // 重新渲染畫布
 
-        saveToUndoStack(canvasInstance); // 操作後儲存狀態
-        console.log("物件已刪除");
-      }
+          saveToUndoStack(canvasInstance); // 操作後儲存狀態
+          console.log("物件已刪除");
+        }
+        break;
+      case "z":
+      case "Z":
+        if (e.ctrlKey || e.metaKey) {
+          handleUndoClick();
+        }
+        break;
+      default:
+        break;
     }
   };
 
 export const isInitialCanvasState = (canvasState: CanvasState): boolean => {
   return canvasState.canvas.objects.length === INITIAL_GRID_OBJECT_COUNT;
+};
+
+// 計算畫布上所有物件（過濾掉網格線）的包圍盒（bounding rect）
+export const computeBoundingRect = (
+  objects: Object[]
+): { left: number; top: number; width: number; height: number } => {
+  let minX = Infinity;
+  let minY = Infinity;
+  let maxX = -Infinity;
+  let maxY = -Infinity;
+
+  objects.forEach((obj) => {
+    const rect = obj.getBoundingRect(); // rect: { left, top, width, height }
+
+    // 計算右下角
+    const right = rect.left + rect.width;
+    const bottom = rect.top + rect.height;
+
+    if (rect.left < minX) minX = rect.left;
+    if (rect.top < minY) minY = rect.top;
+    if (right > maxX) maxX = right;
+    if (bottom > maxY) maxY = bottom;
+  });
+
+  return {
+    left: minX,
+    top: minY,
+    width: maxX - minX,
+    height: maxY - minY,
+  };
+};
+
+// 計算 Zoom To Fit 的縮放比例 (scale)，以便所有物件都能在畫布中顯示，並留有 padding
+export const computeScale = (
+  boundingRect: { width: number; height: number },
+  viewportWidth: number,
+  viewportHeight: number,
+  padding: number
+): number => {
+  const scaleX = viewportWidth / (boundingRect.width + padding * 2);
+  const scaleY = viewportHeight / (boundingRect.height + padding * 2);
+  return Math.min(scaleX, scaleY);
+};
+
+// 計算平移偏移量 (offsetX, offsetY)，以便縮放後的包圍盒中心與畫布中心對齊
+// 計算方式：畫布中心 - (包圍盒中心 × 縮放比例)
+export const computeOffset = (
+  boundingRect: { left: number; top: number; width: number; height: number },
+  newScale: number,
+  viewportWidth: number,
+  viewportHeight: number
+): { offsetX: number; offsetY: number } => {
+  const centerX = boundingRect.left + boundingRect.width / 2;
+  const centerY = boundingRect.top + boundingRect.height / 2;
+  const canvasCenterX = viewportWidth / 2;
+  const canvasCenterY = viewportHeight / 2;
+  return {
+    offsetX: canvasCenterX - centerX * newScale,
+    offsetY: canvasCenterY - centerY * newScale,
+  };
 };

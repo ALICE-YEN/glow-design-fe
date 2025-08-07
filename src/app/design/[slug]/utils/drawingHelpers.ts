@@ -6,7 +6,7 @@ import {
   Pattern,
   TEvent,
 } from "fabric";
-import { FINALIZED_LINE_ID } from "@/app/design/[slug]/utils/constants";
+import { FINALIZED_LINE_ID } from "@/utils/constants";
 import { Point as IPoint } from "@/app/design/[slug]/types/interfaces";
 
 export const snapToGrid = (value: number, gridSize: number): number => {
@@ -93,7 +93,13 @@ export const createPatternFromImage = async (
   width: number
 ): Promise<Pattern> => {
   // 設定 Polygon 底圖
-  const imgData = await FabricImage.fromURL(imageUrl);
+  // 不僅是顯示圖片，而是要讀取（嘗試讀進瀏覽器內記憶體、導出圖片資料），安全等級高，需要 CORS 檢查與明確授權（前端設定 crossOrigin + 後端 CORS 回應）
+  // 瀏覽器假設你只是要「看」，不打算「用」，所以瀏覽器預設不送 Origin，直到你主動說：「我想讀裡面內容」（加了 crossOrigin）。對比：fetch/axios 涉及資料存取、帳戶狀態等，所以瀏覽器預設送 Origin 來讓伺服器做 CORS 檢查
+  const imgData = await FabricImage.fromURL(imageUrl, {
+    crossOrigin: "anonymous", // 我想從別的網域載入這個資源，但我不會帶 cookie，也不需要帳號資訊，請允許我安全地讀它
+  });
+  // 瀏覽器要確保你載入的是「合法授權用來畫圖」的圖片。前端不設，瀏覽器就不發 Origin，後端也就不給 Access-Control-Allow-Origin（伺服器在回應 HTTP 請求時送給瀏覽器的安全指令）
+
   imgData.scaleToWidth(width); // Scales an object to a given width
 
   // 專門用來生成圖像或模式的輔助畫布，不會影響主畫布，提供了一個獨立的渲染環境，允許你創建圖案並用作其他對象的填充

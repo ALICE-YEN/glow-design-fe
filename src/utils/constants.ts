@@ -1,0 +1,19 @@
+export const FINALIZED_LINE_ID = "finalizedLine"; // 繪製牆體，線 ID
+export const GRID_LINE_ID = "grid"; // 網格，線 ID
+export const CANVAS_WIDTH = 3000; // 邏輯畫布寬度
+export const CANVAS_HEIGHT = 3000; // 邏輯畫布高度
+export const GRID_SIZE = 20; // 網格大小
+export const INITIAL_GRID_OBJECT_COUNT = 302; // initializeCanvasWithGrid 函數中的網格線數量
+export const ZOOM_FACTOR = 0.001; // 縮放比例
+export const MIN_ZOOM = 0.5; // 限制最大縮放
+export const MAX_ZOOM = 2; // 限制最小縮放
+export const FLOORING_PATTERN_IMG_WIDTH = 75; // 地板圖案中使用的圖片寬度（用於生成模式填充）
+export const ZOOM_TO_FIT_PADDING = 80; // Zoom To Fit 時，留給物件的額外邊距，所有物件不會貼著畫布邊緣，而是有一定的空白區域
+export const CHOOSE_CUSTOMIZED_IMG_PADDING = 30; // 自定義匯出範圍，Zoom To Fit 時，留給物件的額外邊距
+export const CHOOSE_CUSTOMIZED_IMG_DEFAULT_WIDTH_HEIGHT = 300; // 自定義匯出範圍，若畫布上沒有物件，則用預設尺寸
+export const PAPER_SIZES = {
+  A3: { width: 420, height: 297 },
+  A4: { width: 297, height: 210 },
+} as const;
+export const DEFAULT_FRAME_VIEWPORT_RATIO = 0.8;
+export const CROPPING_FRAME_NAME_PREFIX = "GlowDesign";

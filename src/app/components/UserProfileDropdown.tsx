@@ -1,8 +1,7 @@
-//  要搭配 Header RWD
-
 "user client";
 
 import { useRouter } from "next/navigation";
+import { useSession } from "next-auth/react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faUser } from "@fortawesome/free-solid-svg-icons";
 import { doSignOut } from "@/services/auth/actions";
@@ -17,6 +16,7 @@ export default function UserProfileDropdown({
   showDetailedHeader,
 }: UserProfileDropdownProps) {
   const router = useRouter();
+  const { data: userSession } = useSession();
 
   const signOut = async () => {
     await doSignOut();
@@ -32,7 +32,7 @@ export default function UserProfileDropdown({
         <div className="flex items-center justify-center w-10 h-10 text-white rounded-full bg-contrast">
           <FontAwesomeIcon icon={faUser} size="xl" />
         </div>
-        <p className="text-sm">test@glow-design.com</p>
+        <p className="text-sm">{userSession?.user?.email}</p>
       </div>
       <hr className="border-button-active my-4" />
       <div className="space-y-1">

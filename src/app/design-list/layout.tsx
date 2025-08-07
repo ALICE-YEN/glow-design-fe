@@ -1,5 +1,6 @@
-// 該頁面共用的 layout：該頁面需要多個子路由，共用佈局（如側邊欄）
+"use client";
 
+import useInjectTokenToAxios from "@/hooks/useInjectTokenToAxios";
 import "./design-list.css";
 
 export default function DesignListLayout({
@@ -7,5 +8,7 @@ export default function DesignListLayout({
 }: {
   children: React.ReactNode;
 }) {
+  useInjectTokenToAxios(); // 這裡注入一次即可，所有子頁面共享 token
+
   return <>{children}</>;
 }

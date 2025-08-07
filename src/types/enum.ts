@@ -12,6 +12,7 @@ export enum CanvasAction {
   UNDO = "undo",
   REDO = "redo",
   SAVE = "save",
+  ZOOM_TO_FIT = "zoomToFit",
   CHOOSE_IMG_BY_A4 = "chooseImgByA4",
   CHOOSE_IMG_BY_A3 = "chooseImgByA3",
   CHOOSE_IMG_BY_CUSTOMIZED = "chooseImgByCustomized",
